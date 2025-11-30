@@ -1,3 +1,12 @@
+# NOTE!!
+
+This is a fork of the WebLatex proyect, to build it:
+
+1) Open VSCode
+
+2) DevContainer: Reopen in container
+
+
 <div align="center">
 
 # The WebLatex

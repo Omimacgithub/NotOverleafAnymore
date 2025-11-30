@@ -39,11 +39,13 @@
 		"-output-directory=PDF", // to change the output directory
 		"%DOC%"
 	],
+	"latex-workshop.formatting.latex": "latexindent",
 	// Remove / comment the next 3 lines to remove dark view for pdf
-	"latex-workshop.view.pdf.color.dark.pageColorsBackground": "#171717", // For Dark Viewwer
-	"latex-workshop.latex.autoBuild.run": "never",
-	"latex-workshop.view.pdf.color.dark.pageColorsForeground": "#FFFFFF", // For Dark Viewer
-	"latex-workshop.view.pdf.color.dark.backgroundColor": "#171717", // For Dark Viewer
+	//"latex-workshop.view.pdf.color.dark.pageColorsBackground": "#171717", // For Dark Viewwer
+	"latex-workshop.view.pdf.color.dark.pageColorsBackground": "#FFFFFF", // For Dark Viewwer
+	//"latex-workshop.latex.autoBuild.run": "never",
+	"latex-workshop.view.pdf.color.dark.pageColorsForeground": "#000000", // For Dark Viewer
+	//"latex-workshop.view.pdf.color.dark.backgroundColor": "#171717", // For Dark Viewer
 	"editor.formatOnSave": true,
 	"latex-workshop.latex.pdfWatch.delay": 500,
 	//"latex-workshop.latex.watch.delay": 500, // Deprecated. See here: https://github.com/sanjib-sen/WebLaTex/issues/8
