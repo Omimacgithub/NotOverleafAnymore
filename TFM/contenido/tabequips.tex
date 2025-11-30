@@ -1,0 +1,18 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% Tabla de modelos de todos los equipos %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{table}[]
+\begin{tabular}{l|llll|llllllll}
+\hline
+                             & \multicolumn{4}{c|}{\textit{Sobremesa}}                                      & \multicolumn{8}{c}{\textit{Sistemas embebidos}}                                                                                                                                                                                                                                                                                                       \\
+                             & \multicolumn{2}{c}{\textbf{PC lab}} & \multicolumn{2}{c|}{\textbf{Portátil}} & \multicolumn{2}{c}{\textbf{Jetson Xavier NX}}                                                                             & \multicolumn{2}{l}{\textbf{Jetson Orin Nano}}                                                                               & \multicolumn{2}{c}{\textbf{Jetson AGX Orin}} & \multicolumn{2}{c}{\textbf{Jetson AGX Thor}} \\
+                             & Openvino         & TensorRT         & Openvino           & TensorRT          & Openvino                                                    & TensorRT                                                    & Openvino                                                    & TensorRT                                                      & Openvino              & TensorRT             & Openvino              & TensorRT             \\ \hline
+\textit{YOLO11n (640x640)}   &                  &                  &                    &                   & \begin{tabular}[c]{@{}l@{}}L: 146.3 \\ F1: 88\end{tabular}  & \begin{tabular}[c]{@{}l@{}}L: 28.7 \\ F1: 87.7\end{tabular} & \begin{tabular}[c]{@{}l@{}}L: 77.9 \\ F1: 88\end{tabular}   & \begin{tabular}[c]{@{}l@{}}L: 22.4 * \\ F1: 89.1\end{tabular} &                       &                      &                       &                      \\
+\textit{YuNet **(480x480)}   &                  &                  &                    &                   & \begin{tabular}[c]{@{}l@{}}L: 33.5 \\ F1: 87.9\end{tabular} & \begin{tabular}[c]{@{}l@{}}L: 14.5 \\ F1: 87.9\end{tabular} & \begin{tabular}[c]{@{}l@{}}L: 14.9 \\ F1: 87.9\end{tabular} & \begin{tabular}[c]{@{}l@{}}L: 11.8 \\ F1: 87.9\end{tabular}   &                       &                      &                       &                      \\
+\textit{ArcFace (112x112)}   &                  &                  &                    &                   & \begin{tabular}[c]{@{}l@{}}L: 23.5 \\ P: 44.6\end{tabular}  & \begin{tabular}[c]{@{}l@{}}L: 7 \\ P: 45\end{tabular}       & \begin{tabular}[c]{@{}l@{}}L: 15.9 \\ P: 44.6\end{tabular}  & \begin{tabular}[c]{@{}l@{}}L: 4.8 \\ P: 45.2\end{tabular}     &                       &                      &                       &                      \\
+\textit{OSNet\_x1 (256x128)} &                  &                  &                    &                   & \begin{tabular}[c]{@{}l@{}}L: 45.1 \\ P: 54.3\end{tabular}  & \begin{tabular}[c]{@{}l@{}}L: 13.4 \\ P: 59.2\end{tabular}  & \begin{tabular}[c]{@{}l@{}}L: 21.7 \\ P: 59.4\end{tabular}  & \begin{tabular}[c]{@{}l@{}}L: 10.1 \\ P: 59.2\end{tabular}    &                       &                      &                       &                      \\ \hline
+\end{tabular}
+\caption{Resultados de rendimiento comparados entre dispositivos jetson.
+\newline** CPU=\textbf{OpenCV en CPU}; GPU=\textbf{OpenCV CUDA}}
+\end{table}
+\label{tab:equips}

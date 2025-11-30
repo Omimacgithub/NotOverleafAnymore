@@ -1,0 +1,106 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Preámbulo                                                                    %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[11pt,a4paper,titlepage,twoside,openright,openbib]{report}
+
+\newcommand{\dataacceso}[1]{#1}
+\usepackage{styletfm}
+\usepackage{multirow}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage[acronym]{glossaries}
+
+%\definecolor{codegreen}{rgb}{0,0.6,0}
+%\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+%\definecolor{codepurple}{rgb}{0.58,0,0.82}
+%\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\definecolor{codegreen}{RGB}{0,153,0}
+\definecolor{codegray}{RGB}{128,128,128}
+\definecolor{codepurple}{RGB}{130,0,209}
+\definecolor{backcolour}{RGB}{255,255,255}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\hypersetup{pdfauthor={Omar Montenegro Macía},
+            pdftitle={OMMTFM},
+            pdfsubject={Traballo Fin de Máster},
+            pdfkeywords={De-SVM, Open-World, Cámaras RGBD, reconocimiento de caras, aprendizaje semi-supervisado, Jetson, TinyML, Arquitecturas embebidas.}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Cuerpo                                                                      %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ % Preliminares del documento           %
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+ \include{portada/portada}
+ \dedicatoria{A la mama, pase lo que pase}
+ \begin{agradecimientos}
+ a
+ \end{agradecimientos}
+ \include{portada/resumen}
+ 
+ \pagenumbering{roman}
+ \setcounter{page}{1}
+
+ \tableofcontents
+ \listoffigures
+ \listoftables
+ \cleardoublepage
+ 
+ \pagenumbering{arabic}
+ \setcounter{page}{1}
+
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ % Capítulos                            %
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+ \include{contenido/1introduccion}
+ \include{contenido/2gestion}
+ \include{contenido/3fundamentals}
+ \include{contenido/4System}
+ \include{contenido/5Open-world}
+ \include{contenido/6tests}
+ \include{contenido/7conclusiones}
+
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ % Apéndices, glosarios y bibliografía  %
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+ \appendix
+ \include{anexos/anexos}
+
+ \include{bibliografia/acronimos}
+ \include{bibliografia/glosario}
+
+ \bibliographystyle{IEEEtranN}
+ \bibliography{bibliografia/bibliografia}
+ \cleardoublepage
+ 
+\end{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

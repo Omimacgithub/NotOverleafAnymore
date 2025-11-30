@@ -1,0 +1,20 @@
+\chapter{Introducción}
+\label{chap:introduccion}
+\lettrine{E}{n} este capítulo se expone la motivación y los objetivos de este proyecto. Adicionalmente, se comenta la estructura por capítulos de esta memoria y brevemente su contenido.
+
+\section{Motivación}
+Con la aparición del Deep Learning y las redes neuronales profundas, se han logrado notables avances en términos de precisión en áreas como la visión artificial. Este éxito ha motivado a los investigadores a explorar su aplicación en ámbitos como el internet de las cosas (IoT), la robótica, entre otros. Sin embargo, debido a sus elevados requerimientos computacionales, los modelos de Deep Learning suelen ejecutarse en entornos en la nube \cite{MITTAL2019428}. En este contexto, surge el concepto de TinyML \cite{OLIVEIRA2024101153}, que consiste en la implementación de modelos compactos de forma eficiente en sistemas embebidos como microcontroladores (Low-end TinyML, ej: Arduino) u ordenadores de placa única (High-end TinyML, ej: NVIDIA Jetson), más potentes que los microcontroladores, pero menos económicos. 
+
+En el campo de TinyML ya se han analizado varios modelos \cite{MITTAL2019428, rahmaniar2021real} y propuesto múltiples optimizaciones \cite{MITTAL2019428} para sistemas NVIDIA Jetson. Este proyecto extenderá la investigación realizada aplicando TensorRT, para la ejecución eficiente de redes neuronales en varios dispositivos Jetson, en un entorno de operación real con múltiples cámaras. Se analizará el rendimiento de los modelos tanto de forma aislada como integrado en un sistema de detección y reconocimiento de personas en tiempo real \cite{andrew}, formado por otros modelos que convergen para lograr un mismo objetivo. Se usará el framework ROS \cite{ROS}, estándar de facto en robótica, que permite la ejecución distribuida de procesos en diferentes máquinas y posee una amplia biblioteca de sensores y algoritmos.
+
+TODO: El método De-SVM implementa aprendizaje semi-supervisado, que permite el reconocimiento de caras a partir de un conjunto reducido de datos etiquetados y que se van actualizando en base a las propias predicciones del modelo. Dado que la recopilación de imágenes faciales está fuertemente regulada por la ley de protección de datos, el uso de este enfoque resulta especialmente relevante para el presente proyecto \cite{Erik}. El objetivo es aplicar este método para la identificación de personas desconocidas (Open-Set) y su posterior inclusión (Open-World), ampliando así las capacidades del sistema propuesto \cite{andrew}. 
+
+\section{Objetivos}
+
+Bibliografía de interés:
+TODO: han conseguido ejecutar un sistema de detección y seguimiento de personas en una Jetson TX2: \cite{electronics12214424}
+
+TODO: hablan de la Jetson también\cite{murthy2020investigations}
+
+\section{Estructura de la memoria}
+

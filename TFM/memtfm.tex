@@ -1,0 +1,80 @@
+%!TEX program = xelatex
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Preámbulo                                                                    %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[11pt,a4paper,titlepage,twoside,openright,openbib]{report}
+
+
+\usepackage{styletfm}
+\usepackage{listings}
+
+\newcommand{\dataacceso}[1]{#1}
+\usepackage{multirow}
+
+\hypersetup{pdfauthor={Omar Montenegro Macía},
+            pdftitle={OMMTFM},
+            pdfsubject={Traballo Fin de Máster},
+            pdfkeywords={De-SVM, Open-World, Cámaras RGBD, reconocimiento de caras, aprendizaje semi-supervisado, Jetson, TinyML, Arquitecturas embebidas.}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Cuerpo                                                                      %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Preliminares del documento           %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\include{portada/portada}
+\dedicatoria{A la mama, pase lo que pase}
+\begin{agradecimientos}
+    a
+\end{agradecimientos}
+\include{portada/resumen}
+
+\pagenumbering{roman}
+\setcounter{page}{1}
+
+\tableofcontents
+\listoffigures
+\listoftables
+
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Capítulos                            %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\include{contenido/1introduccion}
+\include{contenido/2gestion}
+\include{contenido/3fundamentals}
+\include{contenido/4System}
+\include{contenido/5ML}
+\include{contenido/6tests}
+\include{contenido/7tempprotect}
+\include{contenido/8conclusiones}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Apéndices, glosarios y bibliografía  %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\appendix
+\include{anexos/anexos}
+%\include{anexos/...}
+
+%\include{bibliografia/acronimos}
+%\include{bibliografia/glosario}
+%\printglossary
+%\printglossary[type=\acronymtype]
+
+\bibliographystyle{IEEEtranN}
+\bibliography{bibliografia/bibliografia}
+\cleardoublepage
+
+\end{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
