@@ -21,7 +21,7 @@
 \usepackage{libertine}
 
 \usepackage{fancyhdr}
-\usepackage[numbers,sort]{natbib} 
+\usepackage[numbers,sort]{natbib}
 \usepackage{setspace}
 \usepackage{multicol}
 \usepackage[nottoc,notlot,notlof,notindex]{tocbibind}
@@ -41,10 +41,10 @@
 \newcommand{\paginaenblanco}{\mbox{}\thispagestyle{empty}\clearpage}
 \newcommand{\dedicatoria}[1]{\thispagestyle{empty}\mbox{}\vfill\hfill\emph{#1}\vfill}
 \newenvironment{agradecimientos}
-               {\thispagestyle{empty}
-                 \vspace*{175pt}
-                 \subsubsection*{\centering Agradecimientos}}
-               {\paginaenblanco}
+{\thispagestyle{empty}
+  \vspace*{175pt}
+  \subsubsection*{\centering Agradecimientos}}
+{\paginaenblanco}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % opcións titlesec                     %
@@ -76,20 +76,18 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \hypersetup{
- colorlinks=true,
- linkcolor=ficblue,
- filecolor=ficblue,      
- urlcolor=ficblue,
- citecolor=ficblue
+  colorlinks=true,
+  linkcolor=ficblue,
+  filecolor=ficblue,
+  urlcolor=ficblue,
+  citecolor=ficblue
 }
-               
+
 \endinput
 
 \usepackage[utf8]{inputenc}
 %\usepackage[toc,acronym]{glossaries}
-\usepackage{glossaries}
-
-\makeglossaries
+%\usepackage{glossaries}
 
 \input{bibliografia/acronimos}
 \input{bibliografia/glosario}

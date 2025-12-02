@@ -3,18 +3,28 @@
 \lettrine{E}{n} este capítulo se expone la motivación y los objetivos de este proyecto. Adicionalmente, se comenta la estructura por capítulos de esta memoria y brevemente su contenido.
 
 \section{Motivación}
-Con la aparición del Deep Learning y las redes neuronales profundas, se han logrado notables avances en términos de precisión en áreas como la visión artificial. Este éxito ha motivado a los investigadores a explorar su aplicación en ámbitos como el internet de las cosas (IoT), la robótica, entre otros. Sin embargo, debido a sus elevados requerimientos computacionales, los modelos de Deep Learning suelen ejecutarse en entornos en la nube \cite{MITTAL2019428}. En este contexto, surge el concepto de TinyML \cite{OLIVEIRA2024101153}, que consiste en la implementación de modelos compactos de forma eficiente en sistemas embebidos como microcontroladores (Low-end TinyML, ej: Arduino) u ordenadores de placa única (High-end TinyML, ej: NVIDIA Jetson), más potentes que los microcontroladores, pero menos económicos. 
+Con la aparición del Deep Learning y las redes neuronales profundas, se han logrado notables avances en términos de precisión en áreas como la visión artificial. Sin embargo, debido a sus elevados requerimientos computacionales, los modelos de Deep Learning suelen ejecutarse en entornos en la nube \cite{MITTAL2019428}, lo que no es una solución viable en aplicaciones con ejecución en tiempo real debido a la latencia en las respuestas. En este contexto, surge el concepto de TinyML \cite{OLIVEIRA2024101153}, que consiste en la implementación de modelos compactos de forma eficiente en sistemas embebidos como microcontroladores (Low-end TinyML, ej: Arduino) u ordenadores de placa única (High-end TinyML, ej: NVIDIA Jetson), más potentes que los microcontroladores, pero menos económicos.
 
-En el campo de TinyML ya se han analizado varios modelos \cite{MITTAL2019428, rahmaniar2021real} y propuesto múltiples optimizaciones \cite{MITTAL2019428} para sistemas NVIDIA Jetson. Este proyecto extenderá la investigación realizada aplicando TensorRT, para la ejecución eficiente de redes neuronales en varios dispositivos Jetson, en un entorno de operación real con múltiples cámaras. Se analizará el rendimiento de los modelos tanto de forma aislada como integrado en un sistema de detección y reconocimiento de personas en tiempo real \cite{andrew}, formado por otros modelos que convergen para lograr un mismo objetivo. Se usará el framework ROS \cite{ROS}, estándar de facto en robótica, que permite la ejecución distribuida de procesos en diferentes máquinas y posee una amplia biblioteca de sensores y algoritmos.
+Dado que el caso de uso de este proyecto es el reconocimiento de personas en tiempo real a partir de los datos de múltiples cámaras, resultaría muy beneficioso aplicar la \textbf{computación en el borde o Edge Computing}. Este paradigma consiste en procesar los datos desde su fuente de origen o desde un dispositivo muy cercano, de esta forma, se reduce la latencia de transmisión y se reparte el volumen de datos entre múltiples dispositivos de bajo consumo \cite{EDCOM}. Este proyecto propone la integración de un sistema compuesto por varias redes neuronales \cite{andrew} en varios dispositivos Jetson y su análisis en un entorno de operación real con múltiples cámaras. El sistema emplea el framework ROS \cite{ROS}, estándar de facto en robótica, que permite la ejecución distribuida de procesos en diferentes máquinas y posee una amplia biblioteca de sensores y algoritmos.
 
-TODO: El método De-SVM implementa aprendizaje semi-supervisado, que permite el reconocimiento de caras a partir de un conjunto reducido de datos etiquetados y que se van actualizando en base a las propias predicciones del modelo. Dado que la recopilación de imágenes faciales está fuertemente regulada por la ley de protección de datos, el uso de este enfoque resulta especialmente relevante para el presente proyecto \cite{Erik}. El objetivo es aplicar este método para la identificación de personas desconocidas (Open-Set) y su posterior inclusión (Open-World), ampliando así las capacidades del sistema propuesto \cite{andrew}. 
+Durante el desarrollo del sistema base, se contempló implementar la capacidad de detectar cuando un individuo es un desconocido y en ese caso agregarlo al sistema (\textit{Open-World})\cite{andrew}. Esta funcionalida es muy útil para implementar un robot móvil guía que asista a los usuarios proporcionando un trato cercano en todo momento (ejemplo: saludarlos por su nombre). Este proyecto propone la implementación de un método de aprendizaje máquina para detectar e incluir nuevos individuos basado en las ideas de una tesis doctoral \cite{Erik}. El método requiere de un conjunto reducido de datos para su inicialización (por ejemplo, los datos biométricos de 5 personas). Dado que la recopilación de imágenes faciales está fuertemente regulada por la ley de protección de datos, el uso de este enfoque resulta especialmente relevante para el presente proyecto \cite{Erik}.
 
 \section{Objetivos}
 
-Bibliografía de interés:
-TODO: han conseguido ejecutar un sistema de detección y seguimiento de personas en una Jetson TX2: \cite{electronics12214424}
+El objetivo global del proyecto es la implementación y funcionamiento de un método de aprendizaje máquina bajo un sistema para el reconocimiento y seguimiento de personas en tiempo real en sistemas embebidos de altas prestaciones de la familia NVIDIA Jetson y dispositivos similares. En concreto, el proyecto pretende abordar los siguientes objetivos:
 
-TODO: hablan de la Jetson también\cite{murthy2020investigations}
+O1. Extender la funcionalidad de un sistema de reconocimiento y seguimiento de personas para robots móviles con el fin de detectar desconocidos e ingresarlos en el sistema.
+
+O2. La ejecución eficiente del programa en sistemas embebidos y otros dispositivos.
+
+TODO: comparan la AGX Xavier (+1000 leuros) con una GTX 1050 y los resultados son muy similares \cite{murthy2020investigations}
 
 \section{Estructura de la memoria}
 
+Esta memoria se divide en capítulos, cada uno con una explicación detallada del trabajo realizado. Se expone a continuación la estructura de esta memoria, explicando brevemente su contenido:
+
+\begin{enumerate}
+    \item Introducción: presente capítulo en el que se exponen los motivos de realización de este proyecto, los objetivos planteados y la estructura de la memoria resultante.
+    \item Fundamentos teóricos y tecnológicos: capítulo en el que se presentan los conceptos clave del proyecto, así como las herramientas, tanto hardware como software utilizadas.
+    \item Gestión del proyecto: TODO:
+\end{enumerate}

@@ -4,15 +4,20 @@
 \lettrine{E}{n} este capítulo se ahonda en los fundamentos y detalles de implementación de la funcionalidad \textit{Open-World} y demás componentes para otorgar la adaptación.
 
 \section{Introducción}
-El sistema visto en el anterior capítulo (capítulo \ref{chap:sys}) está limitado al reconocimiento de personas ya registradas de antemano, lo que se conoce como \textbf{\textit{Closed-Set}}. 
+El sistema visto en el anterior capítulo (capítulo \ref{chap:sys}) está limitado al reconocimiento de personas ya registradas de antemano, lo que se conoce como \textbf{\textit{Closed-Set}}.
 
 \subsection{Fundamentos}
 \label{subsec:erikfounds}
 
-El principal objetivo de OSDe-SVM es lograr la capacidad de adaptación con independencia del contexto en el que se utilice. Dicho método ha sido probado en un contexto de video vigilancia bajo el dataset \textbf{FACE COX} \cite{cox}. También se ha utilizado el dataset \textbf{Youtube Faces} (YTF) \cite{ytf} que, a diferencia del anterior, se encuentra accesible de forma pública. El método utiliza \textbf{secuencias de video} como entrada para devolver las predicciones acerca de un IoI o para determinar una identidad desconocida.
+TODO: El método propuesto en \cite{Erik} y que conforma la base del sistema implementado, ha sido probado en un contexto de video vigilancia bajo el dataset \textbf{FACE COX} \cite{cox}. También se ha utilizado el dataset \textbf{Youtube Faces} (YTF) \cite{ytf} que, a diferencia del anterior, se encuentra accesible de forma pública. En este proyecto se utiliza un dataset\dots
+El método utiliza \textbf{secuencias de video} como entrada para devolver las predicciones acerca de un IoI o para determinar una identidad desconocida.
 
 \subsubsection{Comités de SVM}
-Las características extraídas por ArcFace se utilizan como datos para entrenar las SVM para la clasificación. OSDe-SVM se basa en el concepto de que múltiples SVM simples (ejemplo: lineales) como conjunto (\textbf{comité}) \textbf{generalizan mejor} que una única SVM compleja (ejemplo: sigmoide) \cite{malisiewicz2011ensemble}. Otras ventajas de los comités son la incorporación de nueva información sin tener que re-entrenar las SVM, lo que recorta una cantidad de tiempo significativa durante la operación del sistema, y la flexibilidad, que permite eliminar parte de la información que no es relevante borrando la SVM redundante. Para cada IoI se asigna un comité de SVM, cada SVM del comité se entrena con n muestras de la propia entidad (1 en la idea original \cite{malisiewicz2011ensemble}, 5 adaptado a este proyecto) y \textbf{m-n} muestras negativas (fotogramas de otras entidades), siendo \textbf{m} el número de IoI registrados en el sistema. 
+TODO: El sistema
+
+Las características extraídas por ArcFace se utilizan
+como datos para entrenar las SVM para la clasificación.
+OSDe-SVM se basa en el concepto de que múltiples SVM simples (ejemplo: lineales) como conjunto (\textbf{comité}) \textbf{generalizan mejor} que una única SVM compleja (ejemplo: sigmoide) \cite{malisiewicz2011ensemble}. Otras ventajas de los comités son la incorporación de nueva información sin tener que re-entrenar las SVM, lo que recorta una cantidad de tiempo significativa durante la operación del sistema, y la flexibilidad, que permite eliminar parte de la información que no es relevante borrando la SVM redundante. Para cada IoI se asigna un comité de SVM, cada SVM del comité se entrena con n muestras de la propia entidad (1 en la idea original \cite{malisiewicz2011ensemble}, 5 adaptado a este proyecto) y \textbf{m-n} muestras negativas (fotogramas de otras entidades), siendo \textbf{m} el número de IoI registrados en el sistema.
 
 \subsection{Arquitectura del sistema adaptativo}
 \label{subsec:adaptarch}
@@ -37,7 +42,7 @@ La primera fase del sistema y sin lugar a dudas la más crítica. En este proyec
     \item \textbf{No supervisado}: el sistema recoge los frames cuando aparecen un mínimo de 5 entidades simultaneas en escena (el mínimo necesario de puntos para poder aplicar Weibull). A partir de los frames de las cámaras, que estarán sincronizadas, se obtienen las bboxes (TODO: glosario) que encierran los rostros y se procede a la creación de los comités con los recortes de caras generados. \textbf{No se requiere de ninguna intervención del operador}, el sistema realiza la selección en base a unos criterios preestablecidos (ejemplo: la cara debe estar completamente dentro del rango de la cámara). En esta aproximación, es crucial el método de seguimiento (tracking) para recolectar las secuencias de caras.
 \end{itemize}
 
-Independientemente de la aproximación escogida, se obtienen las características de cada frame de la secuencia y se crea la SVM inicial con la que se \textbf{inicializa el comité}. Dicha SVM se entrena con las características del usuario, que compondrá el set positivo, y un subconjunto de las características del resto de usuarios, que compondrá el set de negativos (escogidas aleatoriamente). Dichas características son generadas por el modelo ArcFace \cite{deng2019arcface}, es la misma red que se utiliza en \cite{Erik, andrew} y que ha demostrado ser de las mejores en el SOTA (TODO: acrónimo) del reconocimiento facial.
+Independientemente de la aproximación escogida, se obtienen las características de cada frame de la secuencia y se crea la SVM inicial con la que se \textbf{inicializa el comité}. Dicha SVM se entrena con las características del usuario, que compondrá el set positivo, y un subconjunto de las características del resto de usuarios, que compondrá el set de negativos (escogidas aleatoriamente). Dichas características son generadas por el modelo ArcFace \cite{deng2019arcface}, es la misma red que se utiliza en \cite{Erik, andrew} y que ha demostrado ser de las mejores en el \acrshort{sota} del reconocimiento facial.
 
 La SVM inicial es la que define la identidad del comité. Si dicha SVM está compuesta por recortes de caras de baja calidad (ejemplo: borrosas o parcialmente ocluidas), entonces el comité \textbf{no estará bien definido} y, por lo tanto, generará \textbf{mayor confusión} a la hora de aplicar Weibull para los reconocimientos.
 
@@ -52,10 +57,10 @@ Una vez inicializado los comités, el método determina identidades en base a se
 \end{itemize}
 
 \begin{figure}
-        \centering
-        \includegraphics[width=0.75\linewidth]{imagenes/De-SVM.png}
-        \caption{Pipeline del método De-SVM, figura extraída de \cite{Erik}}
-        \label{fig:De-SVM}
+    \centering
+    \includegraphics[width=0.75\linewidth]{imagenes/De-SVM.png}
+    \caption{Pipeline del método De-SVM, figura extraída de \cite{Erik}}
+    \label{fig:De-SVM}
 \end{figure}
 
 \subsection{\textit{Recognition Decision Function} (RDF)}
@@ -65,38 +70,41 @@ Las SVM sólo pueden discernir dentro del conjunto de datos con las que fueron e
 
 La distribución de Weibull se modela a partir de las puntuaciones devueltas por cada comité (salida de la función EDF) \textbf{excepto la mejor puntuación} de todos los \textit{ensembles} (que se corresponde con la más baja). Debido a que la entidad en cuestión sólo puede coincidir con un comité, se comprueba si el mejor resultado (o lo que se supone que es la entidad de la secuencia) \textbf{es un extremo} respecto de la distribución de puntuaciones no coincidentes (resto de \textit{ensembles}), en caso afirmativo, se asigna la etiqueta del usuario del comité con la mejor puntuación, en caso contrario, el individuo se considera \textbf{desconocido} (no coincide con ningún comité). Para determinar si la puntuación es un extremo, se calcula la probabilidad (PDF) (TODO: glosario) del mejor \textit{score} a partir de la función PDF con los parámetros obtenidos de la distribución de Weibull modelada. Si el PDF se corresponde con un valor muy cercano al 0, la puntuación se considera que está \textbf{al extremo de la distribución} \cite{scorenorm}. La decisión de si una puntuación es un extremo o no se toma en base a un threshold (Tw), para el resultado de la función de Weibull (función PDF).
 
-TODO: El algoritmo compone una función de Weibull ajustando los parámetros de la misma para que converga con la cola de la distribución. Dicha distribución está formada por las distancias de cada puntuación con la mediana, excluyendo la puntuación más baja (siendo teóricamente la puntuación que coincide para la entidad) y las puntuaciones por encima de la mediana. Finalmente, se determina la probabilidad de pertenencia de la puntuación más baja de la distribución, si la probabilidad es lo suficientemente baja como para concluir que no pertenece a la distribución, entonces el reconocimiento es correcto y se asigna la entidad. En caso contrario, se concluye que la entidad es desconocida. Se establece un threshold (Tw, como se muestra en el algoritmo \ref{fig:RDF}).
+TODO: El algoritmo compone una función de Weibull ajustando los parámetros de la misma para que converga con la cola de la distribución. Dicha distribución está formada por las distancias de cada puntuación con la mediana, excluyendo la puntuación más baja (siendo teóricamente la puntuación que coincide para la entidad) y las puntuaciones por encima de la mediana. Finalmente, se determina la probabilidad de pertenencia de la puntuación más baja de la distribución, si la probabilidad es lo suficientemente baja como para concluir que no pertenece a la distribución, entonces el reconocimiento es correcto y se asigna la entidad. En caso contrario, se concluye que la entidad es desconocida. Se establece un threshold (Tw, como se muestra en el algoritmo \ref{coud:weib}).
 
-\begin{figure}
-    \centering
-    \includegraphics[width=1\linewidth]{imagenes/ALGO.png}
-    \caption{Algoritmo de reconocimiento basado en EVT, extraido de \cite{Erik}}
-    \label{fig:RDF}
-\end{figure}
+\input{contenido/weib}
 
 (TODO: explicación?) El Extreme Value Theory  determina que el valor \textbf{máximo} de una muestra sólo puede converger en una de las siguientes tres distribuciones: Fréchet, Gumbel o Weibull. Cada una de estas distribuciones poseen propiedades únicas (ejemplo: Fréchet es una distribución cuya cola decrece en menor medida que la de Gumbel) que las hacen adecuadas para determinados campos de estudio (TODO: ejemplo: Fréchet para predicción de inundaciones). TODO: En el campo del reconocimiento de personas, sería interesante hallar el mínimo por el que se puede determinar si cierto individuo pertenece o no a la distribución. Para este proyecto, el mínimo es la \textbf{mínima distancia entre el punto y el hiperplano creado por la SVM}, como se aplican varias SVM, el valor final será una fusión de distancias del conjunto de SVM. Como la muestra sólo puede pertenecer a una entidad, entonces se deberían de obtener resultados no coincidentes (TODO: distancias negativas que fueron normalizadas usando no se que método) con el resto de individuos registrados. La distribución de los valores mínimos, en este caso los resultados no coincidentes, sigue una de las 3 distribuciones ya comentadas (TODO: es la de Weibull porque el comportamiento de la cola es acotado, es decir, hay un cierto valor x que devuelve 0).
-
-%\input{contenido/weib}
-
-En \ref{coud:weib}, se muestra el algoritmo RDF.
 
 (Pág 81, TODO: comentar en resultados) La calidad de la función RDF viene determinada por el número de puntos que componen la función de Weibull, cuantos más puntos, mayor definición y por tanto reconocimientos más precisos. Con un universo de 20 individuos, sólo 5 puntos componen la función de Weibull (de las 20 entidades sólo 10 se registran en el sistema, a modo de probar el open-set, y de esos 10, la mitad definen la función), lo que lleva a un comportamiento más impreciso que con un universo mayor. El sistema inicial cuenta con un universo de \textbf{6 individuos}, lo que claramente \textbf{es insuficiente} para realizar una diferenciación precisa de los IoI respecto a lo desconocido. Para este proyecto, ha sido necesario ampliar el universo a \textbf{20 personas}, algunas procedentes del CITIC, que se han prestado voluntariamente, otras extraídas del YoutubeFaces dataset.
 
 
 \subsection{Update Module}
-Es la función que implementa la actualización de los comités. Una vez se haya reconocido la entidad a través de la función anterior, pueden darse 2 posibles escenarios:
+Es el módulo que implementa la actualización de los comités tras el reconocimiento realizado en la anterior función. Dado un valor c, siendo este el resultado de la función RDF, pueden darse los siguientes dos escenarios:
 \begin{itemize}
-    \item \textbf{Entidad conocida (c<Tw)}: se crea una nueva SVM con los frames escogidos en el comité correspondiente. La SVM se entrena con los embeddings de la secuencia de entrada como conjunto de positivos, y un muestreo aleatoria de n embeddings del resto de comités.
-    \item \textbf{Entidad desconocida (c>Tw)}: se crea un nuevo comité representando a la entidad con una nueva SVM. El conjunto de positivos y negativos es el mismo que en el caso anterior, salvo que ahora ya no es necesario extraer los embeddings del comité con el que coincide la secuencia del conjunto de negativos.
+    \item \textbf{Entidad conocida (c<Tw)}: se crea una nueva SVM que
+          será incluida en el comité ganador (el que tiene la puntuación más baja).
+          La SVM se entrena con los embeddings de la secuencia de entrada como
+          conjunto de positivos. Como conjunto de negativos, se realiza un muestreo aleatorio de embeddings \textbf{del resto de comités}.
+    \item \textbf{Entidad desconocida (c>Tw)}: se crea una SVM en un nuevo comité representando a la entidad.
+          El conjunto de positivos es el mismo que en el caso anterior. En el caso de los negativos,
+          las muestras de cualquier comité son válidas.
 \end{itemize}
 
-Una condición necesaria para que este módulo se ejecute es que la secuencia de entrada para el individuo \textbf{contenga un mínimo de n frames para su inicialización}. Otra precondición, que aplica a las entidades conocidas, es comprobar si las caras a añadir son lo suficientemente representativas. Las puntuaciones cerca del cero indican que las muestras se encuentran en el borde de lo que es nuevo y lo que la SVM ya conoce. A partir de un valor de umbral (\textit{update\_th}) se decide si dichas muestras añaden información nueva al comité.
+Una condición necesaria para que este módulo se ejecute es que la
+secuencia de entrada para el individuo \textbf{contenga un mínimo de frames para su inicialización},
+dicho mínimo es fijado por el operador de antemano. Otra precondición,
+que aplica a las entidades conocidas, es comprobar si las caras (o muestras) a añadir son lo suficientemente representativas.
+Las puntuaciones cerca del cero indican que las muestras se encuentran en el borde de lo que es nuevo y lo que la SVM
+ya conoce. A partir de un valor de umbral (\textit{update\_th}) se decide si dichas muestras añaden información nueva al comité.
+
+\textbf{El tamaño del conjunto de positivos y de negativos es prefijado por el operador.}
 
 \subsection{Limitation Module}
 \label{seq:limmod}
 
 El limitation module es una función que se encuentra inherente al módulo de actualización. Si un comité excede un número prefijado de SVM almacenadas (10 en este caso), se toma una decisión para eliminar una de las SVM según los siguientes criterios:
-\subsubsection{Diversidad} 
+\subsubsection{Diversidad}
 Este criterio mide el valor de aportación de una SVM respecto al resto del comité. Se coge un conjunto aleatorio de n embeddings (siendo n=50) de entre todos los comités y se generan los scores utilizando las m SVM del comité, lo que resulta en n*m scores. TODO: \textbf{Basándose en el signo de los scores}, se acumula el producto de los signos entre scores, de forma que un valor discordante afecta en mayor medida a la propia SVM y en menor medida al resto de SVM. Un valor alto indica bajo nivel de diversidad, por ende un valor \textbf{pobre de aportación al comité}. El valor de diversidad se calcula como en \cite{Erik}: TODO: poner la fórmula
 
 \subsubsection{Coherencia}

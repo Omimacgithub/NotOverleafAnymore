@@ -9,7 +9,7 @@
 El sistema de este proyecto posee la capacidad de fusionar diferentes fuentes de datos para otorgar un único resultado de reconocimiento para cada persona detectada. Los nodos que componen la arquitectura se detallan a continuación y se muestran en la figura \ref{fig:ANDRES}:
 
 \begin{itemize}
-    \item Nodo cámara: recibe como fuente los datos de una cámara \textbf{RGBD} y se encarga de detectar, reconocer y obtener la posición 3D de las personas que aparecen en la imagen.
+    \item Nodo cámara: recibe como fuente los datos de una cámara \textbf{\acrshort{rgbd}} y se encarga de detectar, reconocer y obtener la posición 3D de las personas que aparecen en la imagen.
     \item Nodo LiDAR: recibe los datos de un sensor LiDAR (nube de puntos 3D) y se encarga de detectar y obtener la posición 3D de las personas del mapa (no se ha implementado el reconocimiento).
     \item Nodo integrador de sensores: fusiona los datos de los 2 nodos anteriores. La función de este nodo es el seguimiento de las personas reconocidas, más allá de lo que la cobertura de las cámaras ofrece (para un Kinect de la Xbox 360 son 57º).
 \end{itemize}
@@ -19,7 +19,7 @@ El sistema de este proyecto posee la capacidad de fusionar diferentes fuentes de
     \includegraphics[width=0.5\linewidth]{imagenes/SYSARCH.png}
     \caption{Arquitectura general del sistema (figura extraída de \cite{andrew})}
     \label{fig:ANDRES}
-\end{figure} 
+\end{figure}
 
 \section{Modificaciones propuestas}
 
@@ -52,7 +52,7 @@ Con el motivo del fin de soporte de ROS 1 \cite{ROSEOL}, se ha optado por migrar
 
 TODO: Se han recortado bucles for y se ha exprimido la librería de numpy, se han reducido unos milisegundos.
 
-El objetivo de este capítulo es descubrir la capacidad de los dispositivos Jetson de poder asumir la carga de trabajo del sistema de forma que pueda escalarse. El rendimiento esperado en tiempo real para el sistema son los \textbf{10 Hz} (o 10 FPS), por lo tanto, todos los nodos deben de funcionar a 10 Hz. Las NVIDIA Jetson sólo tienen que ocuparse de ejecutar los \textbf{nodos cámara a 10 Hz} y que otro equipo ejecute el nodo LiDAR e integrador del sistema.
+En el campo de TinyML ya se han analizado varios modelos \cite{MITTAL2019428, rahmaniar2021real} y propuesto múltiples optimizaciones \cite{MITTAL2019428} para sistemas NVIDIA Jetson. Este proyecto utiliza el motor de inferencia TensorRT para lograr la ejecución eficiente del sistema en los dispositivos Jetson. El rendimiento esperado en tiempo real para el sistema son los \textbf{10 Hz} (o 10 FPS), por lo tanto, todos los nodos deben de funcionar a 10 Hz. Las NVIDIA Jetson sólo tienen que ocuparse de ejecutar los \textbf{nodos cámara a 10 Hz} y que otro equipo ejecute el nodo LiDAR e integrador del sistema.
 
 Que los nodos cámara trabajen a 10 Hz implica que a cada \textbf{100 ms se recibe un nuevo frame} (10 * 100 = 1000 ms = 1 segundo), la figura \ref{fig:cam} muestra el procesado realizado por dicho nodo en cada frame, que debe de finalizar \textbf{antes de que transcurran 100 ms}. En cada iteración del procesado, se ejecutan \textbf{4 redes neuronales (CNN)}. 2 de ellas, YOLOv8n y YuNet, para la detección de cuerpos y de caras respectivamente. Las otras 2, OSNet\_x1 y ArcFace, para el reconocimiento de cuerpos y caras respectivamente. A pesar de lo que la figura \ref{fig:cam} muestra, las redes de detección YOLOv8n y YuNet \textbf{no se ejecutan en paralelo}, lo mismo sucede con las redes ArcFace y OSNet\_x1. Se ha considerado ejecutar en paralelo estas redes. Sin embargo, las limitaciones de memoria principal de la Jetson restringen tomar esta aproximación.
 
@@ -74,11 +74,11 @@ Para las pruebas de los modelos de detección, se reproduce el video para que el
 Para las pruebas de los modelos de reconocimiento, se guardan como imágenes los recortes de los cuerpos y de las caras de cada individuo en cada frame del video grabado por la cámara. Para cada recorte, se ejecuta el modelo y se compara su predicción con la recogida en el dataset. En la tabla (TODO), se utiliza para los modelos de reconocimiento (ArcFace y OSNet\_x1) la métrica de \textbf{precisión} (proporción de reconocimientos correctos) \cite{andrew}.
 
 \subsection{Resultados en dispositivos Jetson}
-El sistema cuenta con un motor de inferencia de redes neuronales orientado a procesadores y gráficas \textbf{Intel}, llamado \textbf{OpenVINO} \cite{OpenVINO}. OpenVINO otorga herramientas para convertir archivos ONNX (formato reconocido para exportar redes neuronales) a ficheros XML, que son versiones \textbf{optimizadas} de las redes neuronales y que se utilizan para realizar las inferencias. Todas las redes salvo YuNet (que utiliza el motor de OpenCV en CPU) se han exportado a un equivalente optimizado en OpenVINO. 
+El sistema cuenta con un motor de inferencia de redes neuronales orientado a procesadores y gráficas \textbf{Intel}, llamado \textbf{OpenVINO} \cite{OpenVINO}. OpenVINO otorga herramientas para convertir archivos ONNX (formato reconocido para exportar redes neuronales) a ficheros XML, que son versiones \textbf{optimizadas} de las redes neuronales y que se utilizan para realizar las inferencias. Todas las redes salvo YuNet (que utiliza el motor de OpenCV en CPU) se han exportado a un equivalente optimizado en OpenVINO.
 
 Los primeros resultados arrojados en la tabla (TODO) muestran que las placas Jetson \textbf{no son capaces de cumplir el objetivo de 10 Hz} usando OpenVINO. Sólo la ejecución de YOLOv8n consume los 100 ms en la Jetson Xavier NX. En cuanto a la Jetson Orin Nano, la suma de la ejecución de las 4 redes supera también los 100 ms.
 
-TensorRT es un framework para inferencia de alto rendimiento creado por NVIDIA, pensado para la ejecución de redes neuronales en sistemas embebidos de NVIDIA como es la Jetson \cite{MITTAL2019428, rahmaniar2021real}. 
+TensorRT es un framework para inferencia de alto rendimiento creado por NVIDIA, pensado para la ejecución de redes neuronales en sistemas embebidos de NVIDIA como es la Jetson \cite{MITTAL2019428, rahmaniar2021real}.
 
 TensorRT se ha empleado para optimizar modelos ONNX al formato propio de la herramienta (denominado engine) y así poder realizar inferencias a partir de su API. Un ejemplo de código de inferencia en TensorRT es el que se muestra en TODO.
 

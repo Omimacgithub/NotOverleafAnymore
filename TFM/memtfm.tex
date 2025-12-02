@@ -22,6 +22,14 @@
 % Cuerpo                                                                      %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\usepackage[acronym]{glossaries}
+
+\makeglossaries
+
+%\glsenableentrycount
+
+\setacronymstyle{long-short}
+
 \begin{document}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -66,10 +74,10 @@
 \include{anexos/anexos}
 %\include{anexos/...}
 
-%\include{bibliografia/acronimos}
+\include{bibliografia/acronimos}
 %\include{bibliografia/glosario}
-%\printglossary
-%\printglossary[type=\acronymtype]
+\printglossary
+\printglossary[type=\acronymtype]
 
 \bibliographystyle{IEEEtranN}
 \bibliography{bibliografia/bibliografia}

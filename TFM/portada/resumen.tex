@@ -1,25 +1,29 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{abstract}
-\thispagestyle{empty}
-El auge del Deep Learning (DL) y las redes neuronales profundas han impulsado numerosos avances en aplicaciones como la visión artificial. Sin embargo, su implementación en sistemas embebidos en tiempo real (conocido como TinyML) sigue representando un reto debido a los elevados recursos computacionales que requieren. La optimización de dichas redes para su ejecución en sistemas embebidos es clave para proporcionar el internet de las cosas (IoT) y otras aplicaciones relacionadas. 
+    \thispagestyle{empty}
+    El auge del Deep Learning (DL) y las redes neuronales profundas han impulsado numerosos avances en aplicaciones como la visión artificial. Sin embargo, su implementación en sistemas embebidos en tiempo real (conocido como TinyML) sigue representando un reto debido a los elevados recursos computacionales que requieren. La optimización de dichas redes para su ejecución en sistemas embebidos es clave para proporcionar el internet de las cosas (IoT) y otras aplicaciones relacionadas.
 
-Este proyecto propone (\textbf{ha logrado}) la migración y optimización de un método de adaptación a los cambios mediante aprendizaje incremental semisupervisado llamado Dynamic Ensemble of SVM (De-SVM) en el sistema embebido NVIDIA Jetson Orin Nano. Dicho método se integrará en un sistema de detección y reconocimiento de personas con el fin de implementar la clasificación de personas desconocidas y su inclusión (Open-World) bajo un modelo de reconocimiento facial. El sistema está implementado en la arquitectura ROS, que permite ejecutar procesos de forma distribuida en diferentes máquinas. 
+    En el ámbito del reconocimiento de personas, una característica deseable sería que las redes neuronales fueran capaces de reconocer a nuevos individuos y guardar una etiqueta para referenciarlos en un futuro. Sin embargo, dichas redes son fuertemente dependientes del conjunto de datos de entrenamiento, lo que acaba en una pérdida significativa de precisión a la hora de
+    manejar datos diferentes a los del entrenamiento. La perspectiva del
+    aprendizaje logra superar esta limitación, al otorgar la capacidad de añadir nuevos datos durante el tiempo de operación (\textit{Open-World}), el sistema es capaz de evolucionar y extenderse a nuevos contextos sin necesidad de reentrenar las redes neuronales, lo que puede ser un proceso extremadamente costoso.
 
-Para evaluar el rendimiento, se analizarán métricas de velocidad de inferencia y precisión, tanto de forma aislada (en interacción con el modelo de reconocimiento facial) como en conjunto con el sistema completo. Adicionalmente de la NVIDIA Jetson, se evaluará el procesador del robot móvil Summit\_XL y otros dispositivos con aceleradoras, simulando distintas cargas de trabajo según el número de cámaras activas y personas detectadas en escena. 
+    Este proyecto propone la implementación de un método de aprendizaje máquina para la inclusión de nuevos individuos (\textit{Open-World}). Dicho método se ha integrado en un sistema de detección y reconocimiento de personas, diseñado para el robot móvil Summit\_XL, que cuenta con un sensor LiDAR y múltiples cámaras RGBD. El sistema está implementado en la arquitectura ROS, que permite ejecutar procesos de forma distribuida en diferentes máquinas. Con el motivo del fin de soporte de ROS Noetic el 31 de Mayo de 2025, se ha realizado una migración a la distribución ROS 2 Humble, con el fin de mantener el sistema actualizado a las nuevas versiones de Linux y a los nuevos robots del mercado.
 
-\vspace*{25pt}
-\begin{english}
-\centerline{\bfseries \abstractname}
-El auge del Deep Learning (DL) y las redes neuronales profundas han impulsado numerosos avances en aplicaciones como la visión artificial. Sin embargo, su implementación en sistemas embebidos en tiempo real (conocido como TinyML) sigue representando un reto debido a los elevados recursos computacionales que requieren. La optimización de dichas redes para su ejecución en sistemas embebidos es clave para proporcionar el internet de las cosas (IoT) y otras aplicaciones relacionadas. 
+    El software se ha adaptado para funcionar en la familia de placas NVIDIA Jetson y otros dispositivos relacionados (GeForce GTX y RTX). Se ha analizado el rendimiento de los modelos de detección y reconocimiento en varios motores de inferencia como OpenVino y TensorRT.
 
-Este proyecto propone (\textbf{ha logrado}) la migración y optimización de un método de adaptación a los cambios mediante aprendizaje incremental semisupervisado llamado Dynamic Ensemble of SVM (De-SVM) en el sistema embebido NVIDIA Jetson Orin Nano. Dicho método se integrará en un sistema de detección y reconocimiento de personas con el fin de implementar la clasificación de personas desconocidas y su inclusión (Open-World) bajo un modelo de reconocimiento facial. El sistema está implementado en la arquitectura ROS, que permite ejecutar procesos de forma distribuida en diferentes máquinas. 
+    Las pruebas se han realizado a partir de muestras (videos etiquetados) de un entorno de operación real, con movimientos bruscos de las cámaras y entrecruzado de los individuos. Se analiza la escalabilidad del sistema agregando más cámaras.
 
-Para evaluar el rendimiento, se analizarán métricas de velocidad de inferencia y precisión, tanto de forma aislada (en interacción con el modelo de reconocimiento facial) como en conjunto con el sistema completo. Adicionalmente de la NVIDIA Jetson, se evaluará el procesador del robot móvil Summit\_XL y otros dispositivos con aceleradoras, simulando distintas cargas de trabajo según el número de cámaras activas y personas detectadas en escena. 
-\end{english}
+    Finalmente, se realiza un estudio de las diferentes opciones que existen para proteger los datos biométricos de los individuos que se agregan al sistema. Se han reportado resultados de la opción que resultó más viable implementar según las condiciones del proyecto.
 
-\vspace*{25pt}
-\input{portada/palabras-clave}
+    \vspace*{25pt}
+    \begin{english}
+        \centerline{\bfseries \abstractname}
+        a
+    \end{english}
+
+    \vspace*{25pt}
+    \input{portada/palabras-clave}
 \end{abstract}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
