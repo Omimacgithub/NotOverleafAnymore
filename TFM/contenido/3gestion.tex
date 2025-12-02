@@ -1,0 +1,66 @@
+\chapter{Gestión del proyecto}
+\lettrine{E}{n} este capítulo se ahondará en la planificación del proyecto, su seguimiento y del plan de gestión de riesgos utilizado.
+
+\section{Requisitos}
+Los requisitos definen las pautas que el sistema desarrollado debe cumplir para alcanzar los objetivos establecidos. Los requisitos pueden dividirse en los dos siguientes tipos.
+
+\subsection{Funcionales}
+Definen las funcionalidades que el sistema debe de ofrecer. Para este proyecto, se busca ampliar el sistema base para que cumpla con los siguientes requisitos:
+
+\begin{itemize}
+    \item Pasar de reconocimientos frame a frame a ventanas de frames, aprovechando así la coherencia espacio-temporal.
+    \item Reconocimiento de desconocidos (\textit{Open-Set}) e inclusión al sistema (\textit{Open-World}): el sistema debe ser capaz de reconocer y agregar nuevas personas a su base de datos.
+\end{itemize}
+\subsection{No funcionales}
+Definen las características técnicas que debería de cumplir el sistema:
+\begin{itemize}
+    \item Que el sistema evolucione adecuadamente (ejemplo: evitar caídas drásticas en la precisión) a lo largo del tiempo.
+    \item Que la instalación del sistema sea rápida y prácticamente automática.
+    \item Operación en tiempo real: sujeto a la frecuencia del componente más "lento". En el caso de este proyecto, las cámaras RGBD otorgan una imagen RGB cada 100 ms (\textbf{10 Hz}). El objetivo es que el sistema sea capaz de mantener dicha frecuencia.
+    \item Portabilidad: la ejecución del sistema no debe de depender exclusivamente de la arquitectura o de las diferentes versiones de librerías.
+    \item Escalabilidad: debe permitir incluir nuevos componentes (ejemplo: cámaras) sin comprometer significativamente al rendimiento.
+    \item TODO Flexible: todos los requisitos anteriores deben cumplirse para los dispositivos del proyecto.
+    \item Seguridad: el sistema debe proporcionar un método para ofuscar la información biométrica durante su operación. De esta forma, si el sistema es comprometido, el atacante no puede recuperar los datos del individuo.
+\end{itemize}
+\subsection{Actores}
+A continuación se definen los actores (o roles) implicados y sus papeles:
+
+\begin{itemize}
+    \item Individuo que se somete a las pruebas del sistema (ser detectada y reconocida).
+    \item Operador del sistema: encargado de ejecutar y mantener el sistema.
+\end{itemize}
+
+\section{Gestión de riesgos}
+
+\section{Metodología Kanban}
+
+Para el presente proyecto se ha empleado una metodología basada en Kanban (TODO: referencia). Kanban es una herramienta de gestión \textbf{visual}, cuyo objetivo es dividir el trabajo de un proyecto en pequeñas tareas concretas, agilizando así el desarrollo. El proyecto en sí representa un tablero y cada tarea representa una tarjeta, de esta forma, el equipo de desarrollo tiene una visión global de todas las tareas del proyecto. Las tareas en Kanban pasan por múltiples fases que pueden variar según las necesidades del proyecto. Se definen las siguientes fases aplicadas de esta aproximación de Kanban:
+\begin{itemize}
+    \item \textbf{\textit{Backlog}}: son las tareas situadas en fase de TODO: concepción y que esperan a ser divididas en una o varias tareas más concretas.
+    \item \textbf{\textit{TO-DO}}: en esta fase se ubican las tareas que representan objetivos concretos, pero que aún no se han iniciado.
+    \item \textbf{\textit{DOING}}: son las tareas de la fase \textit{TO-DO} cuyo desarrollo ha comenzado.
+    \item \textbf{\textit{DONE}}: las tareas cuyo desarrollo ha finalizado.
+\end{itemize}
+
+En la figura \ref{fig:khan} se muestra una instantánea del tablero Kanban utilizado para este proyecto. El enfoque Kanban ha permitido priorizar en todo momento las tareas importantes del proyecto gracias a su representación visual.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{imagenes/Trallao.png}
+    \caption{Instantánea del tablero Kanban del proyecto}
+    \label{fig:khan}
+\end{figure}
+
+\section{Planificación}
+
+El trabajo correspondiente al presente proyecto se compone de las siguientes tareas, junto con sus hitos (“Hx”) y los entregables (“Ex”) correspondientes:
+
+\subsection{T1. Instalación y ejecución del sistema de partida}
+\begin{itemize}
+    \item \textbf{Descripción y metodología}: Primero de todo, se creará un Dockerfile de despliegue del sistema para cada dispositivo del apartado de infraestructuras.
+    \item \textbf{H1}. Sistema instalado y funcionando en los dispositivos.
+    \item \textbf{E1}. Archivos Dockerfile de despliegue para cada dispositivo.
+\end{itemize}
+
+\section{Seguimiento}
+\subsection{Análisis de desviaciones temporales}

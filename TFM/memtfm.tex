@@ -23,10 +23,12 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \usepackage[acronym]{glossaries}
+\usepackage{glossaries}
+
+\input{bibliografia/glosario.tex}
+\input{bibliografia/acronimos.tex}
 
 \makeglossaries
-
-%\glsenableentrycount
 
 \setacronymstyle{long-short}
 
@@ -58,8 +60,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \include{contenido/1introduccion}
-\include{contenido/2gestion}
-\include{contenido/3fundamentals}
+\include{contenido/2fundamentals}
+\include{contenido/3gestion}
 \include{contenido/4System}
 \include{contenido/5ML}
 \include{contenido/6tests}
@@ -74,10 +76,13 @@
 \include{anexos/anexos}
 %\include{anexos/...}
 
-\include{bibliografia/acronimos}
+%\include{bibliografia/acronimos}
 %\include{bibliografia/glosario}
-\printglossary
-\printglossary[type=\acronymtype]
+\printglossary[title={Glossary}, type=main]
+\printglossary[title={Acronyms}, type=\acronymtype]
+
+%\printglossary
+%\printglossary[type=\acronymtype]
 
 \bibliographystyle{IEEEtranN}
 \bibliography{bibliografia/bibliografia}

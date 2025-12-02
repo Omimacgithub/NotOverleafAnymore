@@ -1,5 +1,5 @@
 \chapter{Fundamentos teóricos y tecnológicos}
-\lettrine{E}{n} este capítulo se detallan las métricas de evaluación y herramientas hardware y software utilizadas, así como los conceptos a entender para el resto de la memoria.
+\lettrine{E}{n} este capítulo se detallan las métricas de evaluación y herramientas hardware y software utilizadas, así como los conceptos necesarios para comprender el resto de la memoria.
 
 \section{Métricas de evaluación}
 \label{sec:metriks}
@@ -8,16 +8,16 @@ Para evaluar la clasificación de los modelos de visión artificial utilizados, 
 \begin{itemize}
     \item \textit{\textbf{True Positive (TP)}}: predicción positiva correcta. Para los modelos de detección, sería detectar correctamente a una persona. Para los modelos de reconocimiento, asignar la etiqueta correcta a la persona detectada.
     \item \textit{\textbf{True Negative (TN)}}: predicción negativa correcta. Para los modelos de detección, sería no detectar correctamente a una persona, lo que carece de sentido a la hora de evaluar un buen detector. TODO (es mejor quitar esta métrica, no la uso en el sistema): Para los modelos de reconocimiento, sería predecir que la persona no pertenece a ninguna de las registradas, de aquí surge el concepto de \textbf{desconocido}.
-    \item \textit{\textbf{False Positive (FP)}}: predicción positiva erronea. Para los modelos de detección, sería detectar una persona donde no la hay. Para los modelos de reconocimiento, sería otorgar una etiqueta incorrecta a la persona detectada.
+    \item \textit{\textbf{False Positive (FP)}}: predicción positiva errónea. Para los modelos de detección, sería detectar una persona donde no la hay. Para los modelos de reconocimiento, sería otorgar una etiqueta incorrecta a la persona detectada.
     \item \textit{\textbf{False Negative (FN)}}: predicción negativa errónea. Para los modelos de detección, sería no detectar a la persona presente. Para los modelos de reconocimiento, sería asignar la entidad de desconocido a una persona ya registrada en el sistema.
 \end{itemize}
 
-Estos componentes se aplicarán a los datasets de prueba formados a partir de los videos grabados. En un entorno real de operación no sería posible aplicar dichas métricas por falta de un \textit{ground truth} (TODO: ponerlo en el glosario de términos). 
+Estos componentes se aplicarán a los datasets de prueba formados a partir de los videos grabados. En un entorno real de operación no sería posible aplicar dichas métricas por falta de un \textit{\gls{gt}}. %\textit{ground truth}.
 
 \section{Evaluación de modelos}
 \label{sec:modeleval}
 
-Las pruebas empleadas para evaluar los modelos de detección y reconocimiento son las mismas que en \cite{andrew}. Teniendo en cuenta que ahora se considera el desconocido como entidad posible, en las pruebas de reconocimiento se añaden las métricas de \textit{recall} y \textit{F1\_score} al tener falsos negativos (FN) y positivos (FP). 
+Las pruebas empleadas para evaluar los modelos de detección y reconocimiento son las mismas que en \cite{andrew}. Teniendo en cuenta que ahora se considera el desconocido como entidad posible, en las pruebas de reconocimiento se añaden las métricas de \textit{recall} y \textit{F1\_score} al tener falsos negativos (FN) y positivos (FP).
 
 \subsection{Modelos de detección}
 \label{subsec:det}
@@ -25,66 +25,93 @@ Las pruebas empleadas para evaluar los modelos de detección y reconocimiento so
 Se aplican las siguientes métricas:
 \begin{itemize}
     \item \textbf{\textit{Precision}}: \textbf{cuando el modelo detecta un objeto}, cuantas veces la detección corresponde con una persona presente.
-    \begin{equation}
-        Precision = \frac{TP}{TP + FP}
-    \end{equation}
+          \begin{equation}
+              Precision = \frac{TP}{TP + FP}
+          \end{equation}
     \item \textbf{\textit{Recall}}: \textbf{cuando realmente hay una persona}, cuantas veces el modelo detecta a esa persona.
-\begin{equation}
-Recall = \frac{TP}{TP + FN}    
-\end{equation}
+          \begin{equation}
+              Recall = \frac{TP}{TP + FN}
+          \end{equation}
     \item \textbf{\textit{F1\_score}}: dicha métrica se calcula como una media armónica entre el \textit{recall} (proporción de objetos detectados) y el \textit{precision} (proporción de detecciones correctas) \cite{andrew}.
-\begin{equation}
-F1\_score = 2* \frac{Precision * Recall}{Precision + Recall}    
-\end{equation}
+          \begin{equation}
+              F1\_score = 2* \frac{Precision * Recall}{Precision + Recall}
+          \end{equation}
 
 \end{itemize}
 
 \subsection{Modelos de reconocimiento}
 \label{subsec:recon}
 
-Las métricas TODO: se calculan de la misma forma, lo único que cambia es su significado que se expone a continuación:
+Las métricas de evaluación son las mismas que en los modelos de detección, salvo las diferencias en el significado que se exponen a continuación:
 \begin{itemize}
     \item \textbf{\textit{Precision}}: refleja la proporción de aciertos cuando el modelo TODO: no asigna a una persona como desconocida.
-    \begin{equation}
-    Precision = \frac{TP + TN}{TP + TN + FP}
-    \end{equation}
+          \begin{equation}
+              Precision = \frac{TP + TN}{TP + TN + FP}
+          \end{equation}
     \item \textbf{\textit{Recall}}: refleja la proporción de veces que el sistema TODO: decide no asignar la entidad desconocida.
-    \begin{equation}
-    Recall = \frac{TP + TN}{TP + TN + FN}    
-    \end{equation}
+          \begin{equation}
+              Recall = \frac{TP + TN}{TP + TN + FN}
+          \end{equation}
     \item \textbf{\textit{F1\_score}}: lo mismo que en los modelos de detección.
 \end{itemize}
 
-Cuando el sistema tiene dudas acerca de la entidad de una persona, es preferible que se asigne dicha entidad como \textbf{desconocida} antes que otorgar una predicción \textbf{incorrecta}. Por este motivo, no se tiene en cuenta los falsos negativos a la hora de calcular la precisión, ni los falsos positivos cuando se calcula el recall.
+Cuando el sistema tiene dudas acerca de la entidad de una persona, es preferible que se asigne dicha entidad como \textbf{desconocida} antes que otorgar una predicción \textbf{incorrecta}. Por este motivo, no se tiene en cuenta los falsos negativos a la hora de calcular la precisión, ni los falsos positivos cuando se calcula el \textit{recall}.
 
 \section{Evaluación de la adaptación}
-Como se ahondará en el capítulo \ref{chap:adaptation}, uno de los factores más importantes a analizar es la capacidad del sistema de retener la información con la que se inicializó. Existe un riesgo de que el sistema elimine toda la información con la que fué entrenado (lo que se conoce como \textit{catastrophic forgetting})
+Como se ahondará en el capítulo \ref{chap:adaptation}, uno de los factores más importantes a analizar es la capacidad del sistema de retener la información con la que se inicializó. Existe un riesgo de que el sistema elimine toda la información con la que fue entrenado (lo que se conoce como \textit{catastrophic forgetting})
 
 TODO: César emplea una métrica para analizar la homogeneidad de los comités, analizar el catastrophic forgeting (comprobar si el sistema no ha eliminado su memoria inicial).
 
 \section{Hardware}
 \subsection{Summit\_XL}
-\subsection{LiDAR}
 \subsection{Cámaras RGBD}
 TODO: habremos usado las 4 kinects?
 \subsection{NVIDIA Jetson}
-Otra característica destacable es su bajo consumo, que oscila entre los 7 W en el modo menos potente y 25 W en el modo de mayor rendimiento, lo que es muy ligero en comparación con una CPU Intel i7 de 125 W de consumo \url{https://es.whatpsu.com/psu/cpu/Intel-Core-i7-13700K/gpu/NVIDIA-GeForce-RTX-3050-GB}, lo que la hace ideal sobretodo en robótica móvil para alargar la vida de la batería.
+Es una familia de \textbf{\glspl{embsystem}} pensados para aplicaciones de \gls{ia}. Dichos dispositivos incluyen un kit de desarrollo llamado \textbf{JetPack}, diseñado para exprimir la potencia de la NVIDIA Jetson en aplicaciones como la robótica, \gls{ia} generativa y visión artificial \cite{jason}.
 
-\textbf{No está pensada para entrenar modelos de IA}.
+Actualmente existe una amplia variedad en la potencia y precio de estos dispositivos \cite{jason}. Para este proyecto se han empleado cuatro modelos diferentes que se exponen a continuación (se encuentran ordenados de menores a mayores prestaciones).
+\subsection{Jetson Xavier NX}
+
+
+Desde 399\$ \cite{price}.
+
+Otra característica destacable es su bajo consumo, que oscila entre los 7 W en el modo menos potente y 25 W en el modo de mayor rendimiento, lo que es muy ligero en comparación con una CPU Intel i7 de 125 W de consumo \url{https://es.whatpsu.com/psu/cpu/Intel-Core-i7-13700K/gpu/NVIDIA-GeForce-RTX-3050-GB}, lo que la hace ideal sobre todo en robótica móvil para alargar la vida de la batería.
+\subsection{Jetson Orin Nano}
+
+CPU Arm Cortex-A78AE v8.2 de 64 bits de 6 núcleos L2 de 1,5 MB + L3 de 4 MB
+GPU Arquitectura NVIDIA Ampere con 1024 núcleos CUDA y 32 núcleos Tensor
+
+Potencia entre 7 W-25 W
+
+\cite{jnano}
+
+Es la más barata desde 249\$ \cite{price}.
+
+\subsection{Jetson AGX Orin}
+La placa AGX Orin aumenta considerablemente las prestaciones de memoria principal y núcleos de CPU respecto la familia NX o Nano. En las placas AGX podría ser viable entrenar modelos \gls{cnn}.
+
+Potencia entre 15 W-60 W
+
+1999\$ \cite{price}.
+
+\cite{jagxorin}
+
+\subsection{Jetson Thor}
+Desde 3499\$ \cite{price}
 \subsection{Equipos x86}
 Para las pruebas se emplearon dos equipos con las siguientes características:
 \begin{itemize}
-  \item \textbf{Equipo 1 (portátil personal)}: cuenta con una CPU \textbf{Intel i7 i7-12650H}, una GPU \textbf{NVIDIA GeForce RTX 3050} con \textbf{4 GB de RAM}. Tiene una memoria principal de \textbf{16 GB} y el sistema operativo Linux Mint 21.3 (equivalente a un Ubuntu 22.04).
-  \item \textbf{Equipo 2 (PC del laboratorio del CITIC)}: cuenta con una CPU \textbf{Intel i7 i7-12700}, una GPU \textbf{NVIDIA GeForce GTX 1650} con \textbf{4 GB de RAM}. Tiene una memoria principal de \textbf{32 GB} y el sistema operativo Ubuntu 24.04.
+    \item \textbf{Equipo 1 (portátil personal)}: cuenta con una CPU \textbf{Intel i7 i7-12650H}, una GPU \textbf{NVIDIA GeForce RTX 3050} con \textbf{4 GB de RAM}. Tiene una memoria principal de \textbf{16 GB} y el sistema operativo Linux Mint 21.3 (equivalente a un Ubuntu 22.04).
+    \item \textbf{Equipo 2 (PC del laboratorio del CITIC)}: cuenta con una CPU \textbf{Intel i7 i7-12700}, una GPU \textbf{NVIDIA GeForce GTX 1650} con \textbf{4 GB de RAM}. Tiene una memoria principal de \textbf{32 GB} y el sistema operativo Ubuntu 24.04.
 \end{itemize}
 
 \section{Software}
 \label{sec:sw}
 
 \subsection{ROS}
-Robot Operating System (ROS) es un middleware de \textbf{código abierto} que incorpora las herramientas necesarias para la interacción y desarrollo de software en robots. Cuenta con una amplia biblioteca de distribuciones y librerías. TODO
+Robot Operating System (ROS) es un middleware (TODO: glosario?) de \textbf{código abierto} que incorpora las herramientas necesarias para la interacción y desarrollo de software en robots. Cuenta con una amplia biblioteca de distribuciones y librerías. TODO
 \subsection{TensorRT}
-Es un software de \textbf{código abierto} desarrollado por NVIDIA para la optimización de inferencias de modelos de IA en aceleradoras de NVIDIA. Permite ejecutar modelos entrenados en frameworks como Pytorch y Tensorflow, aunque se aconseja exportarlos al formato ONNX previamente, para aprovechar al completo las funcionalidades de este software. Se ha empleado TensorRT para optimizar la mayoría de modelos CNN tanto en equipos ARM (Jetson) como x86 (Intel).
+Es un software de \textbf{código abierto} desarrollado por NVIDIA para la optimización de inferencias de modelos de IA en aceleradoras de NVIDIA. Permite ejecutar modelos entrenados en frameworks (TODO: glosario?, esta palabra también se usa más arriba) como Pytorch y Tensorflow, aunque se aconseja exportarlos al formato ONNX previamente, para aprovechar al completo las funcionalidades de este software. Se ha empleado TensorRT para optimizar la mayoría de modelos CNN tanto en equipos ARM (Jetson) como x86 (Intel).
 \subsection{ONNX}
 \subsection{OpenVino}
 Es un software de \textbf{código abierto} desarrollado por Intel para la optimización de inferencias en CPUs (ARM,x86) y en aceleradoras de Intel (GPUs,NPUs). Permite la conversión directa de modelos entrenados en frameworks como Tensorflow y Pytorch. Se ha empleado para reducir la latencia de modelos a la hora de ejecutarlos en CPUs.
@@ -111,10 +138,10 @@ Las métricas para evaluar el sistema final son las mismas que en \cite{andrew}:
 \end{itemize}
 
 \section{Conceptos}
-\subsection{Computación en el borde (Edge computing)}
-En proyectos en los que se demanda el procesamiento de datos en tiempo real, es imprescindible obtener los resultados de forma inmediata para la correcta operabilidad del sistema. El edge computing mantiene el procesamiento de los datos lo más cerca posible de la fuente que los suministra, un ejemplo sería tener una cámara conectada localmente a un equipo, de manera que se reduce la latencia de transmisión por la red y todo el ancho de banda que implicaría transmitir una imagen, entre otras muchas ventajas.
+\subsection{Computación en el borde (Edge Computing)}
+TODO: lo explico en la motivación. En proyectos en los que se demanda el procesamiento de datos en tiempo real, es imprescindible obtener los resultados de forma inmediata para la correcta operabilidad del sistema. El edge computing mantiene el procesamiento de los datos lo más cerca posible de la fuente que los suministra, un ejemplo sería tener una cámara conectada localmente a un equipo, de manera que se reduce la latencia de transmisión por la red y todo el ancho de banda que implicaría transmitir una imagen, entre otras muchas ventajas.
 
-\subsection{Reconocimiento open world}
+\subsection{Reconocimiento \textit{Open-World}}
 Atendiendo a la definición de \cite{rudd2017extreme}, un sistema de reconocimiento open world debe de ser capaz de realizar las siguientes 4 tareas:
 \begin{itemize}
     \item Detectar desconocidos: identificar cuando una muestra de entrada no pertenece al conjunto de datos del entrenamiento. TODO: Un ejemplo sería definir una \textbf{función de Weibull} adaptada a los datos del entrenamiento.
@@ -128,14 +155,14 @@ Atendiendo a la definición de \cite{rudd2017extreme}, un sistema de reconocimie
 \subsubsection{Representación de características (Feature embedding)}
 Se refiere a la representación de los vectores de características (información generada por los modelos) a un espacio vectorial \textbf{más pequeño}, de forma que la relación entre los vectores dentro del espacio \textbf{no se rompa} \cite{embeddings}.
 
-La tesis de De-SVM utiliza una ResNet sin la capa de clasificación (sección 3.4.2)\cite{Erik}.
+La tesis de De-SVM utiliza ArcFace sin la capa de clasificación (sección 3.4.2) \cite{Erik}.
 
 \subsection{Aprendizaje incremental semi-supervisado}
 En el campo de la visión artificial, existe una gran cantidad de parámetros que afectan al contexto de adquisición de los datos para el entrenamiento de modelos deep learning (CNN). Por desgracia, dichos modelos son susceptibles a estos cambios en el contexto. Por ejemplo, el modelo ArcFace \cite{deng2019arcface} utiliza datasets con miles de recortes de caras centradas para su entrenamiento. Sin embargo el modelo, en el contexto de este proyecto, se tiene que enfrentar a condiciones de imagen diferentes, así como tener que reconocer personas a diferentes distancias y poses. Por este motivo, es necesaria la perspectiva de la \textbf{adaptación} para generalizar el uso de CNNs a cualquier contexto.
 
-El aprendizaje incremental \textbf{no supervisado} usa sus propias predicciones a partir de datos entrantes (datos no etiquetados) para refinar los datos ya registrados. De esta forma, el modelo se \textbf{auto-entrena}, mejorando así su capacidad de reconocimiento y eliminando la necesidad de re-entrenar el modelo. Debido a que puede ser necesaria la intervención humana para etiquetar ciertas muestras, el enfoque de dicho aprendizaje se vuelve \textbf{semi-supervisado}.
+El aprendizaje incremental \textbf{no supervisado} usa sus propias predicciones a partir de datos entrantes (datos no etiquetados) para refinar los datos ya registrados. De esta forma, el modelo se \textbf{auto-entrena}, mejorando así su capacidad de reconocimiento y eliminando la necesidad de reentrenar el modelo. Debido a que puede ser necesaria la intervención humana para etiquetar ciertas muestras, el enfoque de dicho aprendizaje se vuelve \textbf{semi-supervisado}.
 
-Es muy importante que las imágenes recolectadas de las identidades \textbf{sean de calidad}, sino la estrategia de auto-entrenamiento \textbf{no será eficaz}.
+Es muy importante que las imágenes recolectadas de las identidades \textbf{sean de calidad}, si no la estrategia de auto-entrenamiento \textbf{no será eficaz}.
 
 \subsection{Support Vector Machine (SVM)}
 

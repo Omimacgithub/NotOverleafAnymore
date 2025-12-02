@@ -2,6 +2,38 @@
 \lettrine{E}{n} este capítulo se presentan los resultados de rendimiento del método con el modelo y junto con el sistema final, variando el número de cámaras. También se explica el proceso de creación de los datasets utilizados para las pruebas.
 
 \section{Diseño de las pruebas}
+
+\subsection{Realización de pruebas}
+Las pruebas del sistema se han focalizado en evaluar las redes neuronales utilizadas en los nodos cámara y el rendimiento del sistema completo. Para este fin, se cuentan con \textbf{datasets} generados a partir de los datos grabados de una prueba de 2 minutos dentro del laboratorio de robótica del CITIC con 6 personas.
+
+Para las pruebas de los modelos de detección, se reproduce el video para que el modelo realize las detecciones en cada frame. Las predicciones obtenidas por el modelo se comparan contra el dataset para evaluar si son correctas. En la tabla (TODO) se muestra para cada modelo de detección (YOLOv8n y YuNet) la métrica F1 (definida en \ref{sec:metriks}).
+
+Para las pruebas de los modelos de reconocimiento, se guardan como imágenes los recortes de los cuerpos y de las caras de cada individuo en cada frame del video grabado por la cámara. Para cada recorte, se ejecuta el modelo y se compara su predicción con la recogida en el dataset \cite{andrew}. En la tabla (TODO), .
+
+\subsection{Resultados en dispositivos Jetson}
+El sistema cuenta con un motor de inferencia de redes neuronales orientado a procesadores y gráficas \textbf{Intel}, llamado \textbf{OpenVINO} \cite{OpenVINO}. OpenVINO otorga herramientas para convertir archivos ONNX (formato reconocido para exportar redes neuronales) a ficheros XML, que son versiones \textbf{optimizadas} de las redes neuronales y que se utilizan para realizar las inferencias. Todas las redes salvo YuNet (que utiliza el motor de OpenCV en CPU) se han exportado a un equivalente optimizado en OpenVINO.
+
+Los primeros resultados arrojados en la tabla (TODO) muestran que las placas Jetson \textbf{no son capaces de cumplir el objetivo de 10 Hz} usando OpenVINO. Sólo la ejecución de YOLOv8n consume los 100 ms en la Jetson Xavier NX. En cuanto a la Jetson Orin Nano, la suma de la ejecución de las 4 redes supera también los 100 ms.
+
+TensorRT es un framework para inferencia de alto rendimiento creado por NVIDIA, pensado para la ejecución de redes neuronales en sistemas embebidos de NVIDIA como es la Jetson \cite{MITTAL2019428, rahmaniar2021real}.
+
+TensorRT se ha empleado para optimizar modelos ONNX al formato propio de la herramienta (denominado engine) y así poder realizar inferencias a partir de su API. Un ejemplo de código de inferencia en TensorRT es el que se muestra en TODO.
+
+Todas las redes neuronales fueron exportadas a un engine de TensorRT salvo YuNet, que utiliza \textbf{OpenCV con CUDA}. Para disponer de soporte CUDA, es necesario compilar OpenCV \textbf{desde el fuente} \cite{OpenCVCUDA}.
+
+NVIDIA consta que con TensorRT, el Speed up de las inferencias aumenta \textbf{36 veces}. En este caso se ha logrado reducir hasta \textbf{5 veces} el tiempo de inferencia en el caso de YOLOv8n en la Jetson Xavier NX. Si sumamos todos los tiempos de inferencia usando el motor de TensorRT, da un total de \textbf{63.6 milisegundos} para la Jetson Xavier NX y \textbf{49.1 milisegundos} para la Jetson Orin Nano.
+
+\input{contenido/tabequips}
+
+\subsection{Resultados en equipos x86}
+
+Afortunadamente, todas las librerías del proyecto cuenta con soporte para ambas arquitecturas x86 y ARM64, por lo que fué prácticamente inmediato el despliegue entre dispositivos mediante Docker (exceptuando pequeños cambios en el código por el cambio de versión de TensorRT y omitir ciertas optimizaciones (ejemplo: flag msse de las CPUs x86)).
+
+Una ventaja de TensorRT es la \textbf{fácil portabilidad del código}, se puede ejecutar un mismo script de inferencia en cualquier equipo que posea una GPU de NVIDIA, siempre que sea posible instalar la misma versión de TensorRT (en caso contrario, es necesario realizar un cambio en el código, aunque este es leve).
+
+En la tabla (TODO) se muestran los resultados obtenidos en 2 equipos x86, comparándolos con la Jetson Orin Nano, el sistema embebido con el que se ha obtenido el mejor rendimiento. En equipos x86, la latencia experimentada  es hasta \textbf{5.3 veces menor} (YOLOv8n) para los modelos ejecutados en CPU y hasta \textbf{4.9 veces menor} (YuNet) para los modelos ejecutados en GPU que la obtenida por la Jetson Orin Nano. Debido a que OpenVINO está pensado para hardware de Intel, las optimizaciones en la Jetson no suponen ninguna mejora, al contrario que en los equipos x86 con una CPU \textbf{Intel i7}. Por otro lado, es sorprendente que también existan diferencias significativas respecto a la Jetson \textbf{cuando se realizan las inferencias en GPU}. La diferencia más notoria es con YuNet en el PC del laboratorio, que poseé una \textbf{GeForce GTX 1650}, que está \textbf{una generación por detrás} de la GPU de la Jetson Orin (las arquitecturas son Turing y Ampere respectivamente) \cite{archs}. Esto implica que, para la carga de trabajo de este proyecto, \textbf{la GPU no es el factor predominante} (TODO: con estos datos puedo sacar esta conclusión?).
+
+
 \section{Resultados Open-World}
 TODO: En la fase de inicialización de los modelos (o fase de entrenamiento), el sistema guarda la información estadística que representa a cierto modelo. Durante el funcionamiento del sistema, puede ocurrir que los datos que recibe de un individuo registrado varíen respecto a la información de entrenamiento, lo que se conoce como \textbf{concept drift}. Se debe de corregir el concept drift para evitar una pérdida en la precisión de reconocimiento.
 
@@ -13,7 +45,7 @@ TODO: los criterios que conforman el módulo de limitación tienen en cuenta el 
 
 TODO: las secuencias de pocos frames (ej: 2) son muy propensas a resultados erroneos, especialmente si introducen mucho ruido, como frames borrosos, con mucha oclusión, variación en la iluminación, entre otros muchos factores. Debido a que este sistema maneja secuencias solapadas (ej: frames 0 a 10, frames 5 a 15) se puede deducir que es muy probable que la identidad a reconocer en la secuencia actual sea la misma identidad que en la secuencia anterior. Dependiendo de diversos factores, como el número de frames de la secuencia, se puede otorgar un mayor peso al reconocimiento anterior.
 
-Para concluir, cuando el sistema no es capaz de reconocer a un individuo con alta confianza y, en cambio, lo denota como desconocido, el mecanismo se vuelve \textbf{contraproducente}. Si una entidad ya conocida se reconoce como desconocida, se crea un nuevo comité de la misma persona, lo que incrementa la duda en el reconocimiento, ya que la distribución de weibull contendrá puntos que representen al propio individuo, indicando que el score de coincidencia no es un caso extremo cuando si debería serlo. La solución más rápida y efectiva es subir el valor de threshold de la probabilidad devuelta por la función de Weibull, aún así, es inevitable que se generen nuevos comités para un mismo individuo, contaminando el sistema rápidamente. 
+Para concluir, cuando el sistema no es capaz de reconocer a un individuo con alta confianza y, en cambio, lo denota como desconocido, el mecanismo se vuelve \textbf{contraproducente}. Si una entidad ya conocida se reconoce como desconocida, se crea un nuevo comité de la misma persona, lo que incrementa la duda en el reconocimiento, ya que la distribución de weibull contendrá puntos que representen al propio individuo, indicando que el score de coincidencia no es un caso extremo cuando si debería serlo. La solución más rápida y efectiva es subir el valor de threshold de la probabilidad devuelta por la función de Weibull, aún así, es inevitable que se generen nuevos comités para un mismo individuo, contaminando el sistema rápidamente.
 
 \section{Fuentes de los datos (nuestro dataset combinado con YTF)}
 
@@ -25,7 +57,7 @@ Supongase un tamaño de secuencia 25 y un offset de 15, la secuencia de frames s
 
 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24
 
-                                   15 16 17 18 ... 39
+15 16 17 18 ... 39
 
 Se pueden almacenar parte de los frames utilizados en un buffer para la siguiente secuencia.
 
@@ -46,7 +78,7 @@ Uno de los objetivos del sistema es obtener la mayor diversidad intra-comité y 
 \section{Tamaño del comité}
 En relación con el anterior punto, el número de SVM influye en la decisión de que percentil tomar. Si se utilizan 3 SVM por comité y la mediana, al menos 2 SVM deben de devolver un score bajo para dar un resultado coincidente. Por otro lado, si se utilizan 10 SVM y un percentil de 30, sólo 3 de las 10 SVM necesitan estar de acuerdo para devolver un match.
 
-En los resultados se muestra como un comité de 3 SVM y TW=0.05 destaca respecto a un comité de 1 SVM y TW=0.5. Los resultados utilizando 10 SVM por comité no llegan a mejorar notablemente el valor de 3 SVM, esto es de gran relevancia, puesto que se reduce el número de iteraciones de cada reconocimiento de 10*n a 3*n, siendo n el número de comités que existen y asumiendo que todos los comités han llegado al límite de SVM. Con estos resultados se ha demostrado que implementar varias SVM por comité mejora el recall manteniendo la precisión. 1 sóla SVM por comité es efectiva si dicha SVM es representativa del individuo, en caso contrario puede devolver respuestas coincidentes acerca de una entidad distinta del comité, generando ruido que perjudica a las predicciones de Weibull. Un mayor número de SVM combinado con la mediana devuelve un resultado conforme dicta una mayoría que omite los scores de SVM intrusas (de entidades distintas) y permite expulsarlas mediante los criterios ya comentados en la sección \ref{seq:limmod}. 
+En los resultados se muestra como un comité de 3 SVM y TW=0.05 destaca respecto a un comité de 1 SVM y TW=0.5. Los resultados utilizando 10 SVM por comité no llegan a mejorar notablemente el valor de 3 SVM, esto es de gran relevancia, puesto que se reduce el número de iteraciones de cada reconocimiento de 10*n a 3*n, siendo n el número de comités que existen y asumiendo que todos los comités han llegado al límite de SVM. Con estos resultados se ha demostrado que implementar varias SVM por comité mejora el recall manteniendo la precisión. 1 sóla SVM por comité es efectiva si dicha SVM es representativa del individuo, en caso contrario puede devolver respuestas coincidentes acerca de una entidad distinta del comité, generando ruido que perjudica a las predicciones de Weibull. Un mayor número de SVM combinado con la mediana devuelve un resultado conforme dicta una mayoría que omite los scores de SVM intrusas (de entidades distintas) y permite expulsarlas mediante los criterios ya comentados en la sección \ref{seq:limmod}.
 
 \section{Tamaño de la plantilla}
 El tamaño de plantilla es igual al tamaño del conjunto de positivos para una entidad, cuantas más muestras conformen dicho conjunto, mejores predicciones realizará la SVM asociada. En la tabla (TODO) se puede ver que el mejor resultado ha sido con un tamaño de plantilla de 10 frames. Los resultados con 5 frames son ligeramente peores (79.7 frente a 76.5), lo que demuestra la robustez del sistema ante dicho número escaso de muestras para un individuo.
@@ -60,7 +92,7 @@ El solapamiento entre secuencias puede causar que las SVM sean más específicas
 Según los resultados arrojados (TODO), ninguno de los solapamientos utilizados indica una variación significativa en los resultados.
 
 \section{Inicialización del sistema}
-La selección de los frames que conforman un nuevo comité es un factor crítico para el correcto funcionamiento del sistema. En la tabla (TODO) se comparan 2 técnicas de inicialización, una semi-supervisada (los frames se escogen manualmente y el comité se actualiza de forma autónoma) y la otra no supervisada (se escogen los frames en el momento que aparecen varias personas en escena para diferenciarlas). 
+La selección de los frames que conforman un nuevo comité es un factor crítico para el correcto funcionamiento del sistema. En la tabla (TODO) se comparan 2 técnicas de inicialización, una semi-supervisada (los frames se escogen manualmente y el comité se actualiza de forma autónoma) y la otra no supervisada (se escogen los frames en el momento que aparecen varias personas en escena para diferenciarlas).
 
 \section{Criterio de selección de frames para nuevas SVM}
 También es muy importante la selección de las muestras que conforman las SVM, en la tabla (TODO) se muestran 2 criterios para la selección, uno consiste en seleccionar los frames con los scores más cercanos al cero, mientras que el otro es una selección aleatoria. El primer criterio demuestra un aumento en el F1 score, dado que los frames cercanos al cero son los más complicados de reconocer, de esta forma la SVM amplía sus fronteras respecto a lo que ya reconoce. A la hora de crear una SVM de un nuevo comité en el modo open-world, no queda otra alternativa que realizar una selección aleatoria.
@@ -87,3 +119,6 @@ num ensembles: 15
 svm of each ensemble: [('jose', 1), ('carlos', 1), ('martin', 1), ('omi', 1), ('rayas', 1), ('andres', 1), ('botella', 1), ('azul', 1), ('javi', 1), ('gris', 1), ('user10', 1), ('user11', 1), ('user12', 1), ('user13', 1), ('user14', 1)]
 
 \section{Open-world runtime}
+
+
+ (Pág 81, TODO:) La calidad de la función RDF viene determinada por el número de puntos que componen la función de Weibull, cuantos más puntos, mayor definición y por tanto reconocimientos más precisos. Con un universo de 20 individuos, sólo 5 puntos componen la función de Weibull (de las 20 entidades sólo 10 se registran en el sistema, a modo de probar el open-set, y de esos 10, la mitad definen la función), lo que lleva a un comportamiento más impreciso que con un universo mayor. El sistema inicial cuenta con un universo de \textbf{6 individuos}, lo que claramente \textbf{es insuficiente} para realizar una diferenciación precisa de los IoI respecto a lo desconocido. Para este proyecto, ha sido necesario ampliar el universo a \textbf{20 personas}, algunas procedentes del CITIC, que se han prestado voluntariamente, otras extraídas del YoutubeFaces dataset.

@@ -1,2 +1,5 @@
 # Ignore generated files
 TFM/PDF
+TFM/indent.log
+TFM/memtfm.log
+TFM/TFM.zip
