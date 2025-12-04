@@ -9,7 +9,7 @@ El sistema visto en el anterior capítulo (capítulo \ref{chap:sys}) está limit
 \subsection{Fundamentos}
 \label{subsec:erikfounds}
 
-TODO: El método propuesto en \cite{Erik} y que conforma la base del sistema implementado, ha sido probado en un contexto de video vigilancia bajo el dataset \textbf{FACE COX} \cite{cox}. También se ha utilizado el dataset \textbf{Youtube Faces} (YTF) \cite{ytf} que, a diferencia del anterior, se encuentra accesible de forma pública. En este proyecto se utiliza un dataset\dots
+TODO: El método propuesto en \cite{Erik} y que conforma la base del sistema implementado, ha sido probado en un contexto de video vigilancia bajo el \textit{\gls{dataset}} \textbf{FACE COX} \cite{cox}. También se ha utilizado el \textit{\gls{dataset}} \textbf{Youtube Faces} (YTF) \cite{ytf} que, a diferencia del anterior, se encuentra accesible de forma pública. En este proyecto se utiliza un \textit{\gls{dataset}}\dots
 El método utiliza \textbf{secuencias de video} como entrada para devolver las predicciones acerca de un IoI o para determinar una identidad desconocida.
 
 \subsubsection{Comités de SVM}
@@ -112,7 +112,7 @@ Este criterio mide el valor de aportación de una SVM respecto al resto del comi
 \end{figure}
 
 \subsubsection{Coherencia}
-Este criterio viene a determinar la precisión de una SVM en el reconocimiento cuando no se dispone de un dataset para su evaluación (ejemplo: entorno operacional). El valor de coherencia determina cuantas veces una SVM devuelve el mismo signo que el resultado consensuado del comité, si los signos coinciden, se suma 1 al valor de coherencia, en caso contrario, se resta -1 a dicho valor. Un valor alto indica buena precisión. En la creación de una SVM, este valor se inicializa a 0.
+Este criterio viene a determinar la precisión de una SVM en el reconocimiento cuando no se dispone de un \textit{\gls{dataset}} para su evaluación (ejemplo: entorno operacional). El valor de coherencia determina cuantas veces una SVM devuelve el mismo signo que el resultado consensuado del comité, si los signos coinciden, se suma 1 al valor de coherencia, en caso contrario, se resta -1 a dicho valor. Un valor alto indica buena precisión. En la creación de una SVM, este valor se inicializa a 0.
 
 \subsubsection{Favorabilidad}
 Finalmente, los dos criterios se fusionan en un valor llamado \textbf{índice de favorabilidad}, la SVM con el menor valor de dicho índice \textbf{se elimina del comité}. El signo del valor de diversidad \textbf{se invierte} a la hora de la fusión.

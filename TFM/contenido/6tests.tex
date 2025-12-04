@@ -1,14 +1,14 @@
 \chapter{Pruebas y resultados}
-\lettrine{E}{n} este capítulo se presentan los resultados de rendimiento del método con el modelo y junto con el sistema final, variando el número de cámaras. También se explica el proceso de creación de los datasets utilizados para las pruebas.
+\lettrine{E}{n} este capítulo se presentan los resultados de rendimiento del método con el modelo y junto con el sistema final, variando el número de cámaras. También se explica el proceso de creación de los \textit{\glspl{dataset}} utilizados para las pruebas.
 
 \section{Diseño de las pruebas}
 
 \subsection{Realización de pruebas}
-Las pruebas del sistema se han focalizado en evaluar las redes neuronales utilizadas en los nodos cámara y el rendimiento del sistema completo. Para este fin, se cuentan con \textbf{datasets} generados a partir de los datos grabados de una prueba de 2 minutos dentro del laboratorio de robótica del CITIC con 6 personas.
+Las pruebas del sistema se han focalizado en evaluar las redes neuronales utilizadas en los nodos cámara y el rendimiento del sistema completo. Para este fin, se cuentan con \textbf{\textit{\glspl{dataset}}} generados a partir de los datos grabados de una prueba de 2 minutos dentro del laboratorio de robótica del CITIC con 6 personas.
 
-Para las pruebas de los modelos de detección, se reproduce el video para que el modelo realize las detecciones en cada frame. Las predicciones obtenidas por el modelo se comparan contra el dataset para evaluar si son correctas. En la tabla (TODO) se muestra para cada modelo de detección (YOLOv8n y YuNet) la métrica F1 (definida en \ref{sec:metriks}).
+Para las pruebas de los modelos de detección, se reproduce el video para que el modelo realize las detecciones en cada frame. Las predicciones obtenidas por el modelo se comparan contra el \textit{\gls{dataset}} para evaluar si son correctas. En la tabla (TODO) se muestra para cada modelo de detección (YOLOv8n y YuNet) la métrica F1 (definida en \ref{sec:metriks}).
 
-Para las pruebas de los modelos de reconocimiento, se guardan como imágenes los recortes de los cuerpos y de las caras de cada individuo en cada frame del video grabado por la cámara. Para cada recorte, se ejecuta el modelo y se compara su predicción con la recogida en el dataset \cite{andrew}. En la tabla (TODO), .
+Para las pruebas de los modelos de reconocimiento, se guardan como imágenes los recortes de los cuerpos y de las caras de cada individuo en cada frame del video grabado por la cámara. Para cada recorte, se ejecuta el modelo y se compara su predicción con la recogida en el \textit{\gls{dataset}} \cite{andrew}. En la tabla (TODO), .
 
 \subsection{Resultados de modelos}
 Todas las \glspl{cnn} de este proyecto utilizan OpenVINO (ver sección \ref{sec:sw}) salvo YuNet, que utiliza el motor de OpenCV (ver sección \ref{sec:sw}) en \gls{cpu}.
@@ -121,4 +121,4 @@ svm of each ensemble: [('jose', 1), ('carlos', 1), ('martin', 1), ('omi', 1), ('
 \section{Open-world runtime}
 
 
- (Pág 81, TODO:) La calidad de la función RDF viene determinada por el número de puntos que componen la función de Weibull, cuantos más puntos, mayor definición y por tanto reconocimientos más precisos. Con un universo de 20 individuos, sólo 5 puntos componen la función de Weibull (de las 20 entidades sólo 10 se registran en el sistema, a modo de probar el open-set, y de esos 10, la mitad definen la función), lo que lleva a un comportamiento más impreciso que con un universo mayor. El sistema inicial cuenta con un universo de \textbf{6 individuos}, lo que claramente \textbf{es insuficiente} para realizar una diferenciación precisa de los IoI respecto a lo desconocido. Para este proyecto, ha sido necesario ampliar el universo a \textbf{20 personas}, algunas procedentes del CITIC, que se han prestado voluntariamente, otras extraídas del YoutubeFaces dataset.
+ (Pág 81, TODO:) La calidad de la función RDF viene determinada por el número de puntos que componen la función de Weibull, cuantos más puntos, mayor definición y por tanto reconocimientos más precisos. Con un universo de 20 individuos, sólo 5 puntos componen la función de Weibull (de las 20 entidades sólo 10 se registran en el sistema, a modo de probar el open-set, y de esos 10, la mitad definen la función), lo que lleva a un comportamiento más impreciso que con un universo mayor. El sistema inicial cuenta con un universo de \textbf{6 individuos}, lo que claramente \textbf{es insuficiente} para realizar una diferenciación precisa de los IoI respecto a lo desconocido. Para este proyecto, ha sido necesario ampliar el universo a \textbf{20 personas}, algunas procedentes del CITIC, que se han prestado voluntariamente, otras extraídas del YoutubeFaces \textit{\gls{dataset}}.

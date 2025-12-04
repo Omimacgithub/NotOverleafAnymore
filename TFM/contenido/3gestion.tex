@@ -107,13 +107,60 @@ Esta tarea se encarga de realizar el proceso de migración de ROS 1 Noetic a ROS
 \end{itemize}
 
 \subsection{T5. Extensión del sistema al procesamiento de vídeo}
-Debido a las características del método de aprendizaje máquina a implementar. Es necesario extender el sistema para procesar vídeos (secuencias de caras).
+Debido a las características del método de aprendizaje máquina a implementar. Es necesario extender el sistema para procesar vídeos (secuencias de caras). Debido a que en los videos de prueba pueden aparecer múltiples individuos de forma simultánea, es necesario implementar un método de seguimiento (\textit{tracking}) de las caras.
 
 \textbf{Tareas:}
 \begin{itemize}
-    \item TODO.
+    \item Agrupar las caras que aparecen en la secuencia por las etiquetas de las entidades otorgadas por el \textit{\gls{dataset}}.
+    \item Obtener una nueva versión del modelo de reconocimiento facial que sea capaz de procesar múltiples imágenes por inferencia (modo \textif{batch}).
+    \item Modificar el código para devolver un reconocimiento por cada secuencia de caras de entrada.
+    \item Diseñar e implementar el método de \textit{tracking} para agrupar las caras.
+    \item Preparar videos donde se vea el tracking funcionando e implementar mejoras si es necesario.
 \end{itemize}
 
+\subsection{T6. Desarrollo del sistema adaptativo}
+Esta enorme tarea abarca todos los pasos desde la comprensión de los conceptos hasta la obtención del nuevo código.
+
+\textbf{Tareas:}
+\begin{itemize}
+    \item Entender los conceptos que sustentan la adaptación que se quiere implementar \cite{Erik}.
+    \item Implementar los componentes necesarios para reconocer entidades desconocidas (\textit{Open-Set}).
+    \item Implementar los componentes necesarios para incorporar entidades desconocidas (\textit{Open-World}).
+\end{itemize}
+
+\subsection{T7. Pruebas del sistema adaptativo}
+Esta tarea trata de realizar un estudio acerca de la influencia de los valores entre parámetros en el rendimiento del sistema.
+
+\textbf{Tareas:}
+\begin{itemize}
+    \item Generar un script que pruebe múltiples combinaciones de parámetros.
+    \item Extraer resultados y obtener las conclusiones
+    \item Revisar el código del sistema si este no se comporta según lo esperado.
+\end{itemize}
+
+\subsection{T8. Análisis de dispositivos}
+En esta tarea se evalúan los dispositivos que pasaron a estar disponibles durante el transcurso del proyecto con el objetivo de establecer comparaciones de rendimiento.
+
+\textbf{Tareas:}
+\begin{itemize}
+    \item Instalar el sistema mediante un Dockerfile modificado según el dispositivo.
+    \item Ejecutar las pruebas y obtener los resultados.
+    \item Generar una tabla comparativa entre dispositivos.
+\end{itemize}
+
+\subsection{T9. Finalización de la documentación}
+Esta tarea representa la fase final del proyecto en la que se cubren los últimos detalles de la memoria, concretamente los siguientes puntos:
+
+\begin{itemize}
+    \item Añadir últimos resultados y repetir pruebas en caso de que fuese necesario.
+    \item Ajustar el contenido a los cambios surgidos en el proyecto.
+    \item Añadir la sección de seguimiento, gestión de riesgos, recursos y costes del proyecto.
+    \item Añadir conclusiones y trabajo futuro.
+    \item Confirmar la estructura de la memoria.
+    \item Agregar apéndices si fuera necesario.
+    \item Repaso del contenido de la memoria para correcciones y para cubrir secciones incompletas.
+    \item Revisar bibliografía.
+\end{itemize}
 
 En la figura TODO se muestra el diagrama de Gantt de todas las tareas, con el fin de aportar un apoyo visual.
 
