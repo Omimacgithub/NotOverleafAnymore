@@ -70,34 +70,83 @@ TODO: habremos usado las 4 kinects?
 Es una familia de \textbf{\glspl{embsystem}} pensados para aplicaciones de \gls{ia}. Dichos dispositivos incluyen un kit de desarrollo llamado \textbf{JetPack}, diseñado para exprimir la potencia de la NVIDIA Jetson en aplicaciones como la robótica, \gls{ia} generativa y visión artificial \cite{jason}.
 
 Actualmente existe una amplia variedad en la potencia y precio de estos dispositivos \cite{jason}. Para este proyecto se han empleado cuatro modelos diferentes que se exponen a continuación (se encuentran ordenados de menores a mayores prestaciones).
+
 \subsection{Jetson Xavier NX}
 
+Specs \cite{jxavier}
+
+\gls{cpu}: 6-core NVIDIA Carmel Armv8.2 64-bit CPU 1.9 GHz
+
+\gls{gpu}: 384-core NVIDIA Volta™ architecture GPU with 48 Tensor Cores 1.1 GHz
+
+Memoria: 8GB 128-bit LPDDR4x 59.7GB/s
+
+Red: Gigabit Ethernet
+
+Consumo: entre 10 W y 20 W
+
+AI Performance: 21 TOPS (TODO: en qué precisión? INT8?)
 
 Desde 399\$ \cite{price}.
 
-Otra característica destacable es su bajo consumo, que oscila entre los 7 W en el modo menos potente y 25 W en el modo de mayor rendimiento, lo que es muy ligero en comparación con una CPU Intel i7 de 125 W de consumo \url{https://es.whatpsu.com/psu/cpu/Intel-Core-i7-13700K/gpu/NVIDIA-GeForce-RTX-3050-GB}, lo que la hace ideal sobre todo en robótica móvil para alargar la vida de la batería.
+
 \subsection{Jetson Orin Nano}
 
-CPU Arm Cortex-A78AE v8.2 de 64 bits de 6 núcleos L2 de 1,5 MB + L3 de 4 MB
-GPU Arquitectura NVIDIA Ampere con 1024 núcleos CUDA y 32 núcleos Tensor
+Specs \cite{jorin}
 
-Potencia entre 7 W-25 W
+\gls{cpu}: 6-core Arm® Cortex®-A78AE v8.2 64-bit CPU 1.5MB L2 + 4MB L3 1.7 GHz
 
-\cite{jnano}
+\gls{gpu}: 1024-core NVIDIA Ampere architecture GPU with 32 Tensor Cores 1020 MHz
+
+Memoria: 8 GB LPDDR5 128 bits 102 GB/s
+
+Red: Gigabit Ethernet
+
+Consumo: 7W - 15W - 25W
+
+AI Performance: 67 TOPS INT8
 
 Es la más barata desde 249\$ \cite{price}.
 
 \subsection{Jetson AGX Orin}
-La placa AGX Orin aumenta considerablemente las prestaciones de memoria principal y núcleos de CPU respecto la familia NX o Nano. En las placas AGX podría ser viable entrenar modelos \gls{cnn}.
 
-Potencia entre 15 W-60 W
+Specs \cite{jorin}:
+
+\gls{cpu}: 12-core Arm Cortex-A78AE v8.2 64-bit 3MB L2 + 6MB L3 CPU 2.2 GHz
+
+\gls{gpu}: 2048-core NVIDIA Ampere architecture GPU with 64 Tensor Cores 1.3 GHz
+
+Memoria: 64GB 256-bit LPDDR5 204.8GB/s
+
+Red: 10 Gigabit Ethernet
+
+AI Performance: 275 TOPS
+
+Consumo: entre 15 W y 60 W
+
+La placa AGX Orin aumenta considerablemente las prestaciones de memoria principal y núcleos de CPU respecto la familia NX o Nano. En las placas AGX podría ser viable entrenar modelos \gls{cnn}.
 
 1999\$ \cite{price}.
 
-\cite{jagxorin}
+\subsection{Jetson AGX Thor}
 
-\subsection{Jetson Thor}
+Specs \cite{jthor}:
+
+\gls{cpu}: 14-core Arm Neoverse-V3AE 64-bit CPU 1 MB L2 cache per core 16 MB shared system L3 cache 2.6 GHz
+
+\gls{gpu}: 2560-core NVIDIA Blackwell architecture GPU with 96 fifth-gen Tensor Cores Multi-Instance GPU (MIG) with 10 TPCs 1.57 GHz
+
+Memoria: 128 GB 256-bit LPDDR5X 273 GB/s
+
+Red: 1 puerto RJ45 de 5 Gigabit Ethernet y 1 puerto QSFP28 de hasta 4 canales x 25 Gigabit Ethernet (TODO: lo mismo que 100 Gigabit Ethernet?)
+
+AI Performance: 2070 TFLOPS (FP4—Sparse)
+
+Consumo: entre 40 W y 130 W
+
 Desde 3499\$ \cite{price}
+
+
 \subsection{Equipos x86}
 Para las pruebas se emplearon dos equipos con las siguientes características:
 \begin{itemize}

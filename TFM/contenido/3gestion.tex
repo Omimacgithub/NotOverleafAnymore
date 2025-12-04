@@ -1,17 +1,17 @@
 \chapter{Gestión del proyecto}
 \lettrine{E}{n} este capítulo se ahondará en la planificación del proyecto, su seguimiento y del plan de gestión de riesgos utilizado.
 
-\section{Requisitos}
+\section{Análisis de requisitos}
 Los requisitos definen las pautas que el sistema desarrollado debe cumplir para alcanzar los objetivos establecidos. Los requisitos pueden dividirse en los dos siguientes tipos.
 
-\subsection{Funcionales}
+\subsection{Requisitos funcionales}
 Definen las funcionalidades que el sistema debe de ofrecer. Para este proyecto, se busca ampliar el sistema base para que cumpla con los siguientes requisitos:
 
 \begin{itemize}
     \item Pasar de reconocimientos frame a frame a ventanas de frames, aprovechando así la coherencia espacio-temporal.
     \item Reconocimiento de desconocidos (\textit{Open-Set}) e inclusión al sistema (\textit{Open-World}): el sistema debe ser capaz de reconocer y agregar nuevas personas a su base de datos.
 \end{itemize}
-\subsection{No funcionales}
+\subsection{Requisitos no funcionales}
 Definen las características técnicas que debería de cumplir el sistema:
 \begin{itemize}
     \item Que el sistema evolucione adecuadamente (ejemplo: evitar caídas drásticas en la precisión) a lo largo del tiempo.
@@ -30,15 +30,13 @@ A continuación se definen los actores (o roles) implicados y sus papeles:
     \item Operador del sistema: encargado de ejecutar y mantener el sistema.
 \end{itemize}
 
-\section{Gestión de riesgos}
-
-\section{Metodología Kanban}
+\section{Metodología de desarrollo}
 
 Para el presente proyecto se ha empleado una metodología basada en Kanban (TODO: referencia). Kanban es una herramienta de gestión \textbf{visual}, cuyo objetivo es dividir el trabajo de un proyecto en pequeñas tareas concretas, agilizando así el desarrollo. El proyecto en sí representa un tablero y cada tarea representa una tarjeta, de esta forma, el equipo de desarrollo tiene una visión global de todas las tareas del proyecto. Las tareas en Kanban pasan por múltiples fases que pueden variar según las necesidades del proyecto. Se definen las siguientes fases aplicadas de esta aproximación de Kanban:
 \begin{itemize}
     \item \textbf{\textit{Backlog}}: son las tareas situadas en fase de TODO: concepción y que esperan a ser divididas en una o varias tareas más concretas.
     \item \textbf{\textit{TO-DO}}: en esta fase se ubican las tareas que representan objetivos concretos, pero que aún no se han iniciado.
-    \item \textbf{\textit{DOING}}: son las tareas de la fase \textit{TO-DO} cuyo desarrollo ha comenzado.
+    \item \textbf{\textit{DOING}}: son las tareas de la fase \textit{to-do} cuyo desarrollo ha comenzado.
     \item \textbf{\textit{DONE}}: las tareas cuyo desarrollo ha finalizado.
 \end{itemize}
 
@@ -53,7 +51,7 @@ En la figura \ref{fig:khan} se muestra una instantánea del tablero Kanban utili
 
 \section{Planificación}
 
-El trabajo correspondiente al presente proyecto se compone de las siguientes tareas, junto con sus hitos (“Hx”) y los entregables (“Ex”) correspondientes:
+La planificación del proyecto se planteó para llevarse a cabo durante casi 12 meses, desde finales de enero de 2025 hasta principios de enero de 2026. El trabajo realizado se divide en las siguientes tareas, cada una con sus hitos (“Hx”) y entregables (“Ex”) correspondientes:
 
 \subsection{T1. Instalación y ejecución del sistema de partida}
 \begin{itemize}
@@ -62,5 +60,35 @@ El trabajo correspondiente al presente proyecto se compone de las siguientes tar
     \item \textbf{E1}. Archivos Dockerfile de despliegue para cada dispositivo.
 \end{itemize}
 
+En la figura TODO se muestra el diagrama de Gantt de todas las tareas, con el fin de aportar un apoyo visual.
+
+\section{Gestión de riesgos}
+
+\input{contenido/tables/risk.tex}
+
+La tabla \ref{tab:risks} muestra el plan de gestión de riesgos elaborado para mitigar el impacto de dichos riesgos y evitar que retrasen en grave medida la consecución del proyecto.
+
 \section{Seguimiento}
+TODO: Cada una de las tareas del proyecto se añaden a la fase \textit{backlog}, que posteriormente se dividen en varias tareas que se incorporan a la fase \textit{to-do}.
+
+TODO: vaya redacción... El desarrollo del proyecto en líneas generales se ha mantenido según lo previsto. Los imprevistos que surgieron se pudieron suplir en cierta medida con la realización de otras tareas, pero han provocado retardos en el proyecto. Los siguientes imprevistos:
+
+\begin{itemize}
+    \item \textbf{Instalación y ejecución del sistema de partida}: la instalación del sistema en la Jetson Xavier NX se retrasó debido a que no llegaba una tarjeta microSD, necesaria para flashear el \gls{so}. Mientras tanto, se trabajó en preparar un Dockerfile de despliegue con todo el software y a experimentar con el sistema en el portátil personal.
+    \item TODO: SEGUIR
+\end{itemize}
+
 \subsection{Análisis de desviaciones temporales}
+
+\section{Recursos y costes del proyecto}
+
+En cuanto a recursos materiales podemos hablar de software y hardware. En el primer caso, todo el software utilizado en el proyecto es de uso gratuito, por lo que no supuso ningún coste.
+
+\input{contenido/tables/recursos.tex}
+
+En cuanto al hardware, salvo el Summit\textunderscore XL y la estación base del GPS que fueron facilitadas por el CITIC,  puede verse un desglose de los componentes usados y su precio en la tabla \ref{tab:resources}.
+
+\input{contenido/tables/costs.tex}
+
+Los recursos humanos requeridos para el proyecto y sus costes se exponen en la tabla \ref{tab:humans}.
+
