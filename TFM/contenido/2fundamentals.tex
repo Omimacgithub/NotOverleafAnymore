@@ -160,15 +160,17 @@ Para las pruebas se emplearon dos equipos con las siguientes características:
 \subsection{ROS}
 Robot Operating System (ROS) es un middleware (TODO: glosario?) de \textbf{código abierto} que incorpora las herramientas necesarias para la interacción y desarrollo de software en robots. Cuenta con una amplia biblioteca de distribuciones y librerías. TODO
 \subsection{TensorRT}
-Es un software de \textbf{código abierto} desarrollado por NVIDIA para la optimización de inferencias de modelos de IA en aceleradoras de NVIDIA. Permite ejecutar modelos entrenados en frameworks (TODO: glosario?, esta palabra también se usa más arriba) como Pytorch y Tensorflow, aunque se aconseja exportarlos al formato ONNX previamente, para aprovechar al completo las funcionalidades de este software. Se ha empleado TensorRT para optimizar la mayoría de modelos CNN tanto en equipos ARM (Jetson) como x86 (Intel).
+Es un software de \textbf{código abierto} desarrollado por NVIDIA para la optimización de inferencias de modelos de IA en aceleradoras de NVIDIA \cite{x36}. Permite ejecutar modelos entrenados en frameworks (TODO: glosario?, esta palabra también se usa más arriba) como Pytorch y Tensorflow, aunque se aconseja exportarlos al formato ONNX previamente, para aprovechar al completo las funcionalidades de este software. Se ha empleado TensorRT para optimizar la mayoría de modelos CNN tanto en equipos ARM (Jetson) como x86 (Intel).
+\subsection{PyCUDA}
+Librería de Python de \textbf{código abierto} \cite{pycuda} que interacciona con el driver de CUDA por medio de un \gls{wrapper}. Se ha utilizado para programar los códigos de inferencia de los modelos que utilizan TensorRT.
 \subsection{ONNX}
-\subsection{OpenVino}
-Es un software de \textbf{código abierto} desarrollado por Intel para la optimización de inferencias en CPUs (ARM,x86) y en aceleradoras de Intel (GPUs,NPUs). Permite la conversión directa de modelos entrenados en frameworks como Tensorflow y Pytorch. Se ha empleado para reducir la latencia de modelos a la hora de ejecutarlos en CPUs.
+\subsection{OpenVINO}
+Es un software de \textbf{código abierto} desarrollado por Intel para la optimización de inferencias en \glspl{cpu} (ARM,x86) y en aceleradoras de Intel (\glspl{gpu},\glspl{npu}) \cite{OpenVINO}. Permite la conversión directa de modelos entrenados en frameworks como Tensorflow y Pytorch a ficheros XML, que son versiones optimizadas de las \glspl{cnn} y que se utilizan para realizar las inferencias. Se ha empleado para reducir la latencia de modelos a la hora de ejecutarlos en \glspl{cpu}.
 \subsection{NumPy}
 Librería de Python de \textbf{código abierto} usada en este proyecto para representar imágenes y la información generada por los modelos en forma de vectores y matrices multidimensionales. Estos elementos pueden manipularse por medio de una amplia cantidad de funciones matemáticas que dicha librería ofrece.
 
 \subsection{Scipy}
-Libreria de Python de \textbf{código abierto} que implementa numerosos algoritmos relacionados con la computación científica. En este proyecto se ha usado para aplicar el método húngaro, hallar los parámetros que modelan una distribución de Weibull, calcular distancias coseno, entre muchas otras funcionalidades que dicho software ofrece.
+Librería de Python de \textbf{código abierto} que implementa numerosos algoritmos relacionados con la computación científica. En este proyecto se ha usado para aplicar el método húngaro, hallar los parámetros que modelan una distribución de Weibull, calcular distancias coseno, entre muchas otras funcionalidades que dicho software ofrece.
 
 \subsection{OpenCV}
 La librería de \textbf{código abierto} por excelencia para visión por computadora de código abierto. Otorga herramientas para la obtención y procesado de las imágenes, además de un módulo de visión artificial (dnn), que incluye modelos ya entrenados de visión artificial. Dicha librería tiene implementación en CUDA (si se compila el código fuente), lo que permite ejecutar operaciones y kernels de modelos en aceleradoras de NVIDIA (ejemplo: NVIDIA Jetson).

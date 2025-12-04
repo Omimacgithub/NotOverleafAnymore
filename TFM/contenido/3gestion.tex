@@ -51,14 +51,69 @@ En la figura \ref{fig:khan} se muestra una instantánea del tablero Kanban utili
 
 \section{Planificación}
 
-La planificación del proyecto se planteó para llevarse a cabo durante casi 12 meses, desde finales de enero de 2025 hasta principios de enero de 2026. El trabajo realizado se divide en las siguientes tareas, cada una con sus hitos (“Hx”) y entregables (“Ex”) correspondientes:
+La planificación del proyecto se planteó para llevarse a cabo durante casi 12 meses, desde finales de enero de 2025 hasta principios de enero de 2026. El trabajo realizado se divide en las siguientes tareas, cada una dividida en tareas más concretas:
+
+\subsection{T0. Revisión de la literatura}
+Esta tarea representa el preludio del proyecto.
+\textbf{Tareas:}
+\begin{itemize}
+    \item Estudio de trabajos que hayan utilizado dispositivos Jetson para ejecutar modelos de inteligencia artificial de forma eficiente.
+    \item Revisar la memoria del trabajo fin de grado del sistema que se pretende optimizar \cite{andrew}.
+\end{itemize}
 
 \subsection{T1. Instalación y ejecución del sistema de partida}
+Esta tarea pretende obtener una versión inicial del software funcionando en los dispositivos de desarrollo y/o pruebas.
+
+\textbf{Tareas:}
 \begin{itemize}
-    \item \textbf{Descripción y metodología}: Primero de todo, se creará un Dockerfile de despliegue del sistema para cada dispositivo del apartado de infraestructuras.
-    \item \textbf{H1}. Sistema instalado y funcionando en los dispositivos.
-    \item \textbf{E1}. Archivos Dockerfile de despliegue para cada dispositivo.
+    \item Creación de un Dockerfile que incluya todas las librerías y aplicaciones necesarias para desplegar y hacer funcionar el sistema.
+    \item Primeras pruebas del sistema a modo de comprobación de que todo funciona según lo esperado.
+    \item Registro de primeros resultados, que servirán de línea base para futuras comparaciones.
 \end{itemize}
+
+\subsection{T2. Optimización de inferencias de las redes neuronales convolucionales}
+Esta tarea pretende lograr un recorte en la latencia de los componentes más pesados del sistema, las \glspl{cnn}, a partir de la potencia de cómputo de las \glspl{gpu} disponibles.
+
+\textbf{Tareas:}
+\begin{itemize}
+    \item Instalación de TensorRT y PyCUDA en los dispositivos.
+    \item Exportación de los modelos existentes al formato ONNX
+    \item Conversión de los modelos ONNX a engines de TensorRT mediante trtexec o por medio de la API de Python de TensorRT.
+    \item Creación de códigos de inferencia que reciban como entrada el flujo de datos del sistema.
+\end{itemize}
+
+\subsection{T3. Pruebas de los modelos y del sistema}
+Esta tarea consiste en poner a prueba los componentes desarrollados y analizar su influencia en el rendimiento del sistema.
+
+\textbf{Tareas:}
+\begin{itemize}
+    \item Preparación y ejecución de las pruebas de modelos.
+    \item Registro de los resultados y comparación con la línea base.
+    \item Preparación y ejecución de las pruebas del sistema.
+    \item Registro de los resultados y comparación con la línea base.
+    \item TODO: más cosas fijo
+\end{itemize}
+
+\subsection{T4. Migración a ROS 2}
+Esta tarea se encarga de realizar el proceso de migración de ROS 1 Noetic a ROS 2 Humble con el fin de seguir recibiendo soporte y permitir la ejecución del sistema en nuevas distribuciones de Ubuntu.
+
+\textbf{Tareas:}
+\begin{itemize}
+    \item Preparar un nuevo Dockerfile para instalar ROS 2 Humble junto al sistema.
+    \item Revisar la guía de migración oficial de ROS 2.
+    \item Realizar los ajustes necesarios para que el proyecto pueda compilar en ROS 2.
+    \item Migrar los nodos del sistema a ROS 2.
+    \item Comprobar que el sistema funciona correctamente en ROS 2.
+\end{itemize}
+
+\subsection{T5. Extensión del sistema al procesamiento de vídeo}
+Debido a las características del método de aprendizaje máquina a implementar. Es necesario extender el sistema para procesar vídeos (secuencias de caras).
+
+\textbf{Tareas:}
+\begin{itemize}
+    \item TODO.
+\end{itemize}
+
 
 En la figura TODO se muestra el diagrama de Gantt de todas las tareas, con el fin de aportar un apoyo visual.
 

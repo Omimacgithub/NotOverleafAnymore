@@ -10,10 +10,10 @@ Para las pruebas de los modelos de detección, se reproduce el video para que el
 
 Para las pruebas de los modelos de reconocimiento, se guardan como imágenes los recortes de los cuerpos y de las caras de cada individuo en cada frame del video grabado por la cámara. Para cada recorte, se ejecuta el modelo y se compara su predicción con la recogida en el dataset \cite{andrew}. En la tabla (TODO), .
 
-\subsection{Resultados en dispositivos Jetson}
-El sistema cuenta con un motor de inferencia de redes neuronales orientado a procesadores y gráficas \textbf{Intel}, llamado \textbf{OpenVINO} \cite{OpenVINO}. OpenVINO otorga herramientas para convertir archivos ONNX (formato reconocido para exportar redes neuronales) a ficheros XML, que son versiones \textbf{optimizadas} de las redes neuronales y que se utilizan para realizar las inferencias. Todas las redes salvo YuNet (que utiliza el motor de OpenCV en CPU) se han exportado a un equivalente optimizado en OpenVINO.
+\subsection{Resultados de modelos}
+Todas las \glspl{cnn} de este proyecto utilizan OpenVINO (ver sección \ref{sec:sw}) salvo YuNet, que utiliza el motor de OpenCV (ver sección \ref{sec:sw}) en \gls{cpu}.
 
-Los primeros resultados arrojados en la tabla (TODO) muestran que las placas Jetson \textbf{no son capaces de cumplir el objetivo de 10 Hz} usando OpenVINO. Sólo la ejecución de YOLOv8n consume los 100 ms en la Jetson Xavier NX. En cuanto a la Jetson Orin Nano, la suma de la ejecución de las 4 redes supera también los 100 ms.
+Los primeros resultados arrojados en la tabla \ref{tab:equips} muestran que las placas Jetson \textbf{no son capaces de cumplir el objetivo de 10 Hz} usando OpenVINO. Sólo la ejecución de YOLOv8n consume los 100 ms en la Jetson Xavier NX. En cuanto a la Jetson Orin Nano, la suma de la ejecución de las 4 redes supera también los 100 ms.
 
 TensorRT es un framework para inferencia de alto rendimiento creado por NVIDIA, pensado para la ejecución de redes neuronales en sistemas embebidos de NVIDIA como es la Jetson \cite{MITTAL2019428, rahmaniar2021real}.
 
