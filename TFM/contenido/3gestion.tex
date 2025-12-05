@@ -55,11 +55,14 @@ La planificación del proyecto se planteó para llevarse a cabo durante casi 12 
 
 \subsection{T0. Revisión de la literatura}
 Esta tarea representa el preludio del proyecto.
+
 \textbf{Tareas:}
 \begin{itemize}
     \item Estudio de trabajos que hayan utilizado dispositivos Jetson para ejecutar modelos de inteligencia artificial de forma eficiente.
     \item Revisar la memoria del trabajo fin de grado del sistema que se pretende optimizar \cite{andrew}.
 \end{itemize}
+
+\textbf{Duración estimada:} 3 semanas
 
 \subsection{T1. Instalación y ejecución del sistema de partida}
 Esta tarea pretende obtener una versión inicial del software funcionando en los dispositivos de desarrollo y/o pruebas.
@@ -71,6 +74,8 @@ Esta tarea pretende obtener una versión inicial del software funcionando en los
     \item Registro de primeros resultados, que servirán de línea base para futuras comparaciones.
 \end{itemize}
 
+\textbf{Duración estimada:} 2 semanas
+
 \subsection{T2. Optimización de inferencias de las redes neuronales convolucionales}
 Esta tarea pretende lograr un recorte en la latencia de los componentes más pesados del sistema, las \glspl{cnn}, a partir de la potencia de cómputo de las \glspl{gpu} disponibles.
 
@@ -81,6 +86,8 @@ Esta tarea pretende lograr un recorte en la latencia de los componentes más pes
     \item Conversión de los modelos ONNX a engines de TensorRT mediante trtexec o por medio de la API de Python de TensorRT.
     \item Creación de códigos de inferencia que reciban como entrada el flujo de datos del sistema.
 \end{itemize}
+
+\textbf{Duración estimada:} 2 meses
 
 \subsection{T3. Pruebas de los modelos y del sistema}
 Esta tarea consiste en poner a prueba los componentes desarrollados y analizar su influencia en el rendimiento del sistema.
@@ -94,6 +101,8 @@ Esta tarea consiste en poner a prueba los componentes desarrollados y analizar s
     \item TODO: más cosas fijo
 \end{itemize}
 
+\textbf{Duración estimada:} 1 mes
+
 \subsection{T4. Migración a ROS 2}
 Esta tarea se encarga de realizar el proceso de migración de ROS 1 Noetic a ROS 2 Humble con el fin de seguir recibiendo soporte y permitir la ejecución del sistema en nuevas distribuciones de Ubuntu.
 
@@ -106,17 +115,21 @@ Esta tarea se encarga de realizar el proceso de migración de ROS 1 Noetic a ROS
     \item Comprobar que el sistema funciona correctamente en ROS 2.
 \end{itemize}
 
+\textbf{Duración estimada:} 3 semanas
+
 \subsection{T5. Extensión del sistema al procesamiento de vídeo}
 Debido a las características del método de aprendizaje máquina a implementar. Es necesario extender el sistema para procesar vídeos (secuencias de caras). Debido a que en los videos de prueba pueden aparecer múltiples individuos de forma simultánea, es necesario implementar un método de seguimiento (\textit{tracking}) de las caras.
 
 \textbf{Tareas:}
 \begin{itemize}
     \item Agrupar las caras que aparecen en la secuencia por las etiquetas de las entidades otorgadas por el \textit{\gls{dataset}}.
-    \item Obtener una nueva versión del modelo de reconocimiento facial que sea capaz de procesar múltiples imágenes por inferencia (modo \textif{batch}).
+    \item Obtener una nueva versión del modelo de reconocimiento facial que sea capaz de procesar múltiples imágenes por inferencia (modo \textit{batch}).
     \item Modificar el código para devolver un reconocimiento por cada secuencia de caras de entrada.
     \item Diseñar e implementar el método de \textit{tracking} para agrupar las caras.
-    \item Preparar videos donde se vea el tracking funcionando e implementar mejoras si es necesario.
+    \item Preparar videos donde se vea el \textit{tracking} funcionando e implementar mejoras si es necesario.
 \end{itemize}
+
+\textbf{Duración estimada:} 1 mes
 
 \subsection{T6. Desarrollo del sistema adaptativo}
 Esta enorme tarea abarca todos los pasos desde la comprensión de los conceptos hasta la obtención del nuevo código.
@@ -128,6 +141,8 @@ Esta enorme tarea abarca todos los pasos desde la comprensión de los conceptos 
     \item Implementar los componentes necesarios para incorporar entidades desconocidas (\textit{Open-World}).
 \end{itemize}
 
+\textbf{Duración estimada:} 2 meses
+
 \subsection{T7. Pruebas del sistema adaptativo}
 Esta tarea trata de realizar un estudio acerca de la influencia de los valores entre parámetros en el rendimiento del sistema.
 
@@ -138,7 +153,9 @@ Esta tarea trata de realizar un estudio acerca de la influencia de los valores e
     \item Revisar el código del sistema si este no se comporta según lo esperado.
 \end{itemize}
 
-\subsection{T8. Análisis de dispositivos}
+\textbf{Duración estimada:} 1 mes
+
+\subsection{T8. Análisis de rendimiento}
 En esta tarea se evalúan los dispositivos que pasaron a estar disponibles durante el transcurso del proyecto con el objetivo de establecer comparaciones de rendimiento.
 
 \textbf{Tareas:}
@@ -147,6 +164,8 @@ En esta tarea se evalúan los dispositivos que pasaron a estar disponibles duran
     \item Ejecutar las pruebas y obtener los resultados.
     \item Generar una tabla comparativa entre dispositivos.
 \end{itemize}
+
+\textbf{Duración estimada:} 2 semanas
 
 \subsection{T9. Finalización de la documentación}
 Esta tarea representa la fase final del proyecto en la que se cubren los últimos detalles de la memoria, concretamente los siguientes puntos:
@@ -162,7 +181,17 @@ Esta tarea representa la fase final del proyecto en la que se cubren los último
     \item Revisar bibliografía.
 \end{itemize}
 
-En la figura TODO se muestra el diagrama de Gantt de todas las tareas, con el fin de aportar un apoyo visual.
+\textbf{Duración estimada:} 2 meses
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{imagenes/Gantt.jpg}
+    \caption{Diagrama de Gantt del proyecto}
+    \label{fig:Gantt}
+\end{figure}
+
+
+En la figura \ref{fig:Gantt} se muestra el diagrama de Gantt del proyecto con todas las dependencias entre tareas y su duración. La duración de las tareas se planificó con cierta holgura, de forma que puedan reducir el impacto en tiempo ante posibles imprevistos. Teniendo como objetivo la deposición de este trabajo en febrero, se programó el desarrollo para finalizar en enero, de forma que se dispone de un mes adicional si los objetivos no se logran en el tiempo previsto.
 
 \section{Gestión de riesgos}
 

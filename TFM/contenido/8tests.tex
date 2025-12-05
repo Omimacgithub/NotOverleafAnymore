@@ -10,7 +10,7 @@ Para las pruebas de los modelos de detección, se reproduce el video para que el
 
 Para las pruebas de los modelos de reconocimiento, se guardan como imágenes los recortes de los cuerpos y de las caras de cada individuo en cada frame del video grabado por la cámara. Para cada recorte, se ejecuta el modelo y se compara su predicción con la recogida en el \textit{\gls{dataset}} \cite{andrew}. En la tabla (TODO), .
 
-\subsection{Resultados de modelos}
+\section{Resultados de modelos}
 Todas las \glspl{cnn} de este proyecto utilizan OpenVINO (ver sección \ref{sec:sw}) salvo YuNet, que utiliza el motor de OpenCV (ver sección \ref{sec:sw}) en \gls{cpu}.
 
 Los primeros resultados arrojados en la tabla \ref{tab:equips} muestran que las placas Jetson \textbf{no son capaces de cumplir el objetivo de 10 Hz} usando OpenVINO. Sólo la ejecución de YOLOv8n consume los 100 ms en la Jetson Xavier NX. En cuanto a la Jetson Orin Nano, la suma de la ejecución de las 4 redes supera también los 100 ms.
@@ -25,16 +25,24 @@ NVIDIA consta que con TensorRT, el Speed up de las inferencias aumenta \textbf{3
 
 \input{contenido/tables/tabequips}
 
-\subsection{Resultados en equipos x86}
-
 Afortunadamente, todas las librerías del proyecto cuenta con soporte para ambas arquitecturas x86 y ARM64, por lo que fué prácticamente inmediato el despliegue entre dispositivos mediante Docker (exceptuando pequeños cambios en el código por el cambio de versión de TensorRT y omitir ciertas optimizaciones (ejemplo: flag msse de las CPUs x86)).
 
 Una ventaja de TensorRT es la \textbf{fácil portabilidad del código}, se puede ejecutar un mismo script de inferencia en cualquier equipo que posea una GPU de NVIDIA, siempre que sea posible instalar la misma versión de TensorRT (en caso contrario, es necesario realizar un cambio en el código, aunque este es leve).
 
 En la tabla (TODO) se muestran los resultados obtenidos en 2 equipos x86, comparándolos con la Jetson Orin Nano, el sistema embebido con el que se ha obtenido el mejor rendimiento. En equipos x86, la latencia experimentada  es hasta \textbf{5.3 veces menor} (YOLOv8n) para los modelos ejecutados en CPU y hasta \textbf{4.9 veces menor} (YuNet) para los modelos ejecutados en GPU que la obtenida por la Jetson Orin Nano. Debido a que OpenVINO está pensado para hardware de Intel, las optimizaciones en la Jetson no suponen ninguna mejora, al contrario que en los equipos x86 con una CPU \textbf{Intel i7}. Por otro lado, es sorprendente que también existan diferencias significativas respecto a la Jetson \textbf{cuando se realizan las inferencias en GPU}. La diferencia más notoria es con YuNet en el PC del laboratorio, que poseé una \textbf{GeForce GTX 1650}, que está \textbf{una generación por detrás} de la GPU de la Jetson Orin (las arquitecturas son Turing y Ampere respectivamente) \cite{archs}. Esto implica que, para la carga de trabajo de este proyecto, \textbf{la GPU no es el factor predominante} (TODO: con estos datos puedo sacar esta conclusión?).
 
+TODO: El rendimiento esperado en tiempo real para el sistema son los \textbf{10 Hz} (o 10 FPS), por lo tanto, todos los nodos deben de funcionar a 10 Hz. Las NVIDIA Jetson solo tienen que ocuparse de ejecutar los \textbf{nodos cámara a 10 Hz} y que otro equipo ejecute el nodo LiDAR e integrador del sistema. Que los nodos cámara trabajen a 10 Hz implica que a cada \textbf{100 ms se recibe un nuevo frame} (10 * 100 = 1000 ms = 1 segundo), la figura \ref{fig:cam} muestra el procesado realizado por dicho nodo en cada frame, que debe de finalizar \textbf{antes de que transcurran 100 ms}. En cada iteración del procesado, se ejecutan \textbf{4 redes neuronales (CNN)}. 2 de ellas, YOLOv8n y YuNet, para la detección de cuerpos y de caras respectivamente. Las otras 2, OSNet\_x1 y ArcFace, para el reconocimiento de cuerpos y caras respectivamente. A pesar de lo que la figura \ref{fig:cam} muestra, las redes de detección YOLOv8n y YuNet \textbf{no se ejecutan en paralelo}, lo mismo sucede con las redes ArcFace y OSNet\_x1. Se ha considerado ejecutar en paralelo estas redes. Sin embargo, las limitaciones de memoria principal de la Jetson restringen tomar esta aproximación.
 
-\section{Resultados Open-World}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.75\linewidth]{imagenes/CAM.png}
+    \caption{Componentes del nodo cámara}
+    \label{fig:cam}
+\end{figure}
+
+\section{Resultados del sistema final}
+
+\section{Resultados del sistema adaptativo}
 TODO: En la fase de inicialización de los modelos (o fase de entrenamiento), el sistema guarda la información estadística que representa a cierto modelo. Durante el funcionamiento del sistema, puede ocurrir que los datos que recibe de un individuo registrado varíen respecto a la información de entrenamiento, lo que se conoce como \textbf{concept drift}. Se debe de corregir el concept drift para evitar una pérdida en la precisión de reconocimiento.
 
 TODO: actualización del modelo, añadir nuevas entidades puede corromper la información de las entidades iniciales (catastrophic forgetting).
@@ -47,11 +55,9 @@ TODO: las secuencias de pocos frames (ej: 2) son muy propensas a resultados erro
 
 Para concluir, cuando el sistema no es capaz de reconocer a un individuo con alta confianza y, en cambio, lo denota como desconocido, el mecanismo se vuelve \textbf{contraproducente}. Si una entidad ya conocida se reconoce como desconocida, se crea un nuevo comité de la misma persona, lo que incrementa la duda en el reconocimiento, ya que la distribución de weibull contendrá puntos que representen al propio individuo, indicando que el score de coincidencia no es un caso extremo cuando si debería serlo. La solución más rápida y efectiva es subir el valor de threshold de la probabilidad devuelta por la función de Weibull, aún así, es inevitable que se generen nuevos comités para un mismo individuo, contaminando el sistema rápidamente.
 
-\section{Fuentes de los datos (nuestro dataset combinado con YTF)}
+\subsection{Pruebas de inicialización}
 
-\section{Pruebas del sistema final}
-
-\section{Solapamiento de secuencias: buffering}
+\subsection{Solapamiento de secuencias: buffering}
 
 Supongase un tamaño de secuencia 25 y un offset de 15, la secuencia de frames sería la siguiente:
 
@@ -61,64 +67,49 @@ Supongase un tamaño de secuencia 25 y un offset de 15, la secuencia de frames s
 
 Se pueden almacenar parte de los frames utilizados en un buffer para la siguiente secuencia.
 
-\section{Número de IoI}
-El número de IoI (o de entidades positivas) afecta directamente al reconocimiento mediante Weibull, ya que cuantas más entidades, más puntos definen la distribución, por lo tanto mejor definida está la función. TODO: me da igual o mejores resultados con 6 entidades que con 10.
+\subsection{Número de IoI}
+El número de IoI (o de entidades positivas) afecta directamente al reconocimiento mediante Weibull, ya que cuantas más entidades, más puntos definen la distribución, por lo tanto mejor definida está la función. TODO: se nos quedan cortas estas pruebas (no tenemos suficientes personas).
 
-\section{Número de negativos}
+(Pág 81, TODO:) La calidad de la función RDF viene determinada por el número de puntos que componen la función de Weibull, cuantos más puntos, mayor definición y por tanto reconocimientos más precisos. Con un universo de 20 individuos, sólo 5 puntos componen la función de Weibull (de las 20 entidades sólo 10 se registran en el sistema, a modo de probar el open-set, y de esos 10, la mitad definen la función), lo que lleva a un comportamiento más impreciso que con un universo mayor. El sistema inicial cuenta con un universo de \textbf{6 individuos}, lo que claramente \textbf{es insuficiente} para realizar una diferenciación precisa de los IoI respecto a lo desconocido. Para este proyecto, ha sido necesario ampliar el universo a \textbf{20 personas}, algunas procedentes del CITIC, que se han prestado voluntariamente, otras extraídas del YoutubeFaces \textit{\gls{dataset}}.
+
+\subsection{Número de negativos}
 En la tabla (TODO) se muestra el \textit{F1 score} para 10 y 50 muestras que conforman el conjunto de negativos de entrenamiento (ratios 1:1 y 1:5 si el tamaño del template es 10). Claramente los resultados mejoran al escoger 50 negativos, esto se debe a que en 10 frames cabe un conjunto reducido de entidades a diferencia de 50 frames, sobretodo si se realiza una selección aleatoria como ocurre en este caso.
 
-\section{Umbral de Weibull (TW)}
+\subsection{Umbral de Weibull (TW)}
 Si el valor del umbral de Weibull es bajo, la precisión se mantiene en valores altos, sacrificando el recall, mientras que un valor alto en dicho umbral se traduce en un elevado recall a costa de la precisión. Como ya se ha explicado, el umbral de Weibull representa la probabilidad máxima a la que el mejor score pertenece a la distribución de scores no coincidentes, cuanto más bajo sea el valor, más extrema debe ser la coincidencia para ser reconocida (la precisión aumenta), por lo que la función es más selectiva en el reconocimiento (devuelve un mayor número de desconocidos, reduciendo así el recall). Un valor alto representa justo lo contrario. TODO: parece que un TW alto es mejor siempre, pero tengo que poner los resultados de una prueba con un desconocido de verdad, así muestro el verdadero problema de elevarlo.
 
-\section{Percentiles}
+\subsection{Percentiles}
 Al fusionar los scores de todas las SVM en todos los frames, se obtiene un único score acordado por la mayoría mediante la mediana, siendo esta equivalente al percentil 50. Al variar el percentil, el número de SVM participantes también varía. Un percentil de 100 implica obtener el mayor score, que se corresponde con la peor coincidencia (por ende, el valor de recall es paupérrimo, puesto que se necesita del consenso de todas las SVM del comité para devolver un match). Por otro lado, un percentil de 0 implica recuperar el score más bajo de entre todas las SVM en todos los frames. En este caso también podría darse un bajo recall ya que si por ejemplo se añade una SVM de otra entidad, dicha SVM devolvería un score negativo, por lo que Weibull etiquetaría el reconocimiento como desconocido al haber más de un comité activado (que devuelve un score bajo).
 
 Uno de los objetivos del sistema es obtener la mayor diversidad intra-comité y la mayor especificidad inter-comité. Un \textbf{percentil alto} encajaría si las SVM son \textbf{específicas} entre si (la mayoría de las SVM devuelven match). En cambio, un \textbf{bajo percentil} funcionaría con unas SVM \textbf{más diversas} (se espera que la minoría de las SVM den un resultado coincidente).
 
-\section{Tamaño del comité}
+\subsection{Tamaño del comité}
 En relación con el anterior punto, el número de SVM influye en la decisión de que percentil tomar. Si se utilizan 3 SVM por comité y la mediana, al menos 2 SVM deben de devolver un score bajo para dar un resultado coincidente. Por otro lado, si se utilizan 10 SVM y un percentil de 30, sólo 3 de las 10 SVM necesitan estar de acuerdo para devolver un match.
 
 En los resultados se muestra como un comité de 3 SVM y TW=0.05 destaca respecto a un comité de 1 SVM y TW=0.5. Los resultados utilizando 10 SVM por comité no llegan a mejorar notablemente el valor de 3 SVM, esto es de gran relevancia, puesto que se reduce el número de iteraciones de cada reconocimiento de 10*n a 3*n, siendo n el número de comités que existen y asumiendo que todos los comités han llegado al límite de SVM. Con estos resultados se ha demostrado que implementar varias SVM por comité mejora el recall manteniendo la precisión. 1 sóla SVM por comité es efectiva si dicha SVM es representativa del individuo, en caso contrario puede devolver respuestas coincidentes acerca de una entidad distinta del comité, generando ruido que perjudica a las predicciones de Weibull. Un mayor número de SVM combinado con la mediana devuelve un resultado conforme dicta una mayoría que omite los scores de SVM intrusas (de entidades distintas) y permite expulsarlas mediante los criterios ya comentados en la sección \ref{seq:limmod}.
 
-\section{Tamaño de la plantilla}
+\subsection{Tamaño de la plantilla}
 El tamaño de plantilla es igual al tamaño del conjunto de positivos para una entidad, cuantas más muestras conformen dicho conjunto, mejores predicciones realizará la SVM asociada. En la tabla (TODO) se puede ver que el mejor resultado ha sido con un tamaño de plantilla de 10 frames. Los resultados con 5 frames son ligeramente peores (79.7 frente a 76.5), lo que demuestra la robustez del sistema ante dicho número escaso de muestras para un individuo.
 
-\section{Tamaño de secuencia}
+\subsection{Tamaño de secuencia}
 En la tabla (TODO) se muestran 3 valores diferentes de este parámetro. Como es de esperar, los mejores resultados coinciden con el mayor tamaño (25), puesto que se dispone de una mayor cantidad de información que apoye al reconocimiento. Los resultados con una secuencia de 15 frames caen levemente, un menor tamaño de secuencia hace que el sistema funcione a una mayor frecuencia (devuelva más reconocimientos en el mismo tiempo), concretamente a cada 1,5 segundos con dicho tamaño de secuencia asumiendo que las cámaras funcionan a 10 Hz (capturan una imagen cada 100 ms).
 
-\section{Solapamiento}
+\subsection{Solapamiento}
 El solapamiento entre secuencias puede causar que las SVM sean más específicas, ya que se da lugar a un mayor número de SVM parecidas entre sí (con un solapamiento de 5 y un tamaño de secuencia de 25, se comparten 20 frames entre secuencias y por ende entre las SVM). Con un número reducido o nulo de frames compartidos, el comité tiende a generalizar mejor, lo que es un factor crítico para la precisión y el recall.
 
 Según los resultados arrojados (TODO), ninguno de los solapamientos utilizados indica una variación significativa en los resultados.
 
-\section{Inicialización del sistema}
+\subsection{Inicialización del sistema}
 La selección de los frames que conforman un nuevo comité es un factor crítico para el correcto funcionamiento del sistema. En la tabla (TODO) se comparan 2 técnicas de inicialización, una semi-supervisada (los frames se escogen manualmente y el comité se actualiza de forma autónoma) y la otra no supervisada (se escogen los frames en el momento que aparecen varias personas en escena para diferenciarlas).
 
-\section{Criterio de selección de frames para nuevas SVM}
+\subsection{Criterio de selección de frames para nuevas SVM}
 También es muy importante la selección de las muestras que conforman las SVM, en la tabla (TODO) se muestran 2 criterios para la selección, uno consiste en seleccionar los frames con los scores más cercanos al cero, mientras que el otro es una selección aleatoria. El primer criterio demuestra un aumento en el F1 score, dado que los frames cercanos al cero son los más complicados de reconocer, de esta forma la SVM amplía sus fronteras respecto a lo que ya reconoce. A la hora de crear una SVM de un nuevo comité en el modo open-world, no queda otra alternativa que realizar una selección aleatoria.
 
-\section{Criterio de favorabilidad}
+\subsection{Criterio de favorabilidad}
 
 En la tabla (TODO) se muestra el efecto de dicho criterio a la hora de eliminar las SVM respecto a un criterio de eliminación aleatorio. Este ...
 
-\section{Creación de nuevos comités}
+\subsection{Creación de nuevos comités}
 En el modo Open-World, el sistema crea un nuevo comité cuando se reconoce a una nueva entidad en el sistema. Sin embargo, debido a las predicciones incorrectas del método, puede ocurrir que se creen nuevos comités para un individuo ya registrado. Estos nuevos comités pueden desplazar a los comités originales adueñándose de su identidad.
 
 El número de comités redundantes creados varía conforme al umbral de Weibull. Cuanto menor sea el valor, más comités redundantes se crearán debido a que la incertidumbre del método aumenta.
-
-\section{Open-set runtime}
-
-
-\section{Open-world selected}
-
-
-\subsection{Caso concreto:}
-global  99  73  14      57.6   87.6     69.5
-
-num ensembles: 15
-svm of each ensemble: [('jose', 1), ('carlos', 1), ('martin', 1), ('omi', 1), ('rayas', 1), ('andres', 1), ('botella', 1), ('azul', 1), ('javi', 1), ('gris', 1), ('user10', 1), ('user11', 1), ('user12', 1), ('user13', 1), ('user14', 1)]
-
-\section{Open-world runtime}
-
-
- (Pág 81, TODO:) La calidad de la función RDF viene determinada por el número de puntos que componen la función de Weibull, cuantos más puntos, mayor definición y por tanto reconocimientos más precisos. Con un universo de 20 individuos, sólo 5 puntos componen la función de Weibull (de las 20 entidades sólo 10 se registran en el sistema, a modo de probar el open-set, y de esos 10, la mitad definen la función), lo que lleva a un comportamiento más impreciso que con un universo mayor. El sistema inicial cuenta con un universo de \textbf{6 individuos}, lo que claramente \textbf{es insuficiente} para realizar una diferenciación precisa de los IoI respecto a lo desconocido. Para este proyecto, ha sido necesario ampliar el universo a \textbf{20 personas}, algunas procedentes del CITIC, que se han prestado voluntariamente, otras extraídas del YoutubeFaces \textit{\gls{dataset}}.

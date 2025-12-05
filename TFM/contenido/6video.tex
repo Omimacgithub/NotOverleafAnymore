@@ -1,0 +1,19 @@
+\chapter{Procesamiento de videos}
+\label{chap:video}
+\lettrine{E}{n} este capítulo se expone la arquitectura que se va a ejecutar en las pruebas.
+
+El sistema expuesto trabaja a nivel de frame, lo que otorga sencillez y una elevada frecuencia, pero al mismo tiempo un alto coste computacional y una no muy alta confianza (el reconocimiento depende enteramente del frame capturado). En este proyecto se ha optado por trabajar con \textbf{secuencias de frames}, de manera que se exprimen las capacidades de la GPU para trabajar por lotes (conjuntos de frames) y se otorgan mejores reconocimientos (basados en múltiples frames). El funcionamiento de esta técnica se muestra en la figura (TODO), se escoge un tamaño de secuencia (15 o 25 en las pruebas realizadas) y se extraen los frames. En cada frame, puede haber entre 0 y n entidades, como no se conoce la identidad de cada individuo en este punto, es necesario realizar un \textbf{rastreo} (tracking) de las entidades en cada uno de los frames. El tracking implementado calcula una matriz de costes entre las detecciones de un frame y el frame posterior, cada coste representa un valor de solape entre \glspl{bbox}, cuanto menor mayor es el solape, finalmente, se realiza una asignación óptima entre detecciones mediante el \textbf{método húngaro} (como se plantea en \cite{Hungarian}).
+
+\section{Reidentificación de entidades}
+Es posible que durante la detección de individuos, las \glspl{bbox} de una misma persona en frames consecutivos no se solapen, debido a la velocidad de movimiento del individuo por ejemplo. En este caso, existe el riesgo de que el método húngaro asocie incorrectamente la identificación a otra persona a la que le ocurre esta misma situación. Otro problema es el no seguimiento de la persona cuando esta se encuentra totalmente ocluida (ejemplo: se cruza un individuo justo delante) y vuelve a aparecer.
+
+A partir del método de tracking propuesto no es posible recuperar el rastro de las entidades que desaparecieron de forma intermitente. Para resolver este problema se ha optado por calcular la distancia euclidiana entre la última \gls{bbox} del individuo en cuestión y la \gls{bbox} de una nueva detección, si la distancia entre ellas es menor a un umbral, se reasigna la detección al individuo.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{imagenes/Seq.jpg}
+    \caption{Funcionamiento de la secuenciación, como salida se obtiene una lista de frames agrupados por entidad}
+    \label{fig:Seq}
+\end{figure}
+
+\section{Coherencia entre múltiples cámaras}

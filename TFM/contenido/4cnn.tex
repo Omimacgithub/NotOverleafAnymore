@@ -1,0 +1,26 @@
+\chapter{Optimización de inferencias de las redes neuronales convolucionales}
+\label{chap:cnn}
+
+\lettrine{E}{n} este capítulo
+
+En el campo de TinyML ya se han analizado varios modelos \cite{MITTAL2019428, rahmaniar2021real} y propuesto múltiples optimizaciones \cite{MITTAL2019428} para sistemas NVIDIA Jetson. Para lograr la ejecución eficiente de modelos en los dispositivos Jetson de este proyecto, se ha optado por utilizar el software \textbf{TensorRT}. Dicho software se aplica para la conversión de modelos en formato ONNX (previamente transformados de frameworks como TensorFlow y PyTorch) al formato optimizado de TensorRT y para ejecutar inferencias.
+
+TODO: El procedimiento sigue el tutorial proporcionado por NVIDIA \cite{tutos}, en esta sección se tratará por partes de forma detallada.
+
+\section{Conversión a ONNX}
+
+Los modelos del proyecto se encuentran en diferentes formatos, existen integraciones para utilizar los modelos directamente de TensorFlow y de PyTorch. Sin embargo, se ha optado por usar exclusivamente el formato ONNX. Su principal desventaja frente a otros formatos son la incompatibilidad de ciertas capas de redes neuronales, se ha tenido. En cambio, es la solución que otorga el mayor rendimiento. Según el formato se han aplicado las siguientes herramientas en la exportación:
+
+\begin{itemize}
+    \item \textbf{PyTorch}: la API de Python ya proporciona una herramienta (torch.onnx.export).
+    \item \textbf{TensorFlow}: se usa la librería de Python \textbf{tf2onnx}.
+\end{itemize}
+
+\section{Conversión a TensorRT engine}
+TODO: El formato (.trt o .engine)
+
+
+\section{Características de los modelos}
+Hablar de los 4 modelos que usamos
+
+\section{Códigos de inferencia}

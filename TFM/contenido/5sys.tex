@@ -1,0 +1,29 @@
+\chapter{Sistema final}
+\label{chap:finalsys}
+\lettrine{E}{n} este capítulo se expone la arquitectura que se va a ejecutar en las pruebas.
+
+\section{Arquitectura del sistema}
+\label{sec:sysarch}
+
+El sistema de este proyecto \cite{andrew} posee la capacidad de fusionar diferentes fuentes de datos para otorgar un único resultado de reconocimiento para cada persona detectada. Los nodos que componen la arquitectura se detallan a continuación y se muestran en la figura \ref{fig:ANDRES}:
+
+\begin{itemize}
+    \item \textbf{Nodo cámara}: recibe como fuente los datos de una cámara \textbf{\acrshort{rgbd}} y se encarga de detectar, reconocer y obtener la posición \gls{3d} de las personas que aparecen en la imagen.
+    \item \textbf{Nodo \gls{lidar}}: recibe los datos de un sensor \gls{lidar} (nube de puntos \gls{3d}) y se encarga de detectar y obtener la posición \gls{3d} de las personas del mapa (no se ha implementado el reconocimiento).
+    \item \textbf{Nodo integrador de sensores}: fusiona los datos de los 2 nodos anteriores. La función de este nodo es el seguimiento de las personas reconocidas, más allá de lo que la cobertura de las cámaras ofrece (para un Kinect de la Xbox 360 son 57º).
+\end{itemize}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{imagenes/SYSARCH.png}
+    \caption{Arquitectura general del sistema (figura extraída de \cite{andrew})}
+    \label{fig:ANDRES}
+\end{figure}
+
+\section{Escalabilidad y tolerancia a fallos de las cámaras}
+TODO: con el sistema inicial, solo se podían ejecutar 2 cámaras y tenían que funcionar las 2 a la vez. Por estas razones, se ha reemplazado la solución del \textit{ApproximateTimeSynchronizer} implementada en \cite{andrew} por la clase \textit{MessageFiltersCache}.
+
+\section{Migración a ROS 2}
+\label{subsec:ROS2}
+
+Con el motivo del fin de soporte de ROS 1 \cite{ROSEOL}, se ha optado por migrar el sistema para ser ejecutado en ROS 2 con el fin de mantener su continuidad. Se han migrado los nodos cámara e integrador, la migración del nodo \gls{lidar} requeriría actualizar el código a una versión soportada para Ubuntu 22.04 de la librería pcl, entre otros detalles que llevarían a rediseñar casi todo el código. TODO: Se probaron diferentes alternativas como RoboStack
