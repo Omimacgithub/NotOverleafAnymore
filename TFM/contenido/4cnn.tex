@@ -1,26 +1,47 @@
 \chapter{Optimización de inferencias de las redes neuronales convolucionales}
 \label{chap:cnn}
 
-\lettrine{E}{n} este capítulo
+\lettrine{E}{n} este capítulo se detalla brevemente la elección de la NVIDIA Jetson para este proyecto y el procedimiento para optimizar el rendimiento de las inferencias de las \gls{cnn} utilizadas.
 
-En el campo de TinyML ya se han analizado varios modelos \cite{MITTAL2019428, rahmaniar2021real} y propuesto múltiples optimizaciones \cite{MITTAL2019428} para sistemas NVIDIA Jetson. Para lograr la ejecución eficiente de modelos en los dispositivos Jetson de este proyecto, se ha optado por utilizar el software \textbf{TensorRT}. Dicho software se aplica para la conversión de modelos en formato ONNX (previamente transformados de frameworks como TensorFlow y PyTorch) al formato optimizado de TensorRT y para ejecutar inferencias.
+\section{Introducción}
 
-TODO: El procedimiento sigue el tutorial proporcionado por NVIDIA \cite{tutos}, en esta sección se tratará por partes de forma detallada.
+A la hora de diseñar aceleradores hardware para aplicaciones de redes neuronales es necesario mantener el balance entre precisión, rendimiento y bajo consumo. La NVIDIA Jetson es una familia de sistemas embebidos que persigue maximizar dicho balance \cite{MITTAL2019428}. Un claro ejemplo es el uso de la Jetson TX2 en aplicaciones como el reconocimiento facial para el procesamiento de videos en resolución Full HD (1080p) \cite{qi2018iot} o la detección de personas con cámaras \gls{rgb} en resolución HD (720p) \cite{rahmaniar2021real}, ambos casos de uso han reportado un rendimiento satisfactorio en tiempo real.
 
-\section{Conversión a ONNX}
+Entre las múltiples técnicas y herramientas que existen \cite{MITTAL2019428}, se ha decantado principalmente por usar TensorRT. Este ecosistema de herramientas permite la optimización de redes neuronales \cite{rahmaniar2021real}, logrando así la ejecución de múltiples aplicaciones en tiempo real. NVIDIA dispone dicho software para una gran variedad de sus \glspl{gpu} y dispositivos Jetson, además de tutoriales para múltiples aplicaciones de \gls{ia} \cite{x36}.
 
-Los modelos del proyecto se encuentran en diferentes formatos, existen integraciones para utilizar los modelos directamente de TensorFlow y de PyTorch. Sin embargo, se ha optado por usar exclusivamente el formato ONNX. Su principal desventaja frente a otros formatos son la incompatibilidad de ciertas capas de redes neuronales, se ha tenido. En cambio, es la solución que otorga el mayor rendimiento. Según el formato se han aplicado las siguientes herramientas en la exportación:
+\section{Procedimiento}
+
+A continuación, se explican los pasos seguidos que permitieron obtener los resultados de la sección \ref{sec:modelic}. Los pasos se siguen como en \cite{tutos}.
+
+\subsection{Conversión a ONNX}
+
+Los modelos del proyecto se encuentran en diferentes formatos, existen integraciones para utilizar los modelos directamente de TensorFlow y de PyTorch. Sin embargo, se ha optado por usar exclusivamente el formato \gls{onnx}. Su principal desventaja frente a otros formatos son la incompatibilidad de ciertas capas de redes neuronales. En cambio, es la solución que otorga el mayor rendimiento. Según el formato se han aplicado las siguientes herramientas en la exportación:
 
 \begin{itemize}
     \item \textbf{PyTorch}: la API de Python ya proporciona una herramienta (torch.onnx.export).
     \item \textbf{TensorFlow}: se usa la librería de Python \textbf{tf2onnx}.
 \end{itemize}
 
-\section{Conversión a TensorRT engine}
-TODO: El formato (.trt o .engine)
+\subsection{Conversión a TensorRT engine}
+Los archivos \textit{engine} de TensorRT (extensión .trt o .engine) representan los modelos finales optimizados por dicha herramienta. El proceso de conversión se puede realizar a través de la API de Python o C++ o mediante el ejecutable \textit{trtexec}, que además devuelve resultados del \gls{profiling} de los modelos, en \ref{coud:trtlatencies} se muestra un ejemplo. Según la distribución del software,  el ejecutable \textit{trtexec} se encuentra en rutas distintas o ni siquiera se encuentra instalado, por lo que una forma más cómoda y general es usar la API.
 
+\input{contenido/codes/trtlatencies.tex}
 
-\section{Características de los modelos}
+\input{contenido/codes/trtshapes.tex}
+
+En \ref{coud:trtshapes} se muestran las características de un modelo transformado en un \textit{engine} de TensorRT. La aparición de un -1 en la primera dimensión de los tensores indica que el modelo soporta \textit{\glspl{batch}} de tamaño dinámico.
+
+\subsection{Códigos de inferencia}
+
+El último paso es emplear los modelos obtenidos. La estructura de los códigos parte de los ya creados en \cite{andrew} para los modelos de este proyecto, salvo por el paso de transferir el trabajo a la \gls{gpu}. PyCUDA ofrece una API que facilita gran parte de la interacción con CUDA, aun así, se necesita gestionar en el código temas como la creación de contextos y reserva de la memoria.
+
+TODO: comentar el código.
+
+\subsection{Características de los modelos}
 Hablar de los 4 modelos que usamos
 
-\section{Códigos de inferencia}
+\subsection{Compilación de OpenCV con soporte para CUDA}
+
+En \cite{andrew} se utiliza una versión del modelo YuNet otorgada por la librería OpenCV, esta versión abstrae al programador de implementar las fases de pre y postprocesado de dicho modelo, que para este caso resultan muy complejas de implementar. Como ya se comentó en la sección \ref{sec:sw}, OpenCV dispone de soporte para CUDA, aunque es necesario compilar el programa desde el fuente. El proceso de compilación seguido es el mismo que en \cite{OpenCVCUDA}.
+
+TODO: algo más.

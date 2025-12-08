@@ -1,0 +1,144 @@
+\begin{lstlisting}[language=Python, caption=Recognition Decision Function]
+import config
+import cv2
+import numpy as np
+import tensorrt as trt
+import pycuda.driver as cuda
+
+from models.BaseDetectionModel import BasePersonDetectionModel
+from ultralytics.data.augment import LetterBox
+
+NMS_THRESHOLD = 0.45
+NMS_ETA = 0.5
+BATCH_SIZE = 1
+ifp = np.float32
+ofp = np.float32
+size = 640
+osize = 8400
+features = 84
+isversion10 = trt.__version__.startswith('10')
+std = [0.229, 0.224, 0.225]
+mean = [0.485, 0.456, 0.406]
+
+class YOLOv11_Optimized(BasePersonDetectionModel):
+
+    def __init__(self, cuda_ctx):
+        super().__init__()
+        self.ctx = cuda_ctx
+        self.ctx.push()
+        f = open(str(config._SRC_ / 'models/trt/model_savers/yolo11n.engine'), "rb")
+        runtime = trt.Runtime(trt.Logger(trt.Logger.WARNING)) 
+        self.engine = runtime.deserialize_cuda_engine(f.read())
+        self.context = self.engine.create_execution_context()
+
+        # Pre-allocate GPU memory using memory pool
+        self.stream = cuda.Stream()
+        #Input - Name: images, Dtype: DataType.FLOAT, Shape: (1, 3, 640, 640)
+        #Output - Name: output0, Dtype: DataType.FLOAT, Shape: (1, 84, 8400)
+
+        #TensorIOMode.INPUT - Name: images, Dtype: DataType.FLOAT, Shape: (1, 3, 320, 320)
+        #TensorIOMode.OUTPUT - Name: output0, Dtype: DataType.FLOAT, Shape: (1, 84, 3549)
+
+        self.input_size = BATCH_SIZE * 3 * size * size * ifp().itemsize
+        self.output_size = BATCH_SIZE * features * osize * ofp().itemsize
+
+        self.d_input = cuda.mem_alloc(self.input_size)
+        self.d_output = cuda.mem_alloc(self.output_size)
+
+        self.bindings = [int(self.d_input), int(self.d_output)]
+
+        if isversion10:
+          for binding in range(1):
+            tensor_name = self.engine.get_tensor_name(binding)
+            self.context.set_input_shape(tensor_name, (1,3,size,size))
+
+        self.ctx.pop()
+
+    def get_params(self):
+        return {'YOLOV8_CONF_THRESHOLD': config.YOLOV8_CONF_THRESHOLD}
+
+    def set_size(self, height, width):
+        super().set_size(height, width, square_size=size)
+
+    def infer(self, frame):
+      self.ctx.push()
+      try:
+        outputs = np.empty([BATCH_SIZE, features, osize], dtype=ofp)
+        #frame = self.scale_frame(frame, mode='border')
+        lb = LetterBox(new_shape=(640,640), auto=False, scale_fill=False, center=False, scaleup=False, stride=32)
+        frame = lb(image=frame)
+        
+        '''
+        # The model was not trained for this
+        #meantensor = np.array(mean, dtype=np.float32).reshape(1,3,1,1)
+        #stdtensor = np.array(std, dtype=np.float32).reshape(1,3,1,1)
+        #frame = (frame - meantensor) / stdtensor
+        '''
+        frame = cv2.dnn.blobFromImage(frame, scalefactor=1 / 255., size=(size, size), swapRB=True)
+        '''
+        cv2.imwrite("ultralytics.png", frame[0].transpose((1, 2, 0)))
+        cv2.imshow("imagen", frame[0].transpose((1, 2, 0)))
+        cv2.waitKey(0)
+        '''
+        # Transfer input data to device
+        cuda.memcpy_htod_async(self.d_input, frame.astype(ifp), self.stream)
+
+        if isversion10:
+          for i in range(self.engine.num_io_tensors):
+            self.context.set_tensor_address(self.engine.get_tensor_name(i), self.bindings[i])
+
+        # Execute model
+        if isversion10:
+          self.context.execute_async_v3(self.stream.handle)
+        else:
+          self.context.execute_async_v2(self.bindings, self.stream.handle, None)
+
+        # Transfer predictions back
+        cuda.memcpy_dtoh_async(outputs, self.d_output, self.stream)
+
+        # Synchronize threads
+        self.stream.synchronize()
+
+        outputs = cv2.transpose(outputs[0])
+        objectness = outputs[:, 4]
+        # Check if YOLOv8 is confident enough that there's no object
+        mask = objectness > config.YOLOV8_CONF_THRESHOLD
+        filtered_outputs = outputs[mask]
+
+        class_scores = filtered_outputs[:, 4:]
+        max_scores = class_scores.max(axis=1)
+        max_classes = class_scores.argmax(axis=1)
+
+        #class 0 its a human
+        person_mask = (max_scores >= config.YOLOV8_CONF_THRESHOLD) & (max_classes == 0)
+        final_outputs = filtered_outputs[person_mask]
+        final_scores = max_scores[person_mask]
+
+        x_center, y_center, width, height = (
+            final_outputs[:, 0], final_outputs[:, 1],
+            final_outputs[:, 2], final_outputs[:, 3]
+        )
+        x0 = x_center - 0.5 * width
+        y0 = y_center - 0.5 * height
+        boxes = np.stack([x0, y0, width, height], axis=1)
+
+        result_boxes = cv2.dnn.NMSBoxes(boxes.tolist(), final_scores.tolist(), config.YOLOV8_CONF_THRESHOLD, NMS_THRESHOLD, NMS_ETA)
+
+        people = []
+        for index in result_boxes:
+            bbox = boxes[index]
+            people.append(
+                self.scale_result({
+                    'x0': bbox[0],
+                    'x1': bbox[0] + bbox[2],
+                    'y0': bbox[1], # - 50 forced bbox height for face detection in YOLOv8n for 320x320 images
+                    'y1': bbox[1] + bbox[3],
+                    'conf': final_scores[index]
+                }))
+            #print("conf: ", final_scores[index])
+        return people
+      finally:
+        self.ctx.pop()
+
+\end{lstlisting}
+\label{coud:yolo11}

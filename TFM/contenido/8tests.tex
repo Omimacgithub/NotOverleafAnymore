@@ -11,6 +11,8 @@ Para las pruebas de los modelos de detección, se reproduce el video para que el
 Para las pruebas de los modelos de reconocimiento, se guardan como imágenes los recortes de los cuerpos y de las caras de cada individuo en cada frame del video grabado por la cámara. Para cada recorte, se ejecuta el modelo y se compara su predicción con la recogida en el \textit{\gls{dataset}} \cite{andrew}. En la tabla (TODO), .
 
 \section{Resultados de modelos}
+\label{sec:modelic}
+
 Todas las \glspl{cnn} de este proyecto utilizan OpenVINO (ver sección \ref{sec:sw}) salvo YuNet, que utiliza el motor de OpenCV (ver sección \ref{sec:sw}) en \gls{cpu}.
 
 Los primeros resultados arrojados en la tabla \ref{tab:equips} muestran que las placas Jetson \textbf{no son capaces de cumplir el objetivo de 10 Hz} usando OpenVINO. Sólo la ejecución de YOLOv8n consume los 100 ms en la Jetson Xavier NX. En cuanto a la Jetson Orin Nano, la suma de la ejecución de las 4 redes supera también los 100 ms.

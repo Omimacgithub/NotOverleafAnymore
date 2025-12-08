@@ -1,0 +1,14 @@
+\begin{lstlisting}[language=C, caption=Profiling del rendimiento del modelo convertido por trtexec]
+[05/13/2025-07:09:52] [I] === Performance summary ===
+[05/13/2025-07:09:52] [I] Throughput: 67.8587 qps
+[05/13/2025-07:09:52] [I] Latency: min = 15.1562 ms, max = 18.6172 ms, mean = 15.301 ms, median = 15.213 ms, percentile(90%) = 15.2698 ms, percentile(95%) = 15.2979 ms, percentile(99%) = 18.1016 ms
+[05/13/2025-07:09:52] [I] Enqueue Time: min = 1.88477 ms, max = 5.98425 ms, mean = 2.46105 ms, median = 2.22729 ms, percentile(90%) = 3.28998 ms, percentile(95%) = 3.37988 ms, percentile(99%) = 3.96179 ms
+[05/13/2025-07:09:52] [I] H2D Latency: min = 0.359985 ms, max = 0.486572 ms, mean = 0.373067 ms, median = 0.367676 ms, percentile(90%) = 0.390869 ms, percentile(95%) = 0.406433 ms, percentile(99%) = 0.42334 ms
+[05/13/2025-07:09:52] [I] GPU Compute Time: min = 14.5267 ms, max = 17.9856 ms, mean = 14.6654 ms, median = 14.5812 ms, percentile(90%) = 14.6301 ms, percentile(95%) = 14.6594 ms, percentile(99%) = 17.4705 ms
+[05/13/2025-07:09:52] [I] D2H Latency: min = 0.202148 ms, max = 0.267578 ms, mean = 0.262522 ms, median = 0.262817 ms, percentile(90%) = 0.265137 ms, percentile(95%) = 0.265869 ms, percentile(99%) = 0.266602 ms
+[05/13/2025-07:09:52] [I] Total Host Walltime: 3.03572 s
+[05/13/2025-07:09:52] [I] Total GPU Compute Time: 3.02107 s
+[05/13/2025-07:09:52] [W] * GPU compute time is unstable, with coefficient of variance = 3.00697%.
+[05/13/2025-07:09:52] [W]   If not already in use, locking GPU clock frequency or adding --useSpinWait may improve the stability.
+\end{lstlisting}
+\label{coud:trtlatencies}
