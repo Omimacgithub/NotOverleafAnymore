@@ -1,5 +1,3 @@
-%!TEX program = xelatex
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Preámbulo                                                                    %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -24,15 +22,11 @@
 % Cuerpo                                                                      %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\usepackage[acronym]{glossaries}
-\usepackage{glossaries}
+%\usepackage[acronym]{glossaries}
+%\usepackage{glossaries}
 
-\input{bibliografia/glosario.tex}
-\input{bibliografia/acronimos.tex}
-
-\makeglossaries
-
-\setacronymstyle{long-short}
+%\input{bibliografia/glosario.tex}
+%\input{bibliografia/acronimos.tex}
 
 \begin{document}
 
@@ -79,17 +73,19 @@
 \include{anexos/anexos}
 %\include{anexos/...}
 
-%\include{bibliografia/acronimos}
-%\include{bibliografia/glosario}
-\printglossary[title={Glossary}, type=main]
-\printglossary[title={Acronyms}, type=\acronymtype]
+%\printglossary[title={Glossary}, type=main]
+%\printglossary[title={Acronyms}, type=\acronymtype]
 
-%\printglossary
-%\printglossary[type=\acronymtype]
+%\bibliographystyle{IEEEtranN}
+%\bibliography{bibliografia/bibliografia}
+%\cleardoublepage
+
+\printglossary[type=\acronymtype,title=Relación de Acrónimos]
+\printglossary[title=Glosario]
 
 \bibliographystyle{IEEEtranN}
 \bibliography{bibliografia/bibliografia}
-\cleardoublepage
+\clearpage
 
 \end{document}
 

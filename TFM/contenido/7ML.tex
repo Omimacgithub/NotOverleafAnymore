@@ -29,7 +29,7 @@ El sistema se estructura como muestra la figura \ref{fig:FACESYS}.
 \end{figure}
 
 \section{Implementación}
-A partir de los mecanismos expuestos en la sección \ref{subseq:secuenciation} se extraen las secuencias de frames que servirán como entrada del pipeline visto en la sección \ref{subsec:adaptarch} y que se expone en detalle a continuación. La mayoría de los componentes se han implementado basándose en \cite{Erik} TODO: como menciono también a César?.
+A partir de los mecanismos expuestos en el capítulo \ref{chap:video} se extraen las secuencias de frames que servirán como entrada del pipeline visto en la sección \ref{subsec:adaptarch} y que se expone en detalle a continuación. La mayoría de los componentes se han implementado basándose en \cite{Erik} TODO: como menciono también a César?.
 
 \subsection{Inicialización}
 
@@ -39,7 +39,7 @@ La primera fase del sistema y sin lugar a dudas la más crítica. En este proyec
     \item \textbf{No supervisado}: el sistema recoge los frames cuando aparecen un mínimo de 5 entidades simultaneas en escena (el mínimo necesario de puntos para poder aplicar Weibull). A partir de los frames de las cámaras, que estarán sincronizadas, se obtienen las \glspl{bbox} que encierran los rostros y se procede a la creación de los comités con los recortes de caras generados. \textbf{No se requiere de ninguna intervención del operador}, el sistema realiza la selección en base a unos criterios preestablecidos (ejemplo: la cara debe estar completamente dentro del rango de la cámara). En esta aproximación, es crucial el método de seguimiento (tracking) para recolectar las secuencias de caras.
 \end{itemize}
 
-Independientemente de la aproximación escogida, se obtienen las características de cada frame de la secuencia y se crea la SVM inicial con la que se \textbf{inicializa el comité}. Dicha SVM se entrena con las características del usuario, que compondrá el set positivo, y un subconjunto de las características del resto de usuarios, que compondrá el set de negativos (escogidas aleatoriamente). Dichas características son generadas por el modelo ArcFace \cite{deng2019arcface}, es la misma red que se utiliza en \cite{Erik, andrew} y que ha demostrado ser de las mejores en el \acrshort{sota} del reconocimiento facial.
+Independientemente de la aproximación escogida, se obtienen las características de cada frame de la secuencia y se crea la \acrshort{svm} inicial con la que se \textbf{inicializa el comité}. Dicha \acrshort{svm} se entrena con las características del usuario, que compondrá el set positivo, y un subconjunto de las características del resto de usuarios, que compondrá el set de negativos (escogidas aleatoriamente). Dichas características son generadas por el modelo ArcFace \cite{deng2019arcface}, es la misma red que se utiliza en \cite{Erik, andrew} y que ha demostrado ser de las mejores en el \acrshort{sota} del reconocimiento facial.
 
 La SVM inicial es la que define la identidad del comité. Si dicha SVM está compuesta por recortes de caras de baja calidad (ejemplo: borrosas o parcialmente ocluidas), entonces el comité \textbf{no estará bien definido} y, por lo tanto, generará \textbf{mayor confusión} a la hora de aplicar Weibull para los reconocimientos.
 
