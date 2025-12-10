@@ -2,19 +2,49 @@
 \label{chap:video}
 \lettrine{E}{n} este capítulo se comenta todo el trabajo relacionado con la extracción de caras en secuencias de video.
 
-El sistema actual trabaja a nivel de frame \cite{andrew}, es decir, devuelve reconocimientos de los individuos presentes en un frame. Esta aproximación permite trabajar a altas frecuencias, sin embargo, las predicciones dependen enteramente de la calidad del frame (ejemplo: nivel de borrosidad). En este proyecto se ha optado por trabajar con \textbf{secuencias de frames}, de esta forma, se devuelve un reconocimiento más robusto, aunque hace que el sistema trabaje a una menor frecuencia.
+El sistema actual trabaja a nivel de frame \cite{andrew}, es decir, devuelve reconocimientos de los individuos presentes en un frame. Esta aproximación permite trabajar a altas frecuencias, sin embargo, las predicciones dependen enteramente de la calidad del frame (ejemplo: nivel de borrosidad). En este proyecto se ha optado por trabajar con \textbf{secuencias de video}, de esta forma, se devuelve un reconocimiento más robusto. Simplemente consiste en procesar un conjunto de frames en un intervalo de tiempo, dicho intervalo de tiempo es ajustable según las necesidades del operador (ejemplo: intervalo de 1 segundo). De los frames del intervalo, se extraen los rostros presentes a partir de un modelo de detección de caras (en este caso YuNet) y se agrupan por cada individuo a lo largo del intervalo, de modo que los frames que no contienen caras \textbf{se descartan}.
 
 \section{Seguimiento de caras}
 En casos como los del \textit{\gls{dataset}} FACE COX \cite{cox}, donde en los videos siempre aparece una sola persona, la agrupación de las caras es trivial (se sabe que todas pertenecen a la misma persona). Sin embargo, en un video donde aparecen múltiples individuos que se entrecruzan, es necesario adoptar un método para seguir el rastro de cada individuo entre frames.
 
-El \textbf{método húngaro} es un algoritmo que resuelve el problema de la asignación óptima. Dada una matriz de costes en el que cada fila establece una correlación con cada columna, dicho algoritmo buscará la \textbf{asignación óptima}, es decir, de menor coste entre elementos, en este caso, dos frames adyacentes \cite{Hungarian}. La figura \ref{fig:Seq} muestra un ejemplo de funcionamiento del método, en cada frame, se aplica el modelo de detección de caras (YuNet) y se generan las \glspl{bbox}
+El \textbf{método húngaro} es un algoritmo que resuelve el problema de la asignación óptima. Dada una matriz de costes en el que cada fila establece una correlación con cada columna, dicho algoritmo buscará la \textbf{asignación óptima}, es decir, de menor coste entre elementos, en este caso, dos frames adyacentes \cite{Hungarian}. La figura \ref{fig:Seq} muestra un ejemplo de funcionamiento del método, que consiste en lo siguiente. Se aplica el modelo de detección de caras (YuNet) y se generan las \glspl{bbox} del \textbf{frame actual y del siguiente}. Posteriormente, se genera la matriz de costes, donde los rostros del frame actual se encuentran en las filas y los rostros del frame posterior en las columnas. Para cada par de rostros de la matriz, se calcula el \textbf{\acrfull{iou}} \cite{iou}, esta métrica devuelve el porcentaje de solapamiento y similitud entre \glspl{bbox}, de forma que recortes de rostros de diferente tamaño (cuando más cerca esté el rostro de la cámara, más grande será el recorte) den un valor bajo al solaparse (ejemplo: personas que coinciden en la imagen en diferentes distancias). Dadas dos \glspl{bbox} A y B, el \acrshort{iou} se calcula como sigue \ref{eq:iou}. Ya que el método húngaro busca las relaciones de menor coste, es necesario restar el valor obtenido por uno. Tras repetir el método en todos los frames de la secuencia, se agrupan los rostros de cada individuo según el rastro generado por el algoritmo.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{imagenes/iou.png}
+    \caption{Intersection over Union, imagen extraída de \cite{iou}}
+    \label{fig:iou}
+\end{figure}
+
+\[ IoU = \frac{A \cap B}{A \cup B} \]
+\captionof{figure}{Cálculo del \acrshort{iou}}
+\label{eq:iou}
 
 \section{Reidentificación de entidades}
-Es posible que durante la detección de individuos, las \glspl{bbox} de una misma persona en frames consecutivos no se solapen, debido a la velocidad de movimiento del individuo por ejemplo. En este caso, existe el riesgo de que el método húngaro asocie incorrectamente la identificación a otra persona a la que le ocurre esta misma situación. Otro problema es el no seguimiento de la persona cuando esta se encuentra totalmente ocluida (ejemplo: se cruza un individuo justo delante) y vuelve a aparecer.
+Es posible que durante la detección de caras, las \glspl{bbox} de una misma persona en frames consecutivos no se solapen debido a la velocidad de movimiento de la propia persona o a un movimiento de la cámara, lo que imposibilita la aplicación del método húngaro. Otro problema es el no seguimiento de la persona cuando esta se encuentra totalmente ocluida (ejemplo: se cruza un individuo justo delante) y reaparece o si simplemente la persona gira su cara fuera de la visión de la cámara y vuelve a detectarse después, en estos casos se crearía una nueva entidad para el mismo individuo, lo que no es un comportamiento deseable.
 
-El uso de \textbf{filtros de Kalman} \cite{Hungarian,MangoYOLO}.
+(TODO: simplificable) El \textbf{filtro de Kalman} predice la próxima posición del individuo basándose en la probabilidad Gausiana, de tal forma que puede mantenerse el rastro cuando la persona desaparece por unos frames. A pesar de ser una técnica efectiva, el filtro necesita de un mínimo de frames para converger cuando una nueva persona aparece \cite{MangoYOLO}, lo que no es beneficioso para intervalos de secuencia cortos. Finalmente se ha optado por un método más sencillo basado en la \textbf{distancia euclidiana}. En el caso de que haya un movimiento veloz del individuo o de la cámara, se calcula la distancia entre el \textbf{centro} de la \gls{bbox} actual con la \glspl{bbox} posterior que no tiene solape, si la distancia calculada es \textbf{inferior a un umbral}, \textbf{se valida la asociación}. En el caso de perder el rastro del individuo, se guarda la posición de la última aparición del rostro y se calcula la distancia con las \glspl{bbox} sin asociación en futuros frames, si la distancia no es inferior al umbral en un máximo de frames (prefijado por el operador), \textbf{se abandona el seguimiento}, en caso contrario se restablece. El valor del umbral se fija de antemano \textbf{y se ajusta automáticamente en función de la resolución} de la cámara.
 
-A partir del método de tracking propuesto no es posible recuperar el rastro de las entidades que desaparecieron de forma intermitente. Para resolver este problema se ha optado por calcular la distancia euclidiana entre la última \gls{bbox} del individuo en cuestión y la \gls{bbox} de una nueva detección, si la distancia entre ellas es menor a un umbral, se reasigna la detección al individuo.
+En la figura \ref{fig:eucls} se expone un ejemplo real, en el primer frame (figura \ref{fig:eucls}), se muestran dos entidades etiquetadas con un identificador (0 y 1) y como para la entidad 0 sus \glspl{bbox} no se solapan, en este caso la distancia euclidiana es capaz de mantener la identificación, también se muestra como la entidad 1 está a punto de ser ocluida, al no haber \glspl{bbox} en frames posteriores asociables a la entidad 1, la posición del último rostro referente a la entidad se guarda. En el segundo frame (figura \ref{fig:eucls}), la entidad 1 se encuentra totalmente ocluida por la entidad 0, como en el instante posterior a dicho frame existe una \gls{bbox} sin ninguna asociación, se calcula la distancia euclidiana entre dicho rostro respecto al último detectado de la entidad 1. En el último frame (figura \ref{fig:eucls}) se muestra la entidad 1 reasignada.
+
+\begin{figure}[hp!]
+    \centering
+    \begin{subfigure}[c]{0.2\textwidth}
+        \includegraphics[width=\textwidth]{imagenes/eucl0.png}
+    \end{subfigure}
+    \begin{subfigure}[c]{0.2\textwidth}
+        \includegraphics[width=\textwidth]{imagenes/eucl1.png}
+    \end{subfigure}
+    \begin{subfigure}[c]{0.2\textwidth}
+        \includegraphics[width=\textwidth]{imagenes/eucl2.png}
+    \end{subfigure}
+    \caption{Reidentificación mediante la distancia euclidiana}
+    \label{fig:eucls}
+\end{figure}
+
+\[ \Delta r_{euclid} = \sqrt{\Delta x^{2} + \Delta y^{2}} \]
+\captionof{figure}{Cálculo de la distancia euclidiana en un sistema de coordenadas \acrshort{2d}, extraído de \cite{Hungarian}}
+\label{eq:eucl}
 
 \begin{figure}
     \centering
@@ -22,7 +52,3 @@ A partir del método de tracking propuesto no es posible recuperar el rastro de 
     \caption{Funcionamiento del método húngaro para el seguimiento de caras, como salida se obtiene una lista de recortes faciales agrupados por entidad}
     \label{fig:Seq}
 \end{figure}
-
-El funcionamiento de esta técnica se muestra en la figura (TODO), se escoge un tamaño de secuencia (15 o 25 en las pruebas realizadas) y se extraen los frames. En cada frame, puede haber entre 0 y n entidades, como no se conoce la identidad de cada individuo en este punto, es necesario realizar un \textbf{rastreo} (tracking) de las entidades en cada uno de los frames. El tracking implementado calcula una matriz de costes entre las detecciones de un frame y el frame posterior, cada coste representa un valor de solape entre \glspl{bbox}, cuanto menor mayor es el solape, finalmente, se realiza una asignación óptima entre detecciones mediante el \textbf{método húngaro} (como se plantea en \cite{Hungarian}).
-
-\section{Coherencia entre múltiples cámaras}

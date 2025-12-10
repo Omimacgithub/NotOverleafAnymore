@@ -1,0 +1,1 @@
+{"rule":"MAS","sentence":"^\\QDe la lista de caras TODO: no es mas conveniente ejecutarlo antes del update module?\\E$"}
