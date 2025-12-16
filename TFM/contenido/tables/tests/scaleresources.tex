@@ -1,0 +1,18 @@
+% Please add the following required packages to your document preamble:
+% \usepackage{multirow}
+\begin{landscape}
+    \centering
+    \begin{table}[]
+        \begin{tabular}{l|llll}
+            \hline
+            \multicolumn{1}{c|}{\multirow{2}{*}{\textit{Nº de cámaras}}} & \multicolumn{4}{c}{\textit{Sobremesa}}                                                                                                                                                                                                                                                                                                           \\
+            \multicolumn{1}{c|}{}                                        & \multicolumn{2}{c}{\textbf{PC lab}}                                                     & \multicolumn{2}{c}{\textbf{Portátil (*)}}                                                                                                                                                                                                              \\ \hline
+            \textbf{}                                                    & \multicolumn{1}{l|}{\textit{CPU}}                                                       & \multicolumn{1}{l|}{\textit{GPU}}                                                       & \multicolumn{1}{l|}{\textit{CPU}}                                                       & \textit{GPU}                                                       \\ \hline
+            \textbf{2 cámaras}                                           & \multicolumn{1}{l|}{}                                                                   & \multicolumn{1}{l|}{}                                                                   & \multicolumn{1}{l|}{}                                                                   &                                                                    \\ \hline
+            \textbf{5 cámaras}                                           & \multicolumn{1}{l|}{\begin{tabular}[c]{@{}l@{}}\%Carga: 6.3\\ \%Mem: 9.27\end{tabular}} & \multicolumn{1}{l|}{\begin{tabular}[c]{@{}l@{}}\%Carga: 6.3\\ \%Mem: 9.27\end{tabular}} & \multicolumn{1}{l|}{\begin{tabular}[c]{@{}l@{}}\%Carga: 6.3\\ \%Mem: 9.27\end{tabular}} & \begin{tabular}[c]{@{}l@{}}\%Carga: 6.3\\ \%Mem: 9.27\end{tabular} \\ \hline
+            \textbf{10 cámaras}                                          & \multicolumn{1}{l|}{}                                                                   & \multicolumn{1}{l|}{}                                                                   & \multicolumn{1}{l|}{}                                                                   & \textbf{}                                                          \\ \hline
+        \end{tabular}
+    \end{table}
+    \captionof{table}{Recursos utilizados del sistema al escalar múltiples cámaras}
+    \label{tab:scaleresources}
+\end{landscape}

@@ -1,0 +1,31 @@
+\chapter{Arquitectura del sistema propuesto}
+\label{chap:sysarch}
+\lettrine{E}{n} este capítulo se expone la arquitectura que se va a ejecutar en las pruebas.
+
+Este proyecto parte de un sistema que detecta y reconoce personas a partir de la información de diferentes sensores, de forma que se obtienen reconocimientos robustos y persistentes en el tiempo \cite{andrew}. La figura \ref{fig:ANDRES} muestra la arquitectura del software, junto con los nuevos componentes desarrollados.
+
+El funcionamiento se describe como sigue, se recibe la información de una o múltiples cámaras, que son procesadas por cuatro \acrshort{cnn} y que devuelven las predicciones de reconocimiento para cada individuo (nodo cámara). Los resultados obtenidos de esta fase se contrastan con las detecciones realizadas por un modelo que procesa una \gls{pcl} otorgada por un sensor \acrshort{lidar} (nodo \acrshort{lidar}). Finalmente, se devuelve la predicción de la identidad otorgada por la información de las cámaras y se mantiene dicha predicción con la información del sensor \acrshort{lidar} cuando la identidad sobrepasa los límites de visión de las cámaras (nodo integrador). Las \acrshort{cnn} del nodo cámara procesan la información \acrshort{rgb}, mientras que la información de distancia de las cámaras se procesa para obtener la posición \acrshort{3d} de las personas detectadas y se compara con la posición devuelta por el modelo de \gls{pcl}. El sistema posé de la capacidad de ampliar su conocimiento de voluntarios y actualizar su información ante nuevos cambios (\textit{Open-World}) a partir de la salida del modelo de reconocimiento facial. De manera resumida, el método se encarga de evaluar si la persona detectada en la secuencia es un desconocido o pertenece a la base de datos. En ambos casos, el sistema se actualiza con la nueva información en forma de un nuevo registro en el sistema si es un desconocido o modificando el registro existente ante los cambios de la entidad (lo que se conoce como \textit{\textbf{concept-drift}}).
+
+Toda la arquitectura vista se ejecuta en el \textit{framework} \acrshort{ros} \cite{ROS}. \acrshort{ros} se encarga de crear los procesos para cada nodo, comprobar su estado, regular la frecuencia a la que trabajan, crear la red en la que dichos procesos intercambian mensajes, entre otros muchos detalles que resultan transparentes para el programador.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{imagenes/SYSARCH.png}
+    \caption{Arquitectura general del sistema (figura extraída de \cite{andrew})}
+    \label{fig:ANDRES}
+\end{figure}
+
+\section{Capacidad de adaptación}
+
+En la figura \ref{fig:FACESYS} se muestra la arquitectura del sistema con adaptación a los cambios. A continuación, se detallan todos sus componentes.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{imagenes/FACESYS.jpg}
+    \caption{Diseño del sistema adaptativo}
+    \label{fig:FACESYS}
+\end{figure}
+
+La mayoría de los componentes se han implementado basándose en \cite{Erik} TODO: como menciono también a César?.
+
+(TODO: Comités) Múltiples \acrshort{svm} simples (ejemplo: lineales) como conjunto (\textbf{comité}) \textbf{generalizan mejor} que una única \acrshort{svm} compleja (ejemplo: sigmoide) \cite{malisiewicz2011ensemble}. Otras ventajas de los comités son la incorporación de nueva información sin tener que reentrenar las \acrshort{svm}, lo que recorta una cantidad de tiempo significativa durante la operación del sistema, y la flexibilidad, que permite eliminar parte de la información que no es relevante borrando la \acrshort{svm} redundante. Para cada IoI se asigna un comité de \acrshort{svm}, cada \acrshort{svm} del comité se entrena con n muestras de la propia entidad (1 en la idea original \cite{malisiewicz2011ensemble}, 5 adaptado a este proyecto) y \textbf{m-n} muestras negativas (fotogramas de otras entidades), siendo \textbf{m} el número de IoI registrados en el sistema.
