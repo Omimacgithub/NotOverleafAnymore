@@ -1,17 +1,26 @@
-% Please add the following required packages to your document preamble:
-% \usepackage{multirow}
 \begin{landscape}
-    \centering
+    %\centering
+    % Please add the following required packages to your document preamble:
+    % \usepackage{multirow}
     % Please add the following required packages to your document preamble:
     % \usepackage{multirow}
     \begin{table}[]
-        \begin{tabular}{l|lll}
+        \begin{tabular}{cc|lll}
             \hline
-            \multicolumn{1}{c|}{\multirow{2}{*}{\textit{Nº de cámaras}}} & \multicolumn{3}{c}{\textit{Sobremesa}}                                                                                                                                                                                                                                                                                                                                                                                      \\
-            \multicolumn{1}{c|}{}                                        & \multicolumn{1}{c}{\textbf{PC lab}}                                                                                                                     & \multicolumn{1}{c}{\textbf{Portátil (*)}}                                                                                                               & \textbf{Referencia \textbackslash{}cite\{andrew\}}                                                      \\ \hline
-            \textbf{2 cámaras}                                           & \begin{tabular}[c]{@{}l@{}}Dp: 0.869487 +- 0.008972 \\ Dr: 0.575452 +- 0.012952 \\ Idf1: 0.689474 +- 0.017967 \\ Idp: 0.929938 +- 0.015667\end{tabular} & \begin{tabular}[c]{@{}l@{}}Dp: 0.877509 +- 0.006809 \\ Dr: 0.544148 +- 0.025549 \\ Idf1: 0.646300 +- 0.039168 \\ Idp: 0.896087 +- 0.037446\end{tabular} & \begin{tabular}[c]{@{}l@{}}Dp: 0.912358 \\ Dr: 0.528254 \\ Idf1: 0.649701 \\ Idp: 0.930586\end{tabular} \\ \hline
-            \textbf{5 cámaras}                                           & \begin{tabular}[c]{@{}l@{}}Dp: 0.826939 +- 0.001086 \\ Dr: 0.519979 +- 0.002911 \\ Idf1: 0.622861 +- 0.000887 \\ Idp: 0.887686 +- 0.004756\end{tabular} & \begin{tabular}[c]{@{}l@{}}Dp:  \\ Dr: \\ Idf1: \\ Idp:\end{tabular}                                                                                    &                                                                                                         \\ \hline
-            \textbf{10 cámaras}                                          & \begin{tabular}[c]{@{}l@{}}Dp: 0.652736 +- 0.010305 \\ Dr: 0.498889 +- 0.003563 \\ Idf1: 0.605140 +- 0.010546 \\ Idp: 0.894189 +- 0.016829\end{tabular} & \begin{tabular}[c]{@{}l@{}}Dp: 0.691066 +- 0.009587 \\ Dr: 0.511520 +- 0.005504 \\ Idf1: 0.579697 +- 0.010082 \\ Idp: 0.820312 +- 0.014890\end{tabular} &                                                                                                         \\ \hline
+            \multicolumn{2}{c|}{\multirow{2}{*}{\textit{\begin{tabular}[c]{@{}c@{}}Number of\\ cameras\end{tabular}}}} & \multicolumn{3}{c}{\textit{Desktop}}                                                                                                                      \\
+            \multicolumn{2}{c|}{}                                                                                      & \multicolumn{1}{c}{\textbf{Lab PC}}                               & \multicolumn{1}{c}{\textbf{Laptop (*)}} & \textbf{Reference \cite{andrew}}            \\ \hline
+            \multicolumn{1}{c|}{\multirow{4}{*}{\textit{\begin{tabular}[c]{@{}c@{}}2\\ cameras\end{tabular}}}}         & \textit{\begin{tabular}[c]{@{}c@{}}Det\\ precision\end{tabular}}  & 0.869487 +- 0.008972                    & 0.877509 +- 0.006809             & 0.912358 \\ \cline{2-2}
+            \multicolumn{1}{c|}{}                                                                                      & \textit{\begin{tabular}[c]{@{}c@{}}Det\\ recall\end{tabular}}     & 0.575452 +- 0.012952                    & 0.544148 +- 0.025549             & 0.528254 \\ \cline{2-2}
+            \multicolumn{1}{c|}{}                                                                                      & \textit{\begin{tabular}[c]{@{}c@{}}Iden\\ F1 score\end{tabular}}  & 0.689474 +- 0.017967                    & 0.646300 +- 0.039168             & 0.649701 \\ \cline{2-2}
+            \multicolumn{1}{c|}{}                                                                                      & \textit{\begin{tabular}[c]{@{}c@{}}Iden\\ precision\end{tabular}} & 0.929938 +- 0.015667                    & 0.896087 +- 0.037446             & 0.930586 \\ \hline
+            \multicolumn{1}{c|}{\multirow{4}{*}{\textit{\begin{tabular}[c]{@{}c@{}}5\\ cameras\end{tabular}}}}         & \textit{\begin{tabular}[c]{@{}c@{}}Det\\ precision\end{tabular}}  & 0.826939 +- 0.001086                    &                                  &          \\ \cline{2-2}
+            \multicolumn{1}{c|}{}                                                                                      & \textit{\begin{tabular}[c]{@{}c@{}}Det\\ recall\end{tabular}}     & 0.519979 +- 0.002911                    &                                  &          \\ \cline{2-2}
+            \multicolumn{1}{c|}{}                                                                                      & \textit{\begin{tabular}[c]{@{}c@{}}Iden\\ F1 score\end{tabular}}  & 0.622861 +- 0.000887                    &                                  &          \\ \cline{2-2}
+            \multicolumn{1}{c|}{}                                                                                      & \textit{\begin{tabular}[c]{@{}c@{}}Iden\\ precision\end{tabular}} & 0.887686 +- 0.004756                    &                                  &          \\ \hline
+            \multicolumn{1}{c|}{\multirow{4}{*}{\textit{\begin{tabular}[c]{@{}c@{}}10\\ cameras\end{tabular}}}}        & \textit{\begin{tabular}[c]{@{}c@{}}Det\\ precision\end{tabular}}  & 0.652736 +- 0.010305                    & 0.691066 +- 0.009587             &          \\ \cline{2-2}
+            \multicolumn{1}{c|}{}                                                                                      & \textit{\begin{tabular}[c]{@{}c@{}}Det\\ recall\end{tabular}}     & 0.498889 +- 0.003563                    & 0.511520 +- 0.005504             &          \\ \cline{2-2}
+            \multicolumn{1}{c|}{}                                                                                      & \textit{\begin{tabular}[c]{@{}c@{}}Iden\\ F1 score\end{tabular}}  & 0.605140 +- 0.010546                    & 0.579697 +- 0.010082             &          \\ \cline{2-2}
+            \multicolumn{1}{c|}{}                                                                                      & \textit{\begin{tabular}[c]{@{}c@{}}Iden\\ precision\end{tabular}} & 0.894189 +- 0.016829                    & 0.820312 +- 0.014890             &          \\ \hline
         \end{tabular}
     \end{table}
     \captionof{table}{Rendimiento del sistema al escalar múltiples cámaras}

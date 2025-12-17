@@ -2,15 +2,20 @@
 % \usepackage{multirow}
 \begin{landscape}
     \centering
+    % Please add the following required packages to your document preamble:
+    % \usepackage{multirow}
     \begin{table}[]
-        \begin{tabular}{l|llll}
+        \begin{tabular}{cc|llll}
             \hline
-            \multicolumn{1}{c|}{\multirow{2}{*}{\textit{Nº de cámaras}}} & \multicolumn{4}{c}{\textit{Sobremesa}}                                                                                                                                                                                                                                                                                                           \\
-            \multicolumn{1}{c|}{}                                        & \multicolumn{2}{c}{\textbf{PC lab}}                                                     & \multicolumn{2}{c}{\textbf{Portátil (*)}}                                                                                                                                                                                                              \\ \hline
-            \textbf{}                                                    & \multicolumn{1}{l|}{\textit{CPU}}                                                       & \multicolumn{1}{l|}{\textit{GPU}}                                                       & \multicolumn{1}{l|}{\textit{CPU}}                                                       & \textit{GPU}                                                       \\ \hline
-            \textbf{2 cámaras}                                           & \multicolumn{1}{l|}{}                                                                   & \multicolumn{1}{l|}{}                                                                   & \multicolumn{1}{l|}{}                                                                   &                                                                    \\ \hline
-            \textbf{5 cámaras}                                           & \multicolumn{1}{l|}{\begin{tabular}[c]{@{}l@{}}\%Carga: 6.3\\ \%Mem: 9.27\end{tabular}} & \multicolumn{1}{l|}{\begin{tabular}[c]{@{}l@{}}\%Carga: 6.3\\ \%Mem: 9.27\end{tabular}} & \multicolumn{1}{l|}{\begin{tabular}[c]{@{}l@{}}\%Carga: 6.3\\ \%Mem: 9.27\end{tabular}} & \begin{tabular}[c]{@{}l@{}}\%Carga: 6.3\\ \%Mem: 9.27\end{tabular} \\ \hline
-            \textbf{10 cámaras}                                          & \multicolumn{1}{l|}{}                                                                   & \multicolumn{1}{l|}{}                                                                   & \multicolumn{1}{l|}{}                                                                   & \textbf{}                                                          \\ \hline
+            \multicolumn{2}{c|}{\multirow{3}{*}{\textit{\begin{tabular}[c]{@{}c@{}}Number of\\ cameras\end{tabular}}}} & \multicolumn{4}{c}{\textit{Desktop}}                                                                                                                     \\
+            \multicolumn{2}{c|}{}                                                                                      & \multicolumn{2}{c}{\textbf{Lab PC}}  & \multicolumn{2}{c}{\textbf{Laptop (*)}}                                                                           \\ \cline{3-6}
+            \multicolumn{2}{c|}{}                                                                                      & \multicolumn{1}{l|}{\textit{CPU}}    & \multicolumn{1}{l|}{\textit{GPU}}       & \multicolumn{1}{l|}{\textit{CPU}} & \multicolumn{1}{l|}{\textit{GPU}}   \\ \hline
+            \multicolumn{1}{c|}{\multirow{2}{*}{\textit{\begin{tabular}[c]{@{}c@{}}2\\ cameras\end{tabular}}}}         & \textit{\%load}                      &                                         & \multicolumn{1}{l|}{}             &                                   & \\ \cline{2-2}
+            \multicolumn{1}{c|}{}                                                                                      & \textit{\%mem}                       &                                         & \multicolumn{1}{l|}{}             &                                   & \\ \hline
+            \multicolumn{1}{c|}{\multirow{2}{*}{\textit{\begin{tabular}[c]{@{}c@{}}5\\ cameras\end{tabular}}}}         & \textit{\%load}                      &                                         & \multicolumn{1}{l|}{}             &                                   & \\ \cline{2-2}
+            \multicolumn{1}{c|}{}                                                                                      & \textit{\%mem}                       &                                         & \multicolumn{1}{l|}{}             &                                   & \\ \hline
+            \multicolumn{1}{c|}{\multirow{2}{*}{\textit{\begin{tabular}[c]{@{}c@{}}10\\ cameras\end{tabular}}}}        & \textit{\%load}                      &                                         & \multicolumn{1}{l|}{}             &                                   & \\ \cline{2-2}
+            \multicolumn{1}{c|}{}                                                                                      & \textit{\%mem}                       &                                         & \multicolumn{1}{l|}{}             &                                   & \\ \hline
         \end{tabular}
     \end{table}
     \captionof{table}{Recursos utilizados del sistema al escalar múltiples cámaras}

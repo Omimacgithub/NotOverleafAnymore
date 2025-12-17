@@ -16,6 +16,8 @@ Las métricas para evaluar el sistema final son las mismas que en \cite{andrew}:
 
 \subsection{Resultados}
 
+\subsubsection{Sistema en ROS 1}
+
 Tabla \ref{tab:scaleperf}
 
 \input{contenido/tables/tests/scaleperf.tex}
@@ -23,6 +25,12 @@ Tabla \ref{tab:scaleperf}
 Tabla \ref{tab:scaleresources}
 
 \input{contenido/tables/tests/scaleresources.tex}
+
+\subsubsection{Sistema en ROS 2}
+
+\input{contenido/tables/tests/scaleros2.tex}
+
+Tabla \ref{tab:scaleros2}
 
 \section{Tamaño del universo}
 El tamaño del universo, es decir, del número de personas presentes en el sistema, es un factor crítico, ya que el sistema implementado se nutre de los datos de los individuos. Por un lado, tener más individuos se traduce en más comités, por lo tanto se dispone de más puntos para definir la distribución de Weibull, lo que refuerza las predicciones. Por otra parte, se dispone de un mayor número de muestras negativas, lo que permite definir mejor las fronteras de las \acrshort{svm} y así mejorar la capacidad de predicción.
@@ -44,24 +52,38 @@ TODO: él método tiene una precondición, \textbf{se necesitan de al menos 5 Io
 TODO: los criterios que conforman el módulo de limitación tienen en cuenta el signo de la puntuación de forma exclusiva, lo que puede no funcionar siempre, sobretodo si se dispone de pocos frames que definan al individuo.
 
 \begin{itemize}
-    \item Umbral de Weibull (Tw): valor que determina si una entidad es desconocida o no. El rango probado es (0.05 0.1 0.25 0.5)
-    \item Percentil: valor del percentil aplicado en la combinación de las puntuaciones generadas por las \acrshort{svm}. El rango probado es (0.25 0.5 0.75)
-    \item Número de \acrshort{svm}: valor que representa al tamaño máximo de un comité. El rango probado es (1 3 7 10)
-    \item Tamaño de la plantilla: establece el número de frames positivos que define a un comité. Se va a partir siempre de un tamaño de 5 frames, el mínimo necesario acorde a \cite{Erik} para definir un nuevo individuo.
-    \item Tamaño de secuencia: número de frames que forman una secuencia de video. El rango probado es (5 15 25)
-    \item TODO: Solapamiento: establece el salto en el número de frames entre secuencias. El rango probado es (0 5 15)
-    \item Número de negativos: tamaño del conjunto de muestras negativas. El rango probado es (10 50)
-    \item Umbral de actualización: valor que determina si las nuevas muestras de un individuo ya. El rango probado es (0.05 0.15 0.3)
+    \item \textbf{Umbral de Weibull (Tw)}: valor que determina si una entidad es desconocida o no. El rango probado es (0.05 0.1 0.25)
+    \item \textbf{Percentil (percent)}: valor del percentil aplicado en la combinación de las puntuaciones generadas por las \acrshort{svm}. El rango probado es (0.25 0.5 0.75)
+    \item \textbf{Número de \acrshort{svm} (max\_svm)}: valor que representa al tamaño máximo de un comité. El rango probado es (1 3 7 10)
+    \item \item \textbf{Número de negativos (nneg)}: tamaño del conjunto de muestras negativas. El rango probado es (10 50)
+    \item \textbf{Tamaño de la plantilla}: establece el número de frames positivos que define a un comité. Se va a partir siempre de un tamaño de 5 frames, el mínimo necesario acorde a \cite{Erik} para definir un nuevo individuo.
+    \item \textbf{Tamaño de secuencia}: número de frames que forman una secuencia de video. Se ha fijado el valor en 15 frames, que equivalen a 1,5 segundos de video con cámaras funcionando a 10 Hz.
+    \item \textbf{Solapamiento}: establece el salto en el número de frames entre secuencias. Se ha fijado el valor en 5, dando lugar a más secuencias para analizar al coincidir frames entre las mismas.
 \end{itemize}
 
-\subsection{Resultados}
-\subsection{Conclusiones}
+A continuación se exponen los resultados obtenidos para cada combinación en \textit{Open-Set} y \textit{Open-World} como una media de 5 ejecuciones. Se parte de \textbf{10 individuos registrados de antemano}, 6 de ellos presentes en el video de prueba. Se inicializa cada comité con 5 frames representativos.
 
-Nneg: En la tabla (TODO) se muestra el \textit{F1 score} para 10 y 50 muestras que conforman el conjunto de negativos de entrenamiento (ratios 1:1 y 1:5 si el tamaño del template es 10). Claramente los resultados mejoran al escoger 50 negativos, esto se debe a que en 10 frames cabe un conjunto reducido de entidades a diferencia de 50 frames, sobretodo si se realiza una selección aleatoria como ocurre en este caso.
+\subsection{Modo \textit{Open-Set}}
+
+\input{contenido/tables/tests/osparams.tex}
+
+En la tabla \ref{tab:osparams} se muestra el \textit{F1 score} para 10 y 50 muestras que conforman el conjunto de negativos de entrenamiento (ratios 1:1 y 1:5 si el tamaño del template es 10). Claramente los resultados mejoran al escoger 50 negativos, esto se debe a que en 10 frames cabe un conjunto reducido de entidades a diferencia de 50 frames, sobretodo si se realiza una selección aleatoria como ocurre en este caso.
 
 Tw: Si el valor del umbral de Weibull es bajo, la precisión se mantiene en valores altos, sacrificando el recall, mientras que un valor alto en dicho umbral se traduce en un elevado recall a costa de la precisión. Como ya se ha explicado, el umbral de Weibull representa la probabilidad máxima a la que el mejor score pertenece a la distribución de scores no coincidentes, cuanto más bajo sea el valor, más extrema debe ser la coincidencia para ser reconocida (la precisión aumenta), por lo que la función es más selectiva en el reconocimiento (devuelve un mayor número de desconocidos, reduciendo así el recall). Un valor alto representa justo lo contrario. TODO: parece que un TW alto es mejor siempre, pero tengo que poner los resultados de una prueba con un desconocido de verdad, así muestro el verdadero problema de elevarlo.
 
 Percentiles: Al fusionar los scores de todas las SVM en todos los frames, se obtiene un único score acordado por la mayoría mediante la mediana, siendo esta equivalente al percentil 50. Al variar el percentil, el número de SVM participantes también varía. Un percentil de 100 implica obtener el mayor score, que se corresponde con la peor coincidencia (por ende, el valor de recall es paupérrimo, puesto que se necesita del consenso de todas las SVM del comité para devolver un match). Por otro lado, un percentil de 0 implica recuperar el score más bajo de entre todas las SVM en todos los frames. En este caso también podría darse un bajo recall ya que si por ejemplo se añade una SVM de otra entidad, dicha SVM devolvería un score negativo, por lo que Weibull etiquetaría el reconocimiento como desconocido al haber más de un comité activado (que devuelve un score bajo).
+
+\subsection{Modo \textit{Open-World}}
+
+\input{contenido/tables/tests/owparams.tex}
+
+La tabla \ref{tab:owparams}.
+
+\subsection{Umbral de actualización?}
+
+\textbf{Umbral de actualización}: valor que se compara frente a la fusión de scores de una secuencia. El rango probado es (0.1 0.3)
+
+
 
 Uno de los objetivos del sistema es obtener la mayor diversidad intra-comité y la mayor especificidad inter-comité. Un \textbf{percentil alto} encajaría si las SVM son \textbf{específicas} entre sí (la mayoría de las SVM devuelven match). En cambio, un \textbf{bajo percentil} funcionaría con unas SVM \textbf{más diversas} (se espera que la minoría de las SVM den un resultado coincidente).
 
@@ -79,13 +101,6 @@ Criterio de selección de frames para nuevas SVM: también es muy importante la 
 
 Criterio de favorabilidad: en la tabla (TODO) se muestra el efecto de dicho criterio a la hora de eliminar las SVM respecto a un criterio de eliminación aleatorio. Este ...
 
-
-\section{Modo \textit{Open-Set}}
-\subsection{Diseño de las pruebas}
-
-\section{Modo \textit{Open-World}}
-\subsection{Diseño de las pruebas}
-
 En el modo \textit{Open-World}, el sistema crea un nuevo comité cuando se reconoce a una nueva entidad en el sistema. Sin embargo, debido a las predicciones incorrectas del método, puede ocurrir que se creen nuevos comités para un individuo ya registrado. Estos nuevos comités pueden desplazar a los comités originales adueñándose de su identidad.
 
 TODO: Para concluir, cuando el sistema no es capaz de reconocer a un individuo con alta confianza y, en cambio, lo denota como desconocido, el mecanismo se vuelve \textbf{contraproducente}. Si una entidad ya conocida se reconoce como desconocida, se crea un nuevo comité de la misma persona, lo que incrementa la duda en el reconocimiento, ya que la distribución de weibull contendrá puntos que representen al propio individuo, indicando que el score de coincidencia no es un caso extremo cuando si debería serlo. La solución más rápida y efectiva es subir el valor de threshold de la probabilidad devuelta por la función de Weibull, aún así, es inevitable que se generen nuevos comités para un mismo individuo, contaminando el sistema rápidamente.
@@ -94,4 +109,6 @@ El número de comités redundantes creados varía conforme al umbral de Weibull.
 
 \section{Pruebas de inicialización del sistema}
 
-La selección de los frames que conforman un nuevo comité es un factor crítico para el correcto funcionamiento del sistema. En la tabla (TODO) se comparan 2 técnicas de inicialización, una semi-supervisada (los frames se escogen manualmente y el comité se actualiza de forma autónoma) y la otra no supervisada (se escogen los frames en el momento que aparecen varias personas en escena para diferenciarlas).
+\input{contenido/tables/tests/inittab.tex}
+
+La selección de los frames que conforman un nuevo comité es un factor crítico para el correcto funcionamiento del sistema. En la tabla \ref{tab:inittab} se comparan 2 técnicas de inicialización, una \textbf{supervisada} (los frames se escogen manualmente) y la otra \textbf{no supervisada} (se escoge un momento del video en el que aparece un mínimo de personas simultáneamente y se aplica el tracking para agrupar sus frames y finalmente se inicializan los comités). En el modo no supervisado se debe de escoger un momento en el que aparezcan todos los individuos del video etiquetado, como dicha situación no se da en el video, se ejecuta el sistema para agregar a los desconocidos bajo las etiquetas de los voluntarios restantes.
