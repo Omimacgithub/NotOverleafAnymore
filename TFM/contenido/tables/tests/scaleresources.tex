@@ -1,23 +1,18 @@
 % Please add the following required packages to your document preamble:
 % \usepackage{multirow}
-\begin{landscape}
-    \centering
-    % Please add the following required packages to your document preamble:
-    % \usepackage{multirow}
-    \begin{table}[]
-        \begin{tabular}{cc|llll}
-            \hline
-            \multicolumn{2}{c|}{\multirow{3}{*}{\textit{\begin{tabular}[c]{@{}c@{}}Number of\\ cameras\end{tabular}}}} & \multicolumn{4}{c}{\textit{Desktop}}                                                                                                                     \\
-            \multicolumn{2}{c|}{}                                                                                      & \multicolumn{2}{c}{\textbf{Lab PC}}  & \multicolumn{2}{c}{\textbf{Laptop (*)}}                                                                           \\ \cline{3-6}
-            \multicolumn{2}{c|}{}                                                                                      & \multicolumn{1}{l|}{\textit{CPU}}    & \multicolumn{1}{l|}{\textit{GPU}}       & \multicolumn{1}{l|}{\textit{CPU}} & \multicolumn{1}{l|}{\textit{GPU}}   \\ \hline
-            \multicolumn{1}{c|}{\multirow{2}{*}{\textit{\begin{tabular}[c]{@{}c@{}}2\\ cameras\end{tabular}}}}         & \textit{\%load}                      &                                         & \multicolumn{1}{l|}{}             &                                   & \\ \cline{2-2}
-            \multicolumn{1}{c|}{}                                                                                      & \textit{\%mem}                       &                                         & \multicolumn{1}{l|}{}             &                                   & \\ \hline
-            \multicolumn{1}{c|}{\multirow{2}{*}{\textit{\begin{tabular}[c]{@{}c@{}}5\\ cameras\end{tabular}}}}         & \textit{\%load}                      &                                         & \multicolumn{1}{l|}{}             &                                   & \\ \cline{2-2}
-            \multicolumn{1}{c|}{}                                                                                      & \textit{\%mem}                       &                                         & \multicolumn{1}{l|}{}             &                                   & \\ \hline
-            \multicolumn{1}{c|}{\multirow{2}{*}{\textit{\begin{tabular}[c]{@{}c@{}}10\\ cameras\end{tabular}}}}        & \textit{\%load}                      &                                         & \multicolumn{1}{l|}{}             &                                   & \\ \cline{2-2}
-            \multicolumn{1}{c|}{}                                                                                      & \textit{\%mem}                       &                                         & \multicolumn{1}{l|}{}             &                                   & \\ \hline
-        \end{tabular}
-    \end{table}
-    \captionof{table}{Recursos utilizados del sistema al escalar múltiples cámaras}
-    \label{tab:scaleresources}
-\end{landscape}
+\begin{table}[]
+    \begin{tabular}{cc|llll}
+        \hline
+        \multicolumn{2}{c|}{\multirow{3}{*}{\textit{\begin{tabular}[c]{@{}c@{}}Number of\\ cameras\end{tabular}}}} & \multicolumn{4}{c}{\textit{Desktop}}                                                                                                                        \\
+        \multicolumn{2}{c|}{}                                                                                      & \multicolumn{2}{c}{\textbf{Lab PC}}  & \multicolumn{2}{c}{\textbf{Laptop (*)}}                                                                              \\ \cline{3-6}
+        \multicolumn{2}{c|}{}                                                                                      & \multicolumn{1}{l|}{\textit{CPU}}    & \multicolumn{1}{l|}{\textit{GPU}}       & \multicolumn{1}{l|}{\textit{CPU}} & \multicolumn{1}{l|}{\textit{GPU}}      \\ \hline
+        \multicolumn{1}{c|}{\multirow{2}{*}{\textit{\begin{tabular}[c]{@{}c@{}}2\\ cameras\end{tabular}}}}         & \textit{\%load}                      & 6.3                                     & \multicolumn{1}{l|}{30}           &                                   &    \\ \cline{2-2}
+        \multicolumn{1}{c|}{}                                                                                      & \textit{\%mem}                       & 9.27                                    & \multicolumn{1}{l|}{21}           &                                   &    \\ \hline
+        \multicolumn{1}{c|}{\multirow{2}{*}{\textit{\begin{tabular}[c]{@{}c@{}}5\\ cameras\end{tabular}}}}         & \textit{\%load}                      & 13.47                                   & \multicolumn{1}{l|}{48.46}        &                                   &    \\ \cline{2-2}
+        \multicolumn{1}{c|}{}                                                                                      & \textit{\%mem}                       & 16.06                                   & \multicolumn{1}{l|}{56}           &                                   &    \\ \hline
+        \multicolumn{1}{c|}{\multirow{2}{*}{\textit{\begin{tabular}[c]{@{}c@{}}10\\ cameras\end{tabular}}}}        & \textit{\%load}                      & 44                                      & \multicolumn{1}{l|}{88.22}        & 44.82                             & 64 \\ \cline{2-2}
+        \multicolumn{1}{c|}{}                                                                                      & \textit{\%mem}                       & 27.87                                   & \multicolumn{1}{l|}{100}          & 73.1                              & 88 \\ \hline
+    \end{tabular}
+\end{table}
+\captionof{table}{Recursos utilizados del sistema al escalar múltiples cámaras}
+\label{tab:scaleresources}

@@ -92,42 +92,42 @@ Desde 3499\$ \cite{price}
 \subsection{Equipos x86}
 Para las pruebas se emplearon dos equipos con las siguientes características:
 \begin{itemize}
-    \item \textbf{Equipo 1 (portátil personal)}: cuenta con una CPU \textbf{Intel i7 i7-12650H}, una GPU \textbf{NVIDIA GeForce RTX 3050} con \textbf{4 GB de RAM}. Tiene una memoria principal de \textbf{16 GB} y el sistema operativo Linux Mint 21.3 (equivalente a un Ubuntu 22.04).
+      \item \textbf{Equipo 1 (portátil personal)}: cuenta con una CPU \textbf{Intel i7 i7-12650H}, una GPU \textbf{NVIDIA GeForce RTX 3050} con \textbf{4 GB de RAM}. Tiene una memoria principal de \textbf{16 GB} y el sistema operativo Linux Mint 21.3 (equivalente a un Ubuntu 22.04).
 
-          CPU: i7-12650H
+            CPU: i7-12650H
 
-          Nº threads: 16
+            Nº threads: 16
 
-          Freq: 4.7 GHz
+            Freq: 4.7 GHz
 
-          GPU: GeForce RTX 3050 (4 GiB)
+            GPU: GeForce RTX 3050 (4 GiB)
 
-          SMs: 18
+            SMs: 18
 
-          SM Freq: 2.1 GHz
+            SM Freq: 2.1 GHz
 
-          MEM Freq: 7 GHz
+            MEM Freq: 7 GHz
 
-          MEM: 15 GB
+            MEM: 15 GB
 
 
-    \item \textbf{Equipo 2 (PC del laboratorio del CITIC)}: cuenta con una CPU \textbf{Intel i7 i7-12700}, una GPU \textbf{NVIDIA GeForce GTX 1650} con \textbf{4 GB de RAM}. Tiene una memoria principal de \textbf{32 GB} y el sistema operativo Ubuntu 24.04.
+      \item \textbf{Equipo 2 (PC del laboratorio del CITIC)}: cuenta con una CPU \textbf{Intel i7 i7-12700}, una GPU \textbf{NVIDIA GeForce GTX 1650} con \textbf{4 GB de RAM}. Tiene una memoria principal de \textbf{32 GB} y el sistema operativo Ubuntu 24.04.
 
-          CPU: i7-12700
+            CPU: i7-12700
 
-          Nº threads: 20
+            Nº threads: 20
 
-          Freq: 4.9 GHz
+            Freq: 4.9 GHz
 
-          GPU: GeForce GTX 1650 (4 GiB)
+            GPU: GeForce GTX 1650 (4 GiB)
 
-          SMs: 14
+            SMs: 14
 
-          SM Freq: 2.1 GHz
+            SM Freq: 2.1 GHz
 
-          MEM Freq: 6 GHz
+            MEM Freq: 6 GHz
 
-          MEM: 33.4 GB
+            MEM: 33.4 GB
 \end{itemize}
 
 \section{Software}
@@ -135,6 +135,9 @@ Para las pruebas se emplearon dos equipos con las siguientes características:
 
 \subsection{ROS}
 \acrfull{ros} es un middleware de \textbf{código abierto} que incorpora las herramientas necesarias para la interacción y desarrollo de software en robots. Cuenta con una amplia biblioteca de distribuciones y librerías. TODO
+\subsection{Rosbag}
+Es una herramienta del ecosistema \arcshort{ros} que graba y reproduce los datos capturados de la ejecución de un sistema \acrshort{ros} en un momento concreto en el tiempo. Los \glspl{dataset} creados en \cite{andrew} se construyeron partiendo de un fichero rosbag, que contiene toda la información generada por los diferentes sensores. En este proyecto se emplearán dichos ficheros rosbag para reproducir las pruebas en tiempo real.
+
 \subsection{TensorRT}
 Es un software de \textbf{código abierto} desarrollado por NVIDIA para la optimización de inferencias de modelos de IA en aceleradoras de NVIDIA \cite{x36}. Permite ejecutar modelos entrenados en frameworks como Pytorch y TensorFlow, aunque se aconseja exportarlos al formato \acrfull{onnx} previamente, para aprovechar al completo las funcionalidades de este software. Se ha empleado TensorRT para optimizar la mayoría de modelos CNN tanto en equipos ARM (Jetson) como x86 (Intel).
 \subsection{PyCUDA}

@@ -1,0 +1,18 @@
+\chapter{Coherencia entre múltiples cámaras}
+Contar con más de una cámara permite realizar un mayor número de predicciones (amplía los grados de visión), cada una de ellas \textbf{más robustas} que con una sola cámara. Asumiendo ningún grado de solapamiento entre cámaras, puede afirmarse que un mismo individuo \textbf{no puede aparecer en el rango de más de una cámara} en un mismo instante de tiempo, es decir, existe una \textbf{coherencia espacio-temporal}. En base a esta afirmación, pueden detectarse errores de una misma predicción en múltiples cámaras e incluso adoptar ciertas técnicas para solucionarlas.
+
+Cuando una incoherencia se detecta, o una o ninguna de las cámaras que han devuelto la predicción se corresponde realmente con la entidad, por lo que se procede a aplicar el siguiente método para averiguarlo:
+\begin{itemize}
+    \item De la lista de caras extraída de cada cámara, se escoge el frame más representativo, es decir, el de menor score.
+    \item Del frame obtenido de cada cámara, se aplica la \textbf{distancia coseno} respecto a los frames de referencia de la entidad repetida y se fusionan todas las distancias en una mediana.
+    \item Por cada valor de distancia, se comprueba si está por debajo de un umbral prefijado, en caso de que solo una cámara dé afirmativo, se asigna la entidad a dicha cámara, en caso negativo, se procede con el siguiente paso.
+    \item Cada cámara posee un \textit{\gls{buffer}} que contiene las predicciones realizadas en la anterior secuencia. Se comprueba si la entidad actual se encuentra en dicho \textit{\gls{buffer}}, si solo una de las cámaras devuelve positivo, entonces se asigna la entidad a dicha cámara, en caso contrario, el método termina sin haber llegado a un acuerdo y se reconoce la entidad como desconocida para todas las cámaras.
+\end{itemize}
+
+La figura TODO muestra un caso real de aplicación,\dots
+
+TODO: no es mas conveniente ejecutarlo antes del update module?
+
+TODO: las secuencias de pocos frames (ej: 2) son muy propensas a resultados erroneos, especialmente si introducen mucho ruido, como frames borrosos, con mucha oclusión, variación en la iluminación, entre otros muchos factores. Debido a que este sistema maneja secuencias solapadas (ej: frames 0 a 10, frames 5 a 15) se puede deducir que es muy probable que la identidad a reconocer en la secuencia actual sea la misma identidad que en la secuencia anterior. Dependiendo de diversos factores, como el número de frames de la secuencia, se puede otorgar un mayor peso al reconocimiento anterior.
+
+TODO: comentar que no se lograron resultados que justificasen emplear este método.
