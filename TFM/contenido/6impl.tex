@@ -117,9 +117,7 @@ Cuando se fusionan los resultados procesados por los distintos sensores, se requ
 Con el motivo del fin de soporte de ROS 1 \cite{ROSEOL}, se ha optado por migrar el sistema para ser ejecutado en ROS 2 con el fin de mantener su continuidad. La documentación oficial de \acrshort{ros} proporciona una guía de migración \cite{ros2tuto}. Se han migrado los nodos cámara e integrador, la migración del nodo \acrshort{lidar} requeriría actualizar el código a una versión soportada para Ubuntu 22.04 de la librería pcl, entre otros detalles que llevarían a rediseñar casi todo el código. Por último, el sensor \acrshort{lidar} instalado no es compatible con \acrshort{ros} 2, lo que impide la migración a menos que se haga un recambio.  TODO: Se probaron diferentes alternativas como RoboStack.
 
 \subsection{Procesamiento de videos}
-\label{chap:video}
-\lettrine{E}{n} este capítulo se comenta todo el trabajo relacionado con la extracción de caras en secuencias de video.
-
+\label{sec:video}
 El sistema actual trabaja a nivel de frame \cite{andrew}, es decir, devuelve reconocimientos de los individuos presentes en un frame. Esta aproximación permite trabajar a altas frecuencias, sin embargo, las predicciones dependen enteramente de la calidad del frame (ejemplo: nivel de borrosidad). En este proyecto se ha optado por trabajar con \textbf{secuencias de video}, de esta forma, se devuelve un reconocimiento más robusto. Simplemente consiste en procesar un conjunto de frames en un intervalo de tiempo, dicho intervalo de tiempo es ajustable según las necesidades del operador (ejemplo: intervalo de 1 segundo). De los frames del intervalo, se extraen los rostros presentes a partir de un modelo de detección de caras (en este caso YuNet) y se agrupan por cada individuo a lo largo del intervalo, de modo que los frames que no contienen caras \textbf{se descartan}.
 
 \subsubsection{Seguimiento de caras}

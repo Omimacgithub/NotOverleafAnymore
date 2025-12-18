@@ -46,10 +46,10 @@ TODO: actualización del modelo, añadir nuevas entidades puede corromper la inf
 TODO: los criterios que conforman el módulo de limitación tienen en cuenta el signo de la puntuación de forma exclusiva, lo que puede no funcionar siempre, sobretodo si se dispone de pocos frames que definan al individuo.
 
 \begin{itemize}
-    \item \textbf{Umbral de Weibull (Tw)}: valor que determina si una entidad es desconocida o no. El rango probado es (0.05 0.1 0.25)
-    \item \textbf{Percentil (percent)}: valor del percentil aplicado en la combinación de las puntuaciones generadas por las \acrshort{svm}. El rango probado es (0.25 0.5 0.75)
-    \item \textbf{Número de \acrshort{svm} (max\_svm)}: valor que representa al tamaño máximo de un comité. El rango probado es (1 3 7 10)
-    \item \item \textbf{Número de negativos (nneg)}: tamaño del conjunto de muestras negativas. El rango probado es (10 50)
+    \item \textbf{Umbral de Weibull (\textit{Tw})}: valor que determina si una entidad es desconocida o no. El rango probado es (0.05 0.1 0.25)
+    \item \textbf{Percentil (\textit{percent})}: valor del percentil aplicado en la combinación de las puntuaciones generadas por las \acrshort{svm}. El rango probado es (0.25 0.5 0.75)
+    \item \textbf{Número de \acrshort{svm} (\textit{max\_svm})}: valor que representa al tamaño máximo de un comité. El rango probado es (1 3 7 10)
+    \item \textbf{Número de negativos (\textit{nneg})}: tamaño del conjunto de muestras negativas. El rango probado es (10 50)
     \item \textbf{Tamaño de la plantilla}: establece el número de frames positivos que define a un comité. Se va a partir siempre de un tamaño de 5 frames, el mínimo necesario acorde a \cite{Erik} para definir un nuevo individuo.
     \item \textbf{Tamaño de secuencia}: número de frames que forman una secuencia de video. Se ha fijado el valor en 15 frames, que equivalen a 1,5 segundos de video con cámaras funcionando a 10 Hz.
     \item \textbf{Solapamiento}: establece el salto en el número de frames entre secuencias. Se ha fijado el valor en 5, dando lugar a más secuencias para analizar al coincidir frames entre las mismas.
@@ -70,9 +70,9 @@ En el modo \textit{Open-World}, el sistema crea un nuevo comité cuando se recon
 
 \input{contenido/tables/tests/owparams.tex}
 
-Como en la sección \ref{seq:osparams}, en la tabla \ref{tab:owparams} se muestran los cinco mejores resultados fruto del análisis de parámetros.
+Como en la sección \ref{sec:osparams}, en la tabla \ref{tab:owparams} se muestran los cinco mejores resultados fruto del análisis de parámetros.
 
-Los parámetros \textit{nneg} y \textit{percent} permanecen constantes acorde a las pruebas de la sección \ref{sec:osparams}. A la hora de escoger un valor de umbral de Weibull (\textit{tw}) es necesario tener en cuenta una métrica adicional que es el número de comités que se han generado (se cuentan también los 10 comités iniciales). Un valor alto del umbral implica una reducción en la creación de comités, debido al elevado \textit{recall} y por ende a un menor número de desconocidos y recíprocamente. Al reducir el valor de \textit{tw} se elevan notablemente los comités creados, pasando de 8 a 24 comités sin contar los 10 iniciales, lo que implica un gran salto con apenas una reducción en el valor de \textit{recall}. Este crecimiento puede deberse a la indecisión del sistema de predecir un individuo, ya que al crear nuevos comités de la misma persona, aumenta el riesgo de que más de un comité se active (devuelva un score bajo), por lo que dejan de darse casos extremos, aumentando así el número de desconocidos y por ende de comités creados. En cuanto al parámetro \textit{max\_svm}, los resultados conducen a la misma conclusión que en las pruebas de la sección \ref{seq:osparams}, salvo por el valor de 3 en uno de los resultados, que representa una situación excepcional.
+Los parámetros \textit{nneg} y \textit{percent} permanecen constantes acorde a las pruebas de la sección \ref{sec:osparams}. A la hora de escoger un valor de umbral de Weibull (\textit{tw}) es necesario tener en cuenta una métrica adicional que es el número de comités que se han generado (se cuentan también los 10 comités iniciales). Un valor alto del umbral implica una reducción en la creación de comités, debido al elevado \textit{recall} y por ende a un menor número de desconocidos y recíprocamente. Al reducir el valor de \textit{tw} se elevan notablemente los comités creados, pasando de 8 a 24 comités sin contar los 10 iniciales, lo que implica un gran salto con apenas una reducción en el valor de \textit{recall}. Este crecimiento puede deberse a la indecisión del sistema de predecir un individuo, ya que al crear nuevos comités de la misma persona, aumenta el riesgo de que más de un comité se active (devuelva un score bajo), por lo que dejan de darse casos extremos, aumentando así el número de desconocidos y por ende de comités creados. En cuanto al parámetro \textit{max\_svm}, los resultados conducen a la misma conclusión que en las pruebas de la sección \ref{sec:osparams}, salvo por el valor de 3 en uno de los resultados, que representa una situación excepcional.
 
 \subsection{Umbral de actualización?}
 
@@ -88,9 +88,7 @@ TODO: comentar como el solapamiento puede influir en la creación de nuevas SVM.
 
 \section{Pruebas de inicialización del sistema}
 
-\input{contenido/tables/tests/inittab.tex}
-
-La selección de los frames que conforman un nuevo comité es un factor crítico para el correcto funcionamiento del sistema. En la tabla \ref{tab:inittab} se comparan 3 técnicas de inicialización:
+La selección de los frames que conforman un nuevo comité es un factor crítico para el correcto funcionamiento del sistema. En esta sección se evalúa el sistema en los modos \textit{Open-Set} y \textit{Open-World} aplicando 3 técnicas de inicialización:
 \begin{itemize}
     \item \textbf{Supervisada}: los comités se inicializan con muestras (recortes faciales) seleccionadas de antemano por el operador. Es el modo utilizado en las pruebas de la sección \ref{seq:paramtunning}.
     \item \textbf{Semisupervisada}: se escoge un momento del video en el que aparece un mínimo de personas simultáneamente y se agrupan las muestras por individuo con la información del \gls{dataset}. Para los individuos que no hayan aparecido en ese instante, se inicializan sus comités por medio del método supervisado.
@@ -102,3 +100,29 @@ Para los modos semisupervisado y no supervisado se tiene que cumplir que el inst
     \item Que el ancho del recorte no supere al alto del recorte.
 \end{itemize}
 La situación ideal sería encontrar un instante en el que todas las personas del video aparezcan. Como mínimo para que el sistema se inicialice es necesario que aparezcan 5 entidades, que equivale al número mínimo de puntos necesarios para definir la distribución de Weibull. En el \gls{dataset} de prueba solo aparece un instante de 5 individuos que cumpla con las condiciones anteriores. Por lo tanto, es necesario añadir a la entidad restante a partir de los datos registrados en el caso de la inicialización no supervisada.
+
+\subsection{Modo \textit{Open-Set}}
+
+\input{contenido/tables/tests/osinittab.tex}
+
+En la tabla \ref{tab:osinittab} se muestran los resultados según la inicialización. Se puede apreciar como claramente el modo supervisado es el que mejor funciona, ya que los recortes de caras pudieron ser seleccionados minuciosamente, por lo que es lógico que devuelva el mejor resultado. El modo semisupervisado . Por último, el modo no supervisado refleja el peor rendimiento, en comparación con el modo semisupervisado los comités deberían de ser los mismos, ya que no existen muchos instantes en el video de prueba que reúnan las condiciones requeridas, por lo que el problema podría residir en como el método de tracking realiza el agrupamiento. Por otra parte, la caída en la precisión y la excesiva desviación en las métricas se debe al individuo que se incluye durante la operación del sistema, a diferencia de los anteriores modos, el comité de la persona en cuestión se define en base a unas muestras no seleccionadas de antemano, por lo que los resultados varían dependiendo de la calidad de las muestras que el sistema escoja. También se depende de que el desconocido detectado sea realmente el individuo en cuestión, en caso contrario se crea un comité que se adueña de la identidad del sujeto, agregando así ruido a los reconocimientos. TODO: el umbral de Weibull.
+
+\subsection{Modo \textit{Open-World}}
+
+\input{contenido/tables/tests/owinittab.tex}
+
+En la tabla \ref{tab:owinittab} se muestran los resultados esta vez para \textit{Open-World}. Salvo en el modo no supervisado, se obtienen mejores resultados con un \textit{Tw} de 0.25 respecto a 0.1, esto puede deberse a que el sistema es menos propenso a crear comités que se puedan adueñar de las entidades existentes, por lo tanto se genera una menor confusión y equivocación. TODO: analizar porque el \textit{Tw} da mejor en 0.1. El número de comités aumenta en el modo no supervisado, ya que al contar con muestras de peor calidad (generalmente) la confusión inter-comité aumenta.
+
+\section{Evolución del sistema en el tiempo}
+\subsection{Modo \textit{Open-Set}}
+
+La figura \ref{fig:osevol}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{imagenes/figaro.png}
+    \caption{Diagrama con datos de ejemplo.}
+    \label{fig:osevol}
+\end{figure}
+
+\subsection{Modo \textit{Open-World}}

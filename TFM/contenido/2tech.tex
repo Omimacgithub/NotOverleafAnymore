@@ -136,7 +136,7 @@ Para las pruebas se emplearon dos equipos con las siguientes características:
 \subsection{ROS}
 \acrfull{ros} es un middleware de \textbf{código abierto} que incorpora las herramientas necesarias para la interacción y desarrollo de software en robots. Cuenta con una amplia biblioteca de distribuciones y librerías. TODO
 \subsection{Rosbag}
-Es una herramienta del ecosistema \arcshort{ros} que graba y reproduce los datos capturados de la ejecución de un sistema \acrshort{ros} en un momento concreto en el tiempo. Los \glspl{dataset} creados en \cite{andrew} se construyeron partiendo de un fichero rosbag, que contiene toda la información generada por los diferentes sensores. En este proyecto se emplearán dichos ficheros rosbag para reproducir las pruebas en tiempo real.
+Es una herramienta del ecosistema \acrshort{ros} que graba y reproduce los datos capturados de la ejecución de un sistema \acrshort{ros} en un momento concreto en el tiempo. Los \glspl{dataset} creados en \cite{andrew} se construyeron partiendo de un fichero rosbag, que contiene toda la información generada por los diferentes sensores. En este proyecto se emplearán dichos ficheros rosbag para reproducir las pruebas en tiempo real.
 
 \subsection{TensorRT}
 Es un software de \textbf{código abierto} desarrollado por NVIDIA para la optimización de inferencias de modelos de IA en aceleradoras de NVIDIA \cite{x36}. Permite ejecutar modelos entrenados en frameworks como Pytorch y TensorFlow, aunque se aconseja exportarlos al formato \acrfull{onnx} previamente, para aprovechar al completo las funcionalidades de este software. Se ha empleado TensorRT para optimizar la mayoría de modelos CNN tanto en equipos ARM (Jetson) como x86 (Intel).
