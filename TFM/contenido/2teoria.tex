@@ -1,6 +1,31 @@
 \chapter{Fundamentos teóricos}
 \lettrine{E}{n} este capítulo se detallan las métricas de evaluación y herramientas hardware y software utilizadas, así como los conceptos necesarios para comprender el resto de la memoria.
 
+\section{Conceptos}
+
+\subsection{Tipos de reconocimiento}
+Existen 3 tipos diferentes de reconocimiento que se aplicarán a lo largo de esta memoria y que son los siguientes:
+
+\subsubsection{\textit{Closed-Set}}
+Tipo de reconocimiento que opera en un conjunto \textbf{cerrado} de objetos, siendo en este caso personas registradas de antemano. Es el modo en el que trabaja el sistema base \cite{andrew}.
+
+\subsubsection{\textit{Open-Set}}
+Extiende al modo \textit{Closed-Set}, de forma que puede reconocer a usuarios que no pertenezcan al conjunto de entrenamiento, es decir, a usuarios \textbf{desconocidos}.
+
+\subsubsection{\textit{Open-World}}
+
+Atendiendo a la definición de \cite{rudd2017extreme}, un sistema de reconocimiento \textit{Open-World} debe de ser capaz de realizar las siguientes 4 tareas:
+\begin{itemize}
+    \item Detectar desconocidos (\textbf{\textit{Open-Set}}): identificar cuando una muestra de entrada no pertenece al conjunto de datos del entrenamiento.
+    \item Escoger las muestras que puedan aportar información del desconocido al modelo.
+    \item Etiquetar dichas muestras, por ejemplo, con un número o un pseudónimo.
+    \item Actualizar el modelo.
+\end{itemize}
+
+\subsection{Support Vector Machine (SVM)}
+
+Es un algoritmo de \textbf{clasificación} que dibuja un hiperplano entre categorías de datos, buscando siempre el mayor margen (distancia entre el punto que define la frontera de la categoría, denominado support vector, y el hiperplano), de modo que agrega cierta tolerancia al posible ruido producido. Es un \textbf{algoritmo de aprendizaje supervisado} (requiere de un conjunto inicial de datos para su entrenamiento) y conforma la unidad más básica de clasificación dentro del sistema de este proyecto \cite{SVM}.
+
 \section{Métricas de evaluación}
 \label{sec:metriks}
 
@@ -56,20 +81,3 @@ Las métricas de evaluación son las mismas que en los modelos de detección, sa
 \end{itemize}
 
 Cuando el sistema tiene dudas acerca de la entidad de una persona, es preferible que se asigne dicha entidad como \textbf{desconocida} antes que otorgar una predicción \textbf{incorrecta}. Por este motivo, no se tiene en cuenta los falsos negativos a la hora de calcular la precisión, ni los falsos positivos cuando se calcula el \textit{recall}.
-
-\section{Conceptos}
-
-\subsection{Reconocimiento \textit{Open-World}}
-Atendiendo a la definición de \cite{rudd2017extreme}, un sistema de reconocimiento \textit{Open-World} debe de ser capaz de realizar las siguientes 4 tareas:
-\begin{itemize}
-    \item Detectar desconocidos (\textbf{\textit{Open-Set}}): identificar cuando una muestra de entrada no pertenece al conjunto de datos del entrenamiento.
-    \item Escoger las muestras que puedan aportar información del desconocido al modelo.
-    \item Etiquetar dichas muestras, por ejemplo, con un número o un pseudónimo.
-    \item Actualizar el modelo.
-\end{itemize}
-
-\subsection{Necesario explicarlo?: Redes neuronales convolucionales (CNN)}
-
-\subsection{Support Vector Machine (SVM)}
-
-Es un algoritmo de \textbf{clasificación} que dibuja un hiperplano entre categorías de datos, buscando siempre el mayor margen (distancia entre el punto que define la frontera de la categoría, denominado support vector, y el hiperplano), de modo que agrega cierta tolerancia al posible ruido producido. Es un \textbf{algoritmo de aprendizaje supervisado} (requiere de un conjunto inicial de datos para su entrenamiento) y conforma la unidad más básica de clasificación dentro del sistema de este proyecto \cite{SVM}.

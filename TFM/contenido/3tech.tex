@@ -8,12 +8,16 @@ El sistema que se expondrá se ha construido para funcionar en el robot móvil S
 \subsection{Cámaras RGBD}
 Las Kinect de Microsoft otorgan una imagen \acrfull{rgb} más una imagen de distancia.
 
-\subsection{NVIDIA Jetson}
+\subsection{Dispositivos}
+
+A continuación se expone el listado de dispositivos sujetos de las pruebas de este proyecto.
+
+\subsubsection{NVIDIA Jetson}
 Es una familia de \textbf{\glspl{embsystem}} pensados para aplicaciones de \acrshort{ia}. Dichos dispositivos incluyen un kit de desarrollo llamado \textbf{JetPack}, diseñado para exprimir la potencia de la NVIDIA Jetson en aplicaciones como la robótica, \acrshort{ia} generativa y visión artificial \cite{jason}.
 
 Actualmente existe una amplia variedad en la potencia y precio de estos dispositivos \cite{jason}. Para este proyecto se han empleado cuatro modelos diferentes que se exponen a continuación (se encuentran ordenados de menores a mayores prestaciones).
 
-\subsection{Jetson Xavier NX}
+\textbf{Jetson Xavier NX}
 
 Specs \cite{jxavier}
 
@@ -32,7 +36,7 @@ AI Performance: 21 TOPS (TODO: en qué precisión? INT8?)
 Desde 399\$ \cite{price}.
 
 
-\subsection{Jetson Orin Nano}
+\textbf{Jetson Orin Nano}
 
 Specs \cite{jorin}
 
@@ -50,7 +54,7 @@ AI Performance: 67 TOPS INT8
 
 Es la más barata desde 249\$ \cite{price}.
 
-\subsection{Jetson AGX Orin}
+\textbf{Jetson AGX Orin}
 
 Specs \cite{jorin}:
 
@@ -70,7 +74,7 @@ La placa AGX Orin aumenta considerablemente las prestaciones de memoria principa
 
 1999\$ \cite{price}.
 
-\subsection{Jetson AGX Thor}
+\textbf{Jetson AGX Thor}
 
 Specs \cite{jthor}:
 
@@ -89,70 +93,72 @@ Consumo: entre 40 W y 130 W
 Desde 3499\$ \cite{price}
 
 
-\subsection{Equipos x86}
-Para las pruebas se emplearon dos equipos con las siguientes características:
-\begin{itemize}
-      \item \textbf{Equipo 1 (portátil personal)}: cuenta con una CPU \textbf{Intel i7 i7-12650H}, una GPU \textbf{NVIDIA GeForce RTX 3050} con \textbf{4 GB de RAM}. Tiene una memoria principal de \textbf{16 GB} y el sistema operativo Linux Mint 21.3 (equivalente a un Ubuntu 22.04).
+\subsubsection{Portátil personal}
+Cuenta con una CPU \textbf{Intel i7 i7-12650H}, una GPU \textbf{NVIDIA GeForce RTX 3050} con \textbf{4 GB de RAM}. Tiene una memoria principal de \textbf{16 GB} y el sistema operativo Linux Mint 21.3 (equivalente a un Ubuntu 22.04).
 
-            CPU: i7-12650H
+CPU: i7-12650H
 
-            Nº threads: 16
+Nº threads: 16
 
-            Freq: 4.7 GHz
+Freq: 4.7 GHz
 
-            GPU: GeForce RTX 3050 (4 GiB)
+GPU: GeForce RTX 3050 (4 GiB)
 
-            SMs: 18
+SMs: 18
 
-            SM Freq: 2.1 GHz
+SM Freq: 2.1 GHz
 
-            MEM Freq: 7 GHz
+MEM Freq: 7 GHz
 
-            MEM: 15 GB
+MEM: 15 GB
 
 
-      \item \textbf{Equipo 2 (PC del laboratorio del CITIC)}: cuenta con una CPU \textbf{Intel i7 i7-12700}, una GPU \textbf{NVIDIA GeForce GTX 1650} con \textbf{4 GB de RAM}. Tiene una memoria principal de \textbf{32 GB} y el sistema operativo Ubuntu 24.04.
+\subsubsection{PC del laboratorio del CITIC}
+Cuenta con una CPU \textbf{Intel i7 i7-12700}, una GPU \textbf{NVIDIA GeForce GTX 1650} con \textbf{4 GB de RAM}. Tiene una memoria principal de \textbf{32 GB} y el sistema operativo Ubuntu 24.04.
 
-            CPU: i7-12700
+CPU: i7-12700
 
-            Nº threads: 20
+Nº threads: 20
 
-            Freq: 4.9 GHz
+Freq: 4.9 GHz
 
-            GPU: GeForce GTX 1650 (4 GiB)
+GPU: GeForce GTX 1650 (4 GiB)
 
-            SMs: 14
+SMs: 14
 
-            SM Freq: 2.1 GHz
+SM Freq: 2.1 GHz
 
-            MEM Freq: 6 GHz
+MEM Freq: 6 GHz
 
-            MEM: 33.4 GB
-\end{itemize}
+MEM: 33.4 GB
 
 \section{Software}
 \label{sec:sw}
 
 \subsection{ROS}
 \acrfull{ros} es un middleware de \textbf{código abierto} que incorpora las herramientas necesarias para la interacción y desarrollo de software en robots. Cuenta con una amplia biblioteca de distribuciones y librerías. TODO
-\subsection{Rosbag}
-Es una herramienta del ecosistema \acrshort{ros} que graba y reproduce los datos capturados de la ejecución de un sistema \acrshort{ros} en un momento concreto en el tiempo. Los \glspl{dataset} creados en \cite{andrew} se construyeron partiendo de un fichero rosbag, que contiene toda la información generada por los diferentes sensores. En este proyecto se emplearán dichos ficheros rosbag para reproducir las pruebas en tiempo real.
 
-\subsection{TensorRT}
+Existe una herramienta del ecosistema \acrshort{ros} que graba y reproduce los datos capturados de la ejecución de un sistema \acrshort{ros} en un momento concreto en el tiempo. Los \glspl{dataset} creados en \cite{andrew} se construyeron partiendo de un fichero rosbag, que contiene toda la información generada por los diferentes sensores. En este proyecto se emplearán dichos ficheros rosbag para reproducir las pruebas en tiempo real.
+
+\subsection{Optimizadores}
+
+\textbf{TensorRT}
 Es un software de \textbf{código abierto} desarrollado por NVIDIA para la optimización de inferencias de modelos de IA en aceleradoras de NVIDIA \cite{x36}. Permite ejecutar modelos entrenados en frameworks como Pytorch y TensorFlow, aunque se aconseja exportarlos al formato \acrfull{onnx} previamente, para aprovechar al completo las funcionalidades de este software. Se ha empleado TensorRT para optimizar la mayoría de modelos CNN tanto en equipos ARM (Jetson) como x86 (Intel).
-\subsection{PyCUDA}
-Librería de Python de \textbf{código abierto} \cite{pycuda} que interacciona con el driver de CUDA por medio de un \gls{wrapper}. Se ha utilizado para programar los códigos de inferencia de los modelos que utilizan TensorRT.
-\subsection{ONNX}
-\subsection{OpenVINO}
+
+\textbf{OpenVINO}
 Es un software de \textbf{código abierto} desarrollado por Intel para la optimización de inferencias en \acrshort{cpu} (ARM,x86) y en aceleradoras de Intel (\acrshort{gpu},\acrshort{npu}) \cite{OpenVINO}. Permite la conversión directa de modelos entrenados en frameworks como Tensorflow y Pytorch a ficheros XML, que son versiones optimizadas de las \acrshort{cnn} y que se utilizan para realizar las inferencias. Se ha empleado para reducir la latencia de modelos a la hora de ejecutarlos en \acrshort{cpu}.
-\subsection{NumPy}
+\subsection{Librerías de Python}
+\textbf{PyCUDA}
+Librería de Python de \textbf{código abierto} \cite{pycuda} que interacciona con el driver de CUDA por medio de un \gls{wrapper}. Se ha utilizado para programar los códigos de inferencia de los modelos que utilizan TensorRT.
+\textbf{NumPy}
 Librería de Python de \textbf{código abierto} usada en este proyecto para representar imágenes y la información generada por los modelos en forma de vectores y matrices multidimensionales. Estos elementos pueden manipularse por medio de una amplia cantidad de funciones matemáticas que dicha librería ofrece.
 
-\subsection{Scipy}
+\textbf{Scipy}
 Librería de Python de \textbf{código abierto} que implementa numerosos algoritmos relacionados con la computación científica. En este proyecto se ha usado para aplicar el método húngaro, hallar los parámetros que modelan una distribución de Weibull, calcular distancias coseno, entre muchas otras funcionalidades que dicho software ofrece.
 
-\subsection{OpenCV}
+\textbf{OpenCV}
 La librería de \textbf{código abierto} por excelencia para visión por computadora de código abierto. Otorga herramientas para la obtención y procesado de las imágenes, además de un módulo de visión artificial (dnn), que incluye modelos ya entrenados de visión artificial. Dicha librería tiene implementación en CUDA (si se compila el código fuente), lo que permite ejecutar operaciones y kernels de modelos en aceleradoras de NVIDIA (ejemplo: NVIDIA Jetson).
+
 \subsection{Docker}
 Es un software de virtualización de \textbf{código abierto}. Permite realizar despliegues automatizados mediante ficheros de configuración, el software se ejecuta en un entorno aislado del sistema operativo llamado \textbf{contenedor}, dichos contenedores proporcionan seguridad y portabilidad. Esta herramienta ha sido de gran utilidad para desplegar el software del proyecto en los diferentes dispositivos.
 
