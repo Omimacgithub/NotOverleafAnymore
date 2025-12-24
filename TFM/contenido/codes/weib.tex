@@ -1,6 +1,7 @@
-\begin{lstlisting}[language=Python, caption=Recognition Decision Function]
+\begin{lstlisting}[language=Python, float=t, label=coud:weib, caption=Recognition Decision Function, basicstyle=\footnotesize]
 import numpy as np
 from scipy import stats
+
 def weib(x,scale,shape):
     if x < 0:
       return 0
@@ -31,4 +32,3 @@ def RDF(R, sorted_ens_scr, Tw):
     ioiId = -1
   
 \end{lstlisting}
-\label{coud:weib}

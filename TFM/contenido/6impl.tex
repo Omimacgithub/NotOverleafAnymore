@@ -3,105 +3,32 @@
 
 \lettrine{E}{n} este capítulo se ahonda en los fundamentos y detalles de implementación de los nuevos componentes.
 
-TODO: Comentar implementación del procesamiento de video?
+\section{Creación de las SVM}
+\label{sec:training}
 
-\section{Inicialización}
+El código \ref{coud:training} corresponde al proceso seguido a la hora de crear y entrenar nuevos clasificadores. De todas las muestras de individuos de la base de datos, se \textbf{excluyen las del propio sujeto} en el caso de crear una \acrshort{svm} para un comité existente. Posteriormente, se extrae un subconjunto aleatorio de estas (función random\_pick), que representará al conjunto de muestras negativas del entrenamiento. Finalmente, se crea la \acrshort{svm} y se entrena con el conjunto de positivos (variable d1) y negativos, etiquetados con 1 (variable labels) y -1 (variable plabels) respectivamente. De esta forma, cuando el clasificador determine que las muestras pertenecen a la clase que representa, devolverá como máximo una puntuación de -1, en caso contrario devolverá un 1 TODO: no sé porqué se comporta al revés. Este comportamiento se ha aplicado simplemente por comodidad, pero la \acrshort{svm} podría entrenarse para que cause el efecto contrario.
 
-En esta primera fase del sistema se crean los registros que representarán a los individuos iniciales. En este proyecto se han probado 2 aproximaciones:
-\begin{itemize}
-    \item \textbf{Supervisado}: el operador realiza una selección de los frames más representativos para cada individuo. El sistema crea el registro a partir de las características extraídas de dichos frames.
-    \item \textbf{No supervisado}: el sistema se encarga de recoger los frames en el instante en el que aparezcan un mínimo de entidades simultáneas en escena. A partir de los frames de las cámaras, que estarán sincronizadas, se obtienen las \glspl{bbox} y se procede a la creación de los comités con los \textit{\gls{embedding}} generados. En este modo \textbf{no se requiere de ninguna intervención del operador}, el sistema realiza la selección en base a unos criterios preestablecidos (ejemplo: la cara debe estar completamente dentro del rango de la cámara). En esta aproximación, es crucial el método de seguimiento (tracking) para recolectar las secuencias de \glspl{bbox}.
-\end{itemize}
-
-Independientemente de la aproximación escogida, se obtienen las características de cada frame de la secuencia y se crea la \acrshort{svm} inicial con la que se \textbf{inicializa el comité}. Dicha \acrshort{svm} se entrena con las características del usuario, que compondrá el set positivo, y un subconjunto de las características del resto de usuarios, que compondrá el set de negativos (escogidas aleatoriamente).
-
-(TODO: donde mencionar los modelos utilizados) Dichas características son generadas por el modelo ArcFace \cite{deng2019arcface}, es la misma red que se utiliza en \cite{Erik, andrew} y que ha demostrado ser de las mejores en el \acrshort{sota} del reconocimiento facial.
-
-La figura \ref{fig:init} muestra el funcionamiento del modo de inicialización no supervisado. A lo largo del video, se busca un instante (o frame) en el que mínimo aparezcan \textbf{5 personas} de forma simultánea, este número corresponde con la cantidad mínima de sujetos necesarios para formar una distribución de Weibull consistente \cite{Erik}. Tras localizar dicho instante, se trata de recolectar un mínimo de \glspl{bbox}, equivalente al tamaño de plantilla (templateSize) para todos los individuos por medio del método de tracking. Las \glspl{bbox} se someten a un método de filtrado que puede descartarlas si no cumplen con determinadas condiciones (ejemplo: cara parcialmente fuera de plano o una \gls{bbox} más ancha que alta). En caso de no recolectar el mínimo necesario de \glspl{bbox}, el sistema \textbf{no se inicializa}. En caso contrario, se obtienen las características (o \textit{\glspl{embedding}/features}) de los datos recogidos y se forma una estructura con los \textit{features} de todos los usuarios, que servirá para entrenar las \acrshort{svm}. Para cada individuo, se crea un \textit{ensemble} a partir de una \acrshort{svm} entrenada con las propias características del sujeto como positivos y las características del \textbf{resto de usuarios} como negativos.
-
-El funcionamiento del modo de inicialización supervisado es el mismo que el de la figura \ref{fig:init}, salvo que no es necesario seguir todo el proceso de selección de \glspl{bbox} del modo no supervisado.
-
-\begin{figure}
-    \centering
-    \includegraphics[width=1\linewidth]{imagenes/Init.jpg}
-    \caption{Inicialización no supervisada del sistema}
-    \label{fig:init}
-\end{figure}
-
-La fase de inicialización es fundamental, debido a que la \acrshort{svm} inicial es la que define la identidad del comité. Si dicha \acrshort{svm} está compuesta por muestras de baja calidad (ejemplo: caras borrosas o parcialmente ocluidas), entonces el comité \textbf{no se identificará correctamente consigo mismo} y, por lo tanto, generará \textbf{mayor confusión} a la hora de aplicar Weibull, es decir, \textbf{se generarán más desconocidos}.
+\input{contenido/codes/training.tex}
 
 \section{Módulo adaptativo}
 \label{sec:adapt}
 
-A continuación se expone en detalle todas las funciones presentes en la figura \ref{fig:ADAPTSYS}.
-
-\subsection{\textit{Ensemble Decision Function} (EDF)}
-
-Es el módulo encargado de devolver una representación comparable de cada individuo que será aplicada en la decisión de reconocimiento.
-
-Por cada secuencia de entrada, siendo esta una secuencia de \textit{\gls{embedding}} (figura \ref{fig:ADAPTSYS}), se calculan las \textbf{puntuaciones (scores) para cada comité}. La puntuación de un comité es a su vez un valor consensuado entre los resultados de las predicciones de las \acrshort{svm} que lo conforman, el criterio de consenso (o de fusión) se basa en un percentil (generalmente la media). Aplicar percentiles es igual a escoger un conjunto amplio o reducido de \acrshort{svm}, ya que pueden existir \acrshort{svm} dañinas para el comité (ejemplo: corresponden a otra persona), los percentiles ayudan a descartar los resultados de dichas \acrshort{svm}. Para cada comité en la base de datos, se ejecutan las siguientes funciones:
-\begin{itemize}
-    \item \textbf{FDF} (Frame Decision Function): se calculan los scores de cada \acrshort{svm} contra \textbf{un frame} de la secuencia y se fusionan las salidas (o puntuaciones) en una única puntuación del comité para dicho frame. Antes de la fusión, se aplica la normalización Euclidiana (figura \ref{eq:l2norm}) a cada puntuación con el fin de hacerlas comparables.
-    \item \textbf{SDF} (Sequence Decision Function): se encarga de fusionar todas las puntuaciones de la anterior función para obtener un único resultado que representa a la \textbf{secuencia}.
-\end{itemize}
-
-\[ s_{i} = \frac{x_{i}}{\left\| x_{i}\right\|_{2}} \]
-\captionof{figure}{Normalización L2, siendo $x_{i}$ un \textit{\gls{embedding}} o la salida de una \acrshort{svm}, se obtiene el vector normalizado $s_{i}$.}
-\label{eq:l2norm}
-
 \subsection{\textit{Recognition Decision Function} (RDF)}
+
 Esta función determina si la entidad detectada se corresponde a un individuo previamente reclutado o a una entidad \textbf{desconocida}.
 
-El código \ref{coud:weib} muestra la implementación de la función RDF. Del conjunto de scores ordenados, se excluye el primer score de la distribución (que corresponde con el más bajo, por lo tanto el mejor) y se compone la distribución de distancias de cada puntuación respecto a la mediana. De los puntos de la distribución, se obtienen los parámetros shape y scale, que modelan la función de Weibull. Finalmente, se calcula la probabilidad de pertenencia a la distribución del mejor score (función weib) y se toma la decisión en base a un umbral (Tw). Si la probabilidad es inferior al umbral, se reconoce el caso como un extremo y se asigna la identidad correspondiente al sujeto, en caso contrario se devuelve como desconocido. En la figura \ref{fig:FITS} se muestran las dos posibles salidas de la función RDF recién comentadas.
+El código \ref{coud:weib} muestra la implementación de la función RDF. Del conjunto de scores ordenados, se excluye el primer score de la distribución (que corresponde con el más bajo, por lo tanto el mejor) y se compone la distribución de distancias de cada puntuación respecto a la mediana. De los puntos de la distribución, se obtienen los parámetros \textit{shape} y \textit{scale}, que modelan la función de Weibull. Finalmente, se calcula la probabilidad de pertenencia a la distribución del mejor score (función weib) y se toma la decisión en base a un umbral (Tw). Si la probabilidad es inferior al umbral, se reconoce el caso como un extremo y se asigna la identidad correspondiente al sujeto (\textit{drift}), en caso contrario se devuelve como desconocido (\textit{unknown}).
 
-\input{contenido/codes/weib}
-
-\begin{figure}
-    \centering
-    \includegraphics[width=1\linewidth]{imagenes/FITS.jpg}
-    \caption{Ejemplos de distribuciones de Weibull y como el umbral (Tw) distingue entre un desconocido (\textit{unknown} y una deriva (\textit{drift})).}
-    \label{fig:FITS}
-\end{figure}
-
-\subsection{Update Module}
-Es el módulo que implementa la actualización de los comités tras el reconocimiento realizado en la anterior función. Pueden darse los siguientes dos escenarios (figura \ref{fig:ADAPTSYS}):
-
-TODO: ya comenté como funciona.
-
-Una condición necesaria para que este módulo se ejecute es que la secuencia de entrada para el individuo \textbf{contenga un mínimo de frames para su inicialización}, dicho mínimo es fijado por el operador de antemano. Otra precondición, que aplica a las entidades conocidas, es comprobar si las caras (o muestras) a añadir son lo suficientemente representativas. Las puntuaciones cerca del cero indican que las muestras se encuentran en el borde de lo que es nuevo y lo que la \acrshort{svm} ya conoce. A partir de un valor de umbral (\textit{update\_th}) se decide si dichas muestras añaden información nueva al comité.
-
-\textbf{El tamaño del conjunto de positivos y de negativos es prefijado por el operador}, en la sección \ref{seq:paramtunning} se evalúa su impacto en el rendimiento.
-
-\subsection{Limitation Module}
-\label{seq:limmod}
-
-El limitation module es una función que se encuentra inherente al módulo de actualización. Si un comité excede un número prefijado de \acrshort{svm} almacenadas, se toma una decisión para eliminar una de las \acrshort{svm} según los siguientes criterios.
-
-\subsubsection{Diversidad}
-Este criterio mide el valor de aportación de una \acrshort{svm} respecto al resto del comité. Se escoge un conjunto aleatorio de \textit{\glspl{embedding}} de entre todos los comités y se generan los scores utilizando las m \acrshort{svm} del comité, lo que resulta en n*m scores. TODO: \textbf{Basándose en el signo de los scores}, se acumula el producto de los signos entre scores, de forma que un valor discordante afecta en mayor medida a la propia \acrshort{svm} y en menor medida al resto de \acrshort{svm}. Un valor alto indica bajo nivel de diversidad, por ende un valor \textbf{pobre de aportación al comité}. La figura \ref{fig:diversity} muestra la fórmula de diversidad, que se calcula como en \cite{Erik}.
-
-\begin{figure}
-    \centering
-    \includegraphics[width=0.75\linewidth]{imagenes/Diversity.png}
-    \caption{Fórmula de diversidad, extraída de \cite{Erik}}
-    \label{fig:diversity}
-\end{figure}
-
-\subsubsection{Coherencia}
-Este criterio viene a determinar la precisión de una \acrshort{svm} en el reconocimiento cuando no se dispone de un \textit{\gls{dataset}} para su evaluación (ejemplo: entorno operacional). El valor de coherencia determina cuantas veces una \acrshort{svm} devuelve el mismo signo que el resultado consensuado del comité, si los signos coinciden, se suma 1 al valor de coherencia, en caso contrario, se resta -1 a dicho valor. Un valor alto indica buena precisión. En la creación de una \acrshort{svm}, este valor se inicializa a 0.
-
-\subsubsection{Favorabilidad}
-Finalmente, los dos criterios se fusionan en un valor llamado \textbf{índice de favorabilidad}, la \acrshort{svm} con el menor valor de dicho índice \textbf{se elimina del comité}. El signo del valor de diversidad \textbf{se invierte} a la hora de la fusión.
-
-\subsection{Creación de nuevos comités (\textit{Open-World})}
-Cuando se reconoce a un usuario como desconocido (supuestamente un individuo no antes reclutado), se registra su identidad en forma de un nuevo comité con una \acrshort{svm} inicial. De esta forma, el sistema adquiere la capacidad de expandir su conocimiento a partir de personas nunca antes vistas. Dicha \acrshort{svm} inicial tiene de muestras positivas las de la propia secuencia actual y de muestras negativas las del resto de individuos ya conocidos.
+\input{contenido/codes/weib.tex}
 
 \section{Mejoras del sistema base}
 
 \subsection{Escalabilidad y tolerancia a fallos de las cámaras}
-Cuando se fusionan los resultados procesados por los distintos sensores, se requiere que todos ellos se encuentren \textbf{sincronizados} dentro de un intervalo temporal (ejemplo: 100 milisegundos), de forma que las predicciones no se empañan de información desactualizada. En \cite{andrew} se utiliza una librería (TODO: clase) de \acrshort{ros}, llamada \textit{ApproximateTimeSynchronizer}, esta librería utiliza un algoritmo para emparejar mensajes a partir del \gls{timestamp} \cite{ApproximateTime}. El problema de esta librería es que no es flexible, ya que espera recibir datos de todas las fuentes en todo momento, lo que no es un suceso realista y que puede provocar una caída del sistema en el momento que una cámara falle. Como solución a este problema, se ha empleado la clase \textit{MessageFiltersCache} de la misma librería a modo de sustitución (TODO: ref). En esta nueva implementación, cada nodo posee una caché en la que se almacenan los mensajes, a una frecuencia establecida se recuperan los datos de todas las cachés, TODO: si en una de las cachés el último dato no se corresponde con el intervalo actual, este se descarta.
+Cuando se fusionan los resultados procesados por los distintos sensores (nodo integración de sensores en la figura \ref{fig:finalsys}), se requiere que todos ellos se encuentren \textbf{sincronizados} dentro de un intervalo temporal (ejemplo: 100 milisegundos), de forma que las predicciones no se realizan a partir de información desactualizada. En \cite{andrew} se utiliza una clase del paquete \textit{message\_filters} de \acrshort{ros} llamado \textit{ApproximateTimeSynchronizer}. Esta clase utiliza un algoritmo para emparejar mensajes a partir de su \gls{timestamp} \cite{ApproximateTime}. El problema de \textit{ApproximateTimeSynchronizer} es que espera recibir datos \textbf{de todas las fuentes en todo momento}, lo que no es una situación realista y que puede provocar una caída del sistema en el momento que uno de los sensores falle. Como solución a este problema, se ha realizado una sustitución por la clase \textit{MessageFiltersCache} de la misma librería \cite{MFC}. En esta nueva implementación, cada nodo posee una caché en la que se almacenan sus mensajes, a una frecuencia establecida se recuperan los datos de todas las cachés, TODO: si en una de las cachés el último dato no se corresponde con el intervalo actual, este no se tiene en cuenta para dicho intervalo. El código \ref{coud:cash} muestra la implementación de dicho mecanismo.
+
+\input{contenido/codes/cash.tex}
 
 \subsection{Migración a ROS 2}
 \label{subsec:ROS2}
 
-Con el motivo del fin de soporte de ROS 1 \cite{ROSEOL}, se ha optado por migrar el sistema para ser ejecutado en ROS 2 con el fin de mantener su continuidad. La documentación oficial de \acrshort{ros} proporciona una guía de migración \cite{ros2tuto}. Se han migrado los nodos cámara e integrador, la migración del nodo \acrshort{lidar} requeriría actualizar el código a una versión soportada para Ubuntu 22.04 de la librería pcl, entre otros detalles que llevarían a rediseñar casi todo el código. Por último, el sensor \acrshort{lidar} instalado no es compatible con \acrshort{ros} 2, lo que impide la migración a menos que se haga un recambio.  TODO: Se probaron diferentes alternativas como RoboStack.
+Con el motivo del fin de soporte de ROS 1 \cite{ROSEOL}, se ha optado por migrar el sistema para ser ejecutado en ROS 2 con el fin de mantener su continuidad. El proceso de migración se ha llevado a cabo por medio de la guía oficial de \acrshort{ros} \cite{ros2tuto}. Se han migrado los nodos cámara e integrador, la migración del nodo \acrshort{lidar} requeriría actualizar el código a una versión soportada para Ubuntu 22.04 de la librería pcl, entre otros detalles que llevarían a rediseñar casi todo el código. Por último, el sensor \acrshort{lidar} instalado no es compatible con \acrshort{ros} 2, lo que impide la migración a menos que se haga un recambio.

@@ -1,0 +1,42 @@
+\begin{lstlisting}[language=Python, float=t, label=coud:cash, caption=MessageFiltersCache]
+def process(self):
+      elapsed = 1
+      if rosv == "1":
+        last_stamp = self.lidar_cash.getLatestTime()
+        if last_stamp:
+          elapsed = rospy.Time.now().to_sec() - last_stamp.to_sec()
+      elif rosv == "2":
+        last_stamp = self.lidar_cash.getLastestTime()
+        if last_stamp:
+          elapsed = (self.get_clock().now().nanoseconds - last_stamp.nanoseconds) / 1e9
+      lidar = self.lidar_cash.getElemBeforeTime(last_stamp) if elapsed < 0.5 else None
+      if lidar:
+        message_list = [lidar]
+        nl = False
+      else:
+        message_list = []
+        nl = True
+      pre = len(message_list)
+      for cam in self.cam_cashes:
+        if rosv == "1":
+          camlast = cam.getLatestTime()
+          report = cam.getElemBeforeTime(camlast)
+        elif rosv == "2":
+          camlast = cam.getLastestTime()
+          report = cam.getElemBeforeTime(camlast)
+        if report:
+          message_list.append(report)
+          if rosv == "1":
+            camlapsed = rospy.Time.now().to_sec() - camlast.to_sec()
+          elif rosv == "2":
+            camlapsed = (self.get_clock().now().nanoseconds - camlast.nanoseconds) / 1e9 #- camlast.to_sec()
+          if camlapsed > 0.5:
+            print(f"Cam msg arrived late: {camlapsed:.2f}")
+      post = len(message_list)
+      nc = True if pre == post else False
+      if len(message_list) > 0:
+        self.on_frame(message_list, nl, nc)
+      else:
+        print("No new content in the queue")
+
+\end{lstlisting}
