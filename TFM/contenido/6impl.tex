@@ -10,10 +10,7 @@ El código \ref{coud:training} corresponde al proceso seguido a la hora de crear
 
 \input{contenido/codes/training.tex}
 
-\section{Módulo adaptativo}
-\label{sec:adapt}
-
-\subsection{\textit{Recognition Decision Function} (RDF)}
+\section{Módulo de reconocimiento}
 
 Esta función determina si la entidad detectada se corresponde a un individuo previamente reclutado o a una entidad \textbf{desconocida}.
 
@@ -21,14 +18,12 @@ El código \ref{coud:weib} muestra la implementación de la función RDF. Del co
 
 \input{contenido/codes/weib.tex}
 
-\section{Mejoras del sistema base}
-
-\subsection{Escalabilidad y tolerancia a fallos de las cámaras}
+\section{Escalabilidad y tolerancia a fallos de las cámaras}
 Cuando se fusionan los resultados procesados por los distintos sensores (nodo integración de sensores en la figura \ref{fig:finalsys}), se requiere que todos ellos se encuentren \textbf{sincronizados} dentro de un intervalo temporal (ejemplo: 100 milisegundos), de forma que las predicciones no se realizan a partir de información desactualizada. En \cite{andrew} se utiliza una clase del paquete \textit{message\_filters} de \acrshort{ros} llamado \textit{ApproximateTimeSynchronizer}. Esta clase utiliza un algoritmo para emparejar mensajes a partir de su \gls{timestamp} \cite{ApproximateTime}. El problema de \textit{ApproximateTimeSynchronizer} es que espera recibir datos \textbf{de todas las fuentes en todo momento}, lo que no es una situación realista y que puede provocar una caída del sistema en el momento que uno de los sensores falle. Como solución a este problema, se ha realizado una sustitución por la clase \textit{MessageFiltersCache} de la misma librería \cite{MFC}. En esta nueva implementación, cada nodo posee una caché en la que se almacenan sus mensajes, a una frecuencia establecida se recuperan los datos de todas las cachés, TODO: si en una de las cachés el último dato no se corresponde con el intervalo actual, este no se tiene en cuenta para dicho intervalo. El código \ref{coud:cash} muestra la implementación de dicho mecanismo.
 
 \input{contenido/codes/cash.tex}
 
-\subsection{Migración a ROS 2}
+\section{Migración a ROS 2}
 \label{subsec:ROS2}
 
 Con el motivo del fin de soporte de ROS 1 \cite{ROSEOL}, se ha optado por migrar el sistema para ser ejecutado en ROS 2 con el fin de mantener su continuidad. El proceso de migración se ha llevado a cabo por medio de la guía oficial de \acrshort{ros} \cite{ros2tuto}. Se han migrado los nodos cámara e integrador, la migración del nodo \acrshort{lidar} requeriría actualizar el código a una versión soportada para Ubuntu 22.04 de la librería pcl, entre otros detalles que llevarían a rediseñar casi todo el código. Por último, el sensor \acrshort{lidar} instalado no es compatible con \acrshort{ros} 2, lo que impide la migración a menos que se haga un recambio.

@@ -18,6 +18,14 @@ Para concluir, este proyecto surgió a partir de la idea de implementar un compl
 
 TODO: El método requiere de un conjunto reducido de datos para su inicialización (por ejemplo, los datos biométricos de 5 personas). Dado que la recopilación de imágenes faciales está fuertemente regulada por la ley de protección de datos, el uso de este enfoque resulta especialmente relevante para el presente proyecto \cite{Erik}.
 
+\section{Trabajo relacionado}
+
+A la hora de diseñar aceleradores hardware para aplicaciones de redes neuronales es necesario mantener el balance entre precisión, rendimiento y bajo consumo. La NVIDIA Jetson es una familia de sistemas embebidos que persigue maximizar dicho balance \cite{MITTAL2019428}. Un claro ejemplo es el uso de la Jetson TX2 en aplicaciones como el reconocimiento facial para el procesamiento de videos en resolución Full HD (1080p) \cite{qi2018iot} o la detección de personas con cámaras \acrshort{rgb} en resolución HD (720p) \cite{rahmaniar2021real}, ambos casos de uso han reportado un rendimiento satisfactorio en tiempo real.
+
+Entre las múltiples técnicas y herramientas que existen \cite{MITTAL2019428}, se ha decantado principalmente por usar TensorRT. Este ecosistema de herramientas permite la optimización de redes neuronales \cite{rahmaniar2021real}, logrando así la ejecución de múltiples aplicaciones en tiempo real. NVIDIA dispone dicho software para una gran variedad de sus \acrshort{gpu} y dispositivos Jetson, además de tutoriales para múltiples aplicaciones de \acrshort{ia} \cite{x36}.
+
+TODO: Poner referencias del trabajo de Open-Set/World.
+
 \section{Objetivos}
 
 El primer objetivo de este proyecto es desarrollar un nuevo método de aprendizaje máquina para detectar desconocidos (\textit{Open-Set}) e incluir nuevos individuos (\textit{Open-World}) basado en las ideas mencionadas en la sección \ref{sec:motivo}. Estas mejoras incluyen, entre otras, construir y procesar simultáneamente las secuencias de todas las caras detectadas en todas las cámaras (aplicando técnicas de tracking), usar comités basados en clasificadores débiles (máquina de vectores de soporte o SVM) para identificar clases (usando votación mayoritaria), aplicar la distribución de Weibull para detectar clases desconocidas, inicializar el sistema de forma apropiada (bien de forma manual, bien cuando el sistema detecta varias caras en el mismo instante de tiempo), adaptar los comités (añadiendo y limitando sus SVM) para seguir los cambios de esa entidad (concept drift) y crear una nueva identidad (comité) para cada desconocido. Para facilitar su despliegue y mantenimiento se dockerizará el sistema y se migrará a ROS2.

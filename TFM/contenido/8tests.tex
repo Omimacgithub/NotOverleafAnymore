@@ -1,18 +1,20 @@
 \chapter{Pruebas y resultados del sistema completo}
+\label{chap:systesting}
+
 \lettrine{E}{n} este capítulo se exponen las pruebas y los resultados de rendimiento del sistema final.
 
 Se ha realizado un análisis de la escalabilidad desde 2 hasta 10 cámaras, que es la cifra máxima a la que se ha aspirado sin experimentar una caída grave en el rendimiento. El sistema se ha probado en las distribuciones ROS 1 y ROS 2. Según el dispositivo, solo hay opción a ejecutar una de las distribuciones (ejemplo: dispositivos Jetson). Se discuten los resultados de rendimiento atendiendo a los recursos utilizados.
 
 También se exponen resultados que prueban las capacidades del módulo adaptativo, se realiza un conjunto de pruebas con diferentes valores de parámetros para evaluar su impacto y por qué generan los resultados expuestos. Con el fin de obtener un sistema completamente autónomo, se ha estudiado varios métodos de inicialización de la base de datos, desde un método supervisado hasta uno totalmente controlado por el propio sistema. Se han comparado los resultados entre las diferentes inicializaciones y se ha explicado el motivo de los resultados y de los factores implicados. Debido a que el sistema se adapta a lo largo del tiempo, se han realizado pruebas que midan la consistencia del sistema a lo largo de varias repeticiones del video, para averiguar si este sufre de una caída repentina en el rendimiento por algún fallo del software. Todas las pruebas mencionadas se ejecutan en las modalidades \textit{Open-Set}, que detecta desconocidos y actualiza las entidades existentes y \textit{Open-World}, que realiza las mismas funciones que \textit{Open-Set}, pero con la capacidad de registrar a los desconocidos en el sistema. De este modo, se analizan las diferencias entre ambas modalidades.
 
-\section{Escalabilidad de cámaras}
+\section{Escalabilidad en el número de cámaras}
 
 Esta sección pretende evaluar el techo del sistema al elevar el número de cámaras implicadas. Se inicializa el sistema y se reproduce el fichero rosbag, que nutrirá al sistema con la información generada por las cámaras en tiempo real. Cada predicción generada por el nodo integrador (ver figura \ref{fig:finalsys}) se almacena en memoria y se vuelca en un fichero \acrshort{json} una vez el sistema se detiene (por ejemplo, con un Ctrl-C). Los datos guardados en el fichero \acrshort{json} se procesan y se devuelven los resultados finales en forma de las siguientes métricas:
 \begin{itemize}
     \item \textit{\textbf{Det precision}}: representa la precisión global de los modelos de detección.
     \item \textit{\textbf{Det recall}}: representa el \textit{recall} global de los modelos de detección.
-    \item \textit{\textbf{Iden F1 score}}: corresponde con el \textit{F1\_score} global de los modelos de reconocimiento.
-    \item \textit{\textbf{Iden precision}}: corresponde con la precisión global de los modelos de reconocimiento.
+    \item \textit{\textbf{Ident F1 score}}: corresponde con el \textit{F1\_score} global de los modelos de reconocimiento.
+    \item \textit{\textbf{Ident precision}}: corresponde con la precisión global de los modelos de reconocimiento.
 \end{itemize}
 
 El archivo rosbag contiene la información de las 2 cámaras instaladas en el Summit\_XL. A modo de aumentar la carga de trabajo, se replica la información de dichas cámaras y se asigna a los nodos, por lo que los resultados de rendimiento deberían de mantenerse a medida que el procesamiento aumenta.
@@ -33,12 +35,7 @@ La tabla \ref{tab:scaleresources}
 
 Tabla \ref{tab:scaleros2}
 
-\section{Tamaño del universo}
-El tamaño del universo, es decir, del número de personas registradas, es un factor crítico, ya que el sistema implementado se nutre de los datos de los individuos. Por un lado, tener más individuos se traduce en más comités, por lo tanto se dispone de más puntos para definir la distribución de Weibull, lo que refuerza las predicciones. Por otra parte, se dispone de un mayor número de muestras negativas, lo que permite definir mejor las fronteras de las \acrshort{svm} y así mejorar la capacidad de predicción.
-
-(Pág 81, TODO:) La calidad de la función RDF viene determinada por el número de puntos que componen la función de Weibull, cuantos más puntos, mayor definición y por tanto reconocimientos más precisos. Con un universo de 20 individuos, sólo 5 puntos componen la función de Weibull (de las 20 entidades sólo 10 se registran en el sistema, a modo de probar el open-set, y de esos 10, la mitad definen la función), lo que lleva a un comportamiento más impreciso que con un universo mayor. El sistema inicial cuenta con un universo de \textbf{6 individuos}, lo que claramente \textbf{es insuficiente} para realizar una diferenciación precisa de los IoI respecto a lo desconocido. Para este proyecto, ha sido necesario ampliar el universo a \textbf{20 personas}, algunas procedentes del CITIC, que se han prestado voluntariamente, otras extraídas del YoutubeFaces \textit{\gls{dataset}}.
-
-\section{Ajuste de parámetros}
+\section{Ajuste de parámetros del aprendizaje y reconocimiento}
 \label{seq:paramtunning}
 
 En esta sección se realiza un estudio acerca de la configuración óptima de parámetros en términos de rendimiento del sistema. A continuación se exponen los parámetros utilizados y su función, junto con el rango de valores para la prueba.
@@ -78,11 +75,11 @@ Como en la sección \ref{sec:osparams}, en la tabla \ref{tab:owparams} se muestr
 
 Los parámetros \textit{nneg} y \textit{percent} permanecen constantes acorde a las pruebas de la sección \ref{sec:osparams}. A la hora de escoger un valor de umbral de Weibull (\textit{tw}) es necesario tener en cuenta una métrica adicional que es el número de comités que se han generado (se cuentan también los 10 comités iniciales). Un valor alto del umbral implica una reducción en la creación de comités, debido al elevado \textit{recall} y por ende a un menor número de desconocidos y recíprocamente. Al reducir el valor de \textit{tw} se elevan notablemente los comités creados, pasando de 8 a 24 comités sin contar los 10 iniciales, lo que implica un gran salto con apenas una reducción en el valor de \textit{recall}. Este crecimiento puede deberse a la indecisión del sistema de predecir un individuo, ya que al crear nuevos comités de la misma persona, aumenta el riesgo de que más de un comité se active (devuelva un score bajo), por lo que dejan de darse casos extremos, aumentando así el número de desconocidos y por ende de comités creados. En cuanto al parámetro \textit{max\_svm}, los resultados conducen a la misma conclusión que en las pruebas de la sección \ref{sec:osparams}, salvo por el valor de 3 en uno de los resultados, que representa una situación excepcional.
 
-\subsection{Umbral de actualización?}
+TODO: %\subsection{Umbral de actualización?}
 
-\textbf{Umbral de actualización}: valor que se compara frente a la fusión de scores de una secuencia. El rango probado es (0.1 0.3)
+TODO:\textbf{Umbral de actualización}: valor que se compara frente a la fusión de scores de una secuencia. El rango probado es (0.1 0.3)
 
-Uno de los objetivos del sistema es obtener la mayor diversidad intra-comité y la mayor especificidad inter-comité. Un \textbf{percentil alto} encajaría si las SVM son \textbf{específicas} entre sí (la mayoría de las SVM devuelven match). En cambio, un \textbf{bajo percentil} funcionaría con unas SVM \textbf{más diversas} (se espera que la minoría de las SVM den un resultado coincidente).
+TODO: Uno de los objetivos del sistema es obtener la mayor diversidad intra-comité y la mayor especificidad inter-comité. Un \textbf{percentil alto} encajaría si las SVM son \textbf{específicas} entre sí (la mayoría de las SVM devuelven match). En cambio, un \textbf{bajo percentil} funcionaría con unas SVM \textbf{más diversas} (se espera que la minoría de las SVM den un resultado coincidente).
 
 TODO: En relación con el anterior punto, el número de SVM influye en la decisión de que percentil tomar. Si se utilizan 3 SVM por comité y la mediana, al menos 2 SVM deben de devolver un score bajo para dar un resultado coincidente. Por otro lado, si se utilizan 10 SVM y un percentil de 30, sólo 3 de las 10 SVM necesitan estar de acuerdo para devolver un match. En los resultados se muestra como un comité de 3 SVM y TW=0.05 destaca respecto a un comité de 1 SVM y TW=0.5. Los resultados utilizando 10 SVM por comité no llegan a mejorar notablemente el valor de 3 SVM, esto es de gran relevancia, puesto que se reduce el número de iteraciones de cada reconocimiento de 10*n a 3*n, siendo n el número de comités que existen y asumiendo que todos los comités han llegado al límite de SVM. Con estos resultados se ha demostrado que implementar varias SVM por comité mejora el recall manteniendo la precisión. 1 sóla SVM por comité es efectiva si dicha SVM es representativa del individuo, en caso contrario puede devolver respuestas coincidentes acerca de una entidad distinta del comité, generando ruido que perjudica a las predicciones de Weibull. Un mayor número de SVM combinado con el percentil devuelve un resultado conforme dicta un grupo que omite los scores de SVM intrusas (de entidades distintas) y permite expulsarlas mediante los criterios ya comentados en la sección \ref{seq:limmod}.
 
@@ -90,7 +87,12 @@ TODO: comentar como el solapamiento puede influir en la creación de nuevas SVM.
 
 (TODO: podría comentarse) Criterio de selección de frames para nuevas SVM: también es muy importante la selección de las muestras que conforman las SVM, en la tabla (TODO) se muestran 2 criterios para la selección, uno consiste en seleccionar los frames con los scores más cercanos al cero, mientras que el otro es una selección aleatoria. El primer criterio demuestra un aumento en el F1 score, dado que los frames cercanos al cero son los más complicados de reconocer, de esta forma la SVM amplía sus fronteras respecto a lo que ya reconoce. A la hora de crear una SVM de un nuevo comité en el modo open-world, no queda otra alternativa que realizar una selección aleatoria.
 
-\section{Pruebas de inicialización del sistema}
+\section{Influencia del número de usuarios en el rendimiento}
+El número de usuarios registrados es un factor crítico, ya que el sistema implementado se nutre de los datos de los individuos. Por un lado, tener más individuos se traduce en más comités, por lo tanto se dispone de más puntos para definir la distribución de Weibull, lo que refuerza las predicciones. Por otra parte, se dispone de un mayor número de muestras negativas, lo que permite definir mejor las fronteras de las \acrshort{svm} y así mejorar la capacidad de predicción.
+
+La calidad de la función RDF viene determinada por el número de puntos que componen la función de Weibull, cuantos más puntos, mayor definición y por tanto reconocimientos más precisos \cite{Erik}. Con un universo de 20 individuos, sólo 5 puntos componen la función de Weibull (de las 20 entidades sólo 10 se registran en el sistema, a modo de probar el open-set, y de esos 10, la mitad definen la función), lo que lleva a un comportamiento más impreciso que con un universo mayor. El sistema inicial cuenta con un universo de \textbf{6 individuos}, lo que claramente \textbf{es insuficiente} para realizar una diferenciación precisa de los IoI respecto a lo desconocido.
+
+\section{Métodos de inicialización del sistema}
 
 La selección de los frames que conforman un nuevo comité es un factor crítico para el correcto funcionamiento del sistema. En esta sección se evalúa el sistema en los modos \textit{Open-Set} y \textit{Open-World} aplicando 3 técnicas de inicialización:
 \begin{itemize}

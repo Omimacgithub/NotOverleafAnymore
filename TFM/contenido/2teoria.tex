@@ -1,18 +1,16 @@
 \chapter{Fundamentos teóricos}
 \lettrine{E}{n} este capítulo se detallan las métricas de evaluación y herramientas hardware y software utilizadas, así como los conceptos necesarios para comprender el resto de la memoria.
 
-\section{Conceptos}
+\section{Tipos de aprendizaje máquina semisupervisado}
+El aprendizaje máquina semisupervisado parte de una fase inicial de los modelos entrenados con datos perfectamente \textbf{etiquetados}, dichos datos se complementan o se actualizan con muestras obtenidas durante la operación del sistema (no etiquetadas), de esta forma el modelo amplia su conocimiento de manera autónoma. Existen 3 tipos diferentes de aprendizaje máquina semisupervisado que se aplicarán a lo largo de esta memoria y que son los siguientes:
 
-\subsection{Tipos de reconocimiento}
-Existen 3 tipos diferentes de reconocimiento que se aplicarán a lo largo de esta memoria y que son los siguientes:
+\subsection{\textit{Closed-Set}}
+Tipo de aprendizaje que opera en un conjunto \textbf{cerrado} de objetos, siendo en este caso personas registradas de antemano. Es el modo en el que trabaja el sistema base \cite{andrew}.
 
-\subsubsection{\textit{Closed-Set}}
-Tipo de reconocimiento que opera en un conjunto \textbf{cerrado} de objetos, siendo en este caso personas registradas de antemano. Es el modo en el que trabaja el sistema base \cite{andrew}.
-
-\subsubsection{\textit{Open-Set}}
+\subsection{\textit{Open-Set}}
 Extiende al modo \textit{Closed-Set}, de forma que puede reconocer a usuarios que no pertenezcan al conjunto de entrenamiento, es decir, a usuarios \textbf{desconocidos}.
 
-\subsubsection{\textit{Open-World}}
+\subsection{\textit{Open-World}}
 
 Atendiendo a la definición de \cite{rudd2017extreme}, un sistema de reconocimiento \textit{Open-World} debe de ser capaz de realizar las siguientes 4 tareas:
 \begin{itemize}
@@ -22,24 +20,13 @@ Atendiendo a la definición de \cite{rudd2017extreme}, un sistema de reconocimie
     \item Actualizar el modelo.
 \end{itemize}
 
-\subsection{Support Vector Machine (SVM)}
+\section{Clasificadores}
 
-Es un algoritmo de \textbf{clasificación} que dibuja un hiperplano entre categorías de datos, buscando siempre el mayor margen (distancia entre el punto que define la frontera de la categoría, denominado support vector, y el hiperplano), de modo que agrega cierta tolerancia al posible ruido producido. Es un \textbf{algoritmo de aprendizaje supervisado} (requiere de un conjunto inicial de datos para su entrenamiento) y conforma la unidad más básica de clasificación dentro del sistema de este proyecto \cite{SVM}.
+TODO: hablar de los tipos y de que finalmente se escoge \acrfull{svm}.
 
-\section{Métricas de evaluación}
-\label{sec:metriks}
+Es un algoritmo de \textbf{clasificación} que dibuja un hiperplano entre categorías de datos, buscando siempre el mayor margen (distancia entre el punto que define la frontera de la categoría, denominado \textit{support vector}, y el hiperplano), de modo que agrega cierta tolerancia al posible ruido producido. Es un \textbf{algoritmo de aprendizaje supervisado} (requiere de un conjunto inicial de datos para su entrenamiento) y conforma la unidad más básica de clasificación dentro del sistema de este proyecto \cite{SVM}. Dicho algoritmo pertenece al aprendizaje \textit{Closed-Set}, es decir, no es capaz de discernir entre clases fuera del conjunto de datos de entrenamiento, por lo que un dato desconocido se clasificaría erróneamente como una de las clases del entrenamiento \cite{rudd2017extreme}.
 
-Para evaluar la clasificación de los modelos de visión artificial utilizados, se emplearon los siguientes componentes cuyo significado se expone a continuación:
-\begin{itemize}
-    \item \textit{\textbf{True Positive (TP)}}: predicción positiva correcta. Para los modelos de detección, sería detectar correctamente a una persona. Para los modelos de reconocimiento, asignar la etiqueta correcta a la persona detectada.
-    \item \textit{\textbf{True Negative (TN)}}: predicción negativa correcta. Para los modelos de detección, sería no detectar correctamente a una persona, lo que carece de sentido a la hora de evaluar un buen detector. TODO (es mejor quitar esta métrica, no la uso en el sistema): Para los modelos de reconocimiento, sería predecir que la persona no pertenece a ninguna de las registradas, de aquí surge el concepto de \textbf{desconocido}.
-    \item \textit{\textbf{False Positive (FP)}}: predicción positiva errónea. Para los modelos de detección, sería detectar una persona donde no la hay. Para los modelos de reconocimiento, sería otorgar una etiqueta incorrecta a la persona detectada.
-    \item \textit{\textbf{False Negative (FN)}}: predicción negativa errónea. Para los modelos de detección, sería no detectar a la persona presente. Para los modelos de reconocimiento, sería asignar la entidad de desconocido a una persona ya registrada en el sistema.
-\end{itemize}
-
-Estos componentes se aplicarán a los datasets de prueba formados a partir de los videos grabados. En un entorno real de operación no sería posible aplicar dichas métricas por falta de un \textit{\gls{gt}}. %\textit{ground truth}.
-
-\section{Evaluación de modelos}
+\section{Métricas de evaluación de modelos de clasificación}
 \label{sec:modeleval}
 
 Las pruebas empleadas para evaluar los modelos de detección y reconocimiento son las mismas que en \cite{andrew}. Teniendo en cuenta que ahora se considera el desconocido como entidad posible, en las pruebas de reconocimiento se añaden las métricas de \textit{recall} y \textit{F1\_score} al tener falsos negativos (FN) y positivos (FP).
@@ -81,3 +68,16 @@ Las métricas de evaluación son las mismas que en los modelos de detección, sa
 \end{itemize}
 
 Cuando el sistema tiene dudas acerca de la entidad de una persona, es preferible que se asigne dicha entidad como \textbf{desconocida} antes que otorgar una predicción \textbf{incorrecta}. Por este motivo, no se tiene en cuenta los falsos negativos a la hora de calcular la precisión, ni los falsos positivos cuando se calcula el \textit{recall}.
+
+\subsection{Matriz de confusión}
+\label{sec:metriks}
+
+Para evaluar la clasificación de los modelos de visión artificial del proyecto, se empleó la famosa matriz de confusión, que es una tabla compuesta por los siguientes items:
+\begin{itemize}
+    \item \textit{\textbf{True Positive (TP)}}: predicción positiva correcta. Para los modelos de detección, sería detectar correctamente a una persona. Para los modelos de reconocimiento, asignar la etiqueta correcta a la persona detectada.
+    \item \textit{\textbf{True Negative (TN)}}: predicción negativa correcta. Para los modelos de detección, sería no detectar correctamente a una persona, lo que carece de sentido a la hora de evaluar un buen detector. TODO (es mejor quitar esta métrica, no la uso en el sistema): Para los modelos de reconocimiento, sería predecir que la persona no pertenece a ninguna de las registradas, de aquí surge el concepto de \textbf{desconocido}.
+    \item \textit{\textbf{False Positive (FP)}}: predicción positiva errónea. Para los modelos de detección, sería detectar una persona donde no la hay. Para los modelos de reconocimiento, sería otorgar una etiqueta incorrecta a la persona detectada.
+    \item \textit{\textbf{False Negative (FN)}}: predicción negativa errónea. Para los modelos de detección, sería no detectar a la persona presente. Para los modelos de reconocimiento, sería asignar la entidad de desconocido a una persona ya registrada en el sistema.
+\end{itemize}
+
+Estos componentes se aplicarán a los datasets de prueba formados a partir de los videos grabados. En un entorno real de operación no sería posible aplicar dichas métricas por falta de un \textit{\gls{gt}}. %\textit{ground truth}.

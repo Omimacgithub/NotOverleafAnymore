@@ -2,13 +2,19 @@
 \lettrine{E}{n} este capítulo se detallan las métricas de evaluación y herramientas hardware y software utilizadas, así como los conceptos necesarios para comprender el resto de la memoria.
 
 \section{Hardware}
-\subsection{Summit\_XL}
-El sistema que se expondrá se ha construido para funcionar en el robot móvil Summit\_XL. Dicho robot es de tipo diferencial (permite el movimiento en todas las direcciones excepto en los laterales) y cuenta con 4 ruedas de goma, de gran utilidad para moverse en entornos de exteriores. Entre sus componentes, tiene instalado un sensor Velodyne \acrshort{lidar} que otorga nubes de puntos \acrshort{3d} del entorno y dos cámaras Kinect instaladas en los laterales.
+\label{sec:hw}
 
 \subsection{Cámaras RGBD}
-Las Kinect de Microsoft otorgan una imagen \acrfull{rgb} más una imagen de distancia.
+Para nutrir al sistema de imágenes se cuenta con las cámaras Kinect de Microsoft. Dichas cámaras otorgan una imagen \acrfull{rgb} más una imagen de profundidad (depth).
 
-\subsection{Dispositivos}
+Para este proyecto, se cuenta con dos de estas cámaras, cada una con una cobertura de visión de 57º, lo que otorga un rango total de 117º, asumiendo que no existen solapes entre las cámaras.
+
+\subsection{Summit\_XL}
+\label{sec:summit}
+
+El sistema que se expondrá se ha construido para funcionar en el robot móvil Summit\_XL. Dicho robot es de tipo diferencial (permite el movimiento en todas las direcciones excepto en los laterales) y cuenta con 4 ruedas de goma, de gran utilidad para moverse en entornos de exteriores. Entre sus componentes, tiene instalado un sensor Velodyne \acrshort{lidar} que otorga nubes de puntos \acrshort{3d} del entorno y dos cámaras Kinect instaladas en los laterales.
+
+\section{Dispositivos}
 
 A continuación se expone el listado de dispositivos sujetos de las pruebas de este proyecto.
 
@@ -132,7 +138,7 @@ MEM Freq: 6 GHz
 
 MEM: 33.4 GB
 
-\section{Software}
+\section{Software específico}
 \label{sec:sw}
 
 \subsection{ROS}
@@ -140,10 +146,10 @@ MEM: 33.4 GB
 
 Existe una herramienta del ecosistema \acrshort{ros} que graba y reproduce los datos capturados de la ejecución de un sistema \acrshort{ros} en un momento concreto en el tiempo. Los \glspl{dataset} creados en \cite{andrew} se construyeron partiendo de un fichero rosbag, que contiene toda la información generada por los diferentes sensores. En este proyecto se emplearán dichos ficheros rosbag para reproducir las pruebas en tiempo real.
 
-\subsection{Optimizadores}
+\subsection{Optimizadores y \textit{backends} de inferencias}
 
 \textbf{TensorRT}
-Es un software de \textbf{código abierto} desarrollado por NVIDIA para la optimización de inferencias de modelos de IA en aceleradoras de NVIDIA \cite{x36}. Permite ejecutar modelos entrenados en frameworks como Pytorch y TensorFlow, aunque se aconseja exportarlos al formato \acrfull{onnx} previamente, para aprovechar al completo las funcionalidades de este software. Se ha empleado TensorRT para optimizar la mayoría de modelos CNN tanto en equipos ARM (Jetson) como x86 (Intel).
+Es un software de \textbf{código abierto} desarrollado por NVIDIA para la optimización de inferencias de modelos de IA en aceleradoras de NVIDIA \cite{x36}. Permite ejecutar modelos entrenados en \textit{frameworks} como Pytorch o TensorFlow, aunque se aconseja exportarlos al formato \acrfull{onnx} previamente, para aprovechar al completo las funcionalidades de este software. Se ha empleado TensorRT para optimizar la mayoría de modelos \acrshort{cnn} tanto en equipos \acrshort{arm} como x86. TensorRT versión 10 está disponible para las aceleradoras de NVIDIA con un \textit{compute capability} igual o superior a 7.5. En el caso de querer usar el software con una \textit{compute capability} inferior, es necesario instalar versiones anteriores descontinuadas (ejemplo: versión 8). El código generado en la versión 8 de la API \textbf{no es compatible} con la versión 10.
 
 \textbf{OpenVINO}
 Es un software de \textbf{código abierto} desarrollado por Intel para la optimización de inferencias en \acrshort{cpu} (ARM,x86) y en aceleradoras de Intel (\acrshort{gpu},\acrshort{npu}) \cite{OpenVINO}. Permite la conversión directa de modelos entrenados en frameworks como Tensorflow y Pytorch a ficheros XML, que son versiones optimizadas de las \acrshort{cnn} y que se utilizan para realizar las inferencias. Se ha empleado para reducir la latencia de modelos a la hora de ejecutarlos en \acrshort{cpu}.
@@ -157,13 +163,28 @@ Librería de Python de \textbf{código abierto} usada en este proyecto para repr
 Librería de Python de \textbf{código abierto} que implementa numerosos algoritmos relacionados con la computación científica. En este proyecto se ha usado para aplicar el método húngaro, hallar los parámetros que modelan una distribución de Weibull, calcular distancias coseno, entre muchas otras funcionalidades que dicho software ofrece.
 
 \textbf{OpenCV}
-La librería de \textbf{código abierto} por excelencia para visión por computadora de código abierto. Otorga herramientas para la obtención y procesado de las imágenes, además de un módulo de visión artificial (dnn), que incluye modelos ya entrenados de visión artificial. Dicha librería tiene implementación en CUDA (si se compila el código fuente), lo que permite ejecutar operaciones y kernels de modelos en aceleradoras de NVIDIA (ejemplo: NVIDIA Jetson).
+La librería de \textbf{código abierto} por excelencia para visión por computadora de código abierto. Otorga herramientas para la obtención y procesado de las imágenes, además de un módulo de visión artificial (dnn), que incluye modelos ya entrenados de visión artificial. Dicha librería tiene implementación en CUDA (si se compila el código fuente \cite{OpenCVCUDA}.), lo que permite ejecutar operaciones y kernels de modelos en aceleradoras de NVIDIA (ejemplo: NVIDIA Jetson).
 
 \subsection{Docker}
 Es un software de virtualización de \textbf{código abierto}. Permite realizar despliegues automatizados mediante ficheros de configuración, el software se ejecuta en un entorno aislado del sistema operativo llamado \textbf{contenedor}, dichos contenedores proporcionan seguridad y portabilidad. Esta herramienta ha sido de gran utilidad para desplegar el software del proyecto en los diferentes dispositivos.
 
-\section{Otras herramientas}
+\section{Software general}
 \subsection{VS Code}
 \subsection{Git}
 \subsection{Trello}
 \subsection{Draw.io}
+
+\section{Dataset de las pruebas}
+\label{sec:dataset}
+
+A modo de evaluar el rendimiento en términos de precisión del sistema y de los modelos de visión artificial vistos en los capítulos \ref{chap:cnn} y \ref{chap:systesting}, se parte de un \gls{dataset} creado en \cite{andrew}. El \gls{dataset} contiene datos etiquetados extraídos de un fichero Rosbag, que contiene la información de las dos cámaras Kinect \acrshort{rgbd} y del sensor \acrshort{lidar} instalados en el Summit\_XL durante la realización de una prueba. Dicha prueba se ha realizado a partir de los datos grabados de una prueba de 2 minutos dentro del laboratorio de robótica del \acrshort{citic} con 6 personas. Cada entrada en el fichero \acrshort{json} del \gls{dataset} se compone de los siguientes objetos \cite{andrew}:
+
+\begin{itemize}
+    \item Identificador del frame
+    \item Lista de las personas presentes, que contiene lo siguiente:
+          \begin{itemize}
+              \item Coordenadas de la \gls{bbox} corporal del sujeto, así como la confianza de la detección y su tamaño.
+              \item Coordenadas de la \gls{bbox} facial del sujeto, así como la confianza de la detección, su tamaño y la orientación de la cara.
+              \item Etiqueta del individuo registrado.
+          \end{itemize}
+\end{itemize}
