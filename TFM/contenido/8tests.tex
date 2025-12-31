@@ -3,13 +3,16 @@
 
 \lettrine{E}{n} este capítulo se exponen las pruebas y los resultados de rendimiento del sistema final.
 
-Se ha realizado un análisis de la escalabilidad desde 2 hasta 10 cámaras, que es la cifra máxima a la que se ha aspirado sin experimentar una caída grave en el rendimiento. El sistema se ha probado en las distribuciones ROS 1 y ROS 2. Según el dispositivo, solo hay opción a ejecutar una de las distribuciones (ejemplo: dispositivos Jetson). Se discuten los resultados de rendimiento atendiendo a los recursos utilizados.
+Se ha realizado un análisis de la escalabilidad desde 2 hasta 10 cámaras, que es la cifra máxima a la que se ha aspirado sin experimentar una caída grave en el rendimiento. El sistema se ha probado en las distribuciones ROS 1 y ROS 2. Según el dispositivo, solo hay opción a ejecutar una de las distribuciones (ejemplo: dispositivos Jetson). Se discuten los resultados de rendimiento atendiendo a múltiples factores como los recursos utilizados.
 
 También se exponen resultados que prueban las capacidades del módulo adaptativo, se realiza un conjunto de pruebas con diferentes valores de parámetros para evaluar su impacto y por qué generan los resultados expuestos. Con el fin de obtener un sistema completamente autónomo, se ha estudiado varios métodos de inicialización de la base de datos, desde un método supervisado hasta uno totalmente controlado por el propio sistema. Se han comparado los resultados entre las diferentes inicializaciones y se ha explicado el motivo de los resultados y de los factores implicados. Debido a que el sistema se adapta a lo largo del tiempo, se han realizado pruebas que midan la consistencia del sistema a lo largo de varias repeticiones del video, para averiguar si este sufre de una caída repentina en el rendimiento por algún fallo del software. Todas las pruebas mencionadas se ejecutan en las modalidades \textit{Open-Set}, que detecta desconocidos y actualiza las entidades existentes y \textit{Open-World}, que realiza las mismas funciones que \textit{Open-Set}, pero con la capacidad de registrar a los desconocidos en el sistema. De este modo, se analizan las diferencias entre ambas modalidades.
 
 \section{Escalabilidad en el número de cámaras}
 
-Esta sección pretende evaluar el techo del sistema al elevar el número de cámaras implicadas. Se inicializa el sistema y se reproduce el fichero rosbag, que nutrirá al sistema con la información generada por las cámaras en tiempo real. Cada predicción generada por el nodo integrador (ver figura \ref{fig:finalsys}) se almacena en memoria y se vuelca en un fichero \acrshort{json} una vez el sistema se detiene (por ejemplo, con un Ctrl-C). Los datos guardados en el fichero \acrshort{json} se procesan y se devuelven los resultados finales en forma de las siguientes métricas:
+Esta sección pretende evaluar el techo del sistema al elevar el número de cámaras implicadas.
+
+Se inicializa el sistema con el nodo integración de sensores, el nodo \acrshort{lidar} y el número de nodos cámara deseado (ver sección \ref{sec:basearch}). Se reproduce el fichero rosbag una vez inicializado el sistema, que lo nutrirá con la información generada por los sensores en tiempo real. Cada predicción generada por el nodo integrador se almacena en memoria y se vuelca en un fichero \acrshort{json} una vez el sistema se detiene (por ejemplo, con un Ctrl-C). Los datos guardados en el fichero \acrshort{json} se procesan contra el \textit{\gls{dataset}} y se devuelven los resultados finales en forma de las siguientes métricas:
+
 \begin{itemize}
     \item \textit{\textbf{Det precision}}: representa la precisión global de los modelos de detección.
     \item \textit{\textbf{Det recall}}: representa el \textit{recall} global de los modelos de detección.
@@ -17,23 +20,32 @@ Esta sección pretende evaluar el techo del sistema al elevar el número de cám
     \item \textit{\textbf{Ident precision}}: corresponde con la precisión global de los modelos de reconocimiento.
 \end{itemize}
 
-El archivo rosbag contiene la información de las 2 cámaras instaladas en el Summit\_XL. A modo de aumentar la carga de trabajo, se replica la información de dichas cámaras y se asigna a los nodos, por lo que los resultados de rendimiento deberían de mantenerse a medida que el procesamiento aumenta.
+\subsection{Entorno de las pruebas}
 
-\subsection{Sistema en ROS 1}
+La figura \ref{fig:systesting} ilustra el proceso comentado al inicio de la sección. Debido a que el rosbag utilizado es un archivo pesado (41 \acrshort{gb}), en ciertas situaciones ha sido necesario reproducir dicho fichero desde una \textbf{fuente externa} al no disponer de almacenamiento local suficiente. La comunicación con la fuente externa se realiza a través de una red \acrshort{lan} Gigabit Ethernet, que posee un ancho de banda limitado para la transmisión de imágenes \acrshort{rgbd}. La fuente externa debe de enviar $(|imagen\_RGB| + |imagen\_profundidad)*nºcams + |nube\_de\_puntos\_LiDAR|$ megabytes de datos cada 100 ms (que es la frecuencia a la que trabaja el sistema), siendo $|imagen\_RGB| = 40 MB/s$, $|imagen\_profundidad| = 20 MB/s$ y $|nube de puntos LiDAR| = 5 MB/s$, lo que supera el ancho de banda máximo (125 \acrshort{mb}/s) utilizando únicamente dos cámaras.
 
-La tabla \ref{tab:scaleperf}
+Para reducir el ancho de banda necesario para la transmisión, se ha optado por desplegar nodos encargados de comprimir la imagen \acrshort{rgb}. La compresión se realiza por medio del paquete \textit{image\_transport} de \acrshort{ros}, que logra reducir hasta 10 veces el tamaño de la imagen (resultando en 4 \acrshort{mb}/s). Los nodos cámara se suscriben al tópico con la imagen comprimida y se descomprime en el destino.
+
+En el caso de la imagen de distancia, en sí no es un objeto pesado, por lo que no necesita compresión. Sin embargo, la frecuencia elevada de transmisión (30 Hz), hace que se requiera de un mayor ancho de banda. Como el resto de los sensores funcionan a 10 Hz, la tasa de la imagen de profundidad puede reducirse a dicha frecuencia, de forma que el sistema no nota el cambio y se logra reducir el ancho de banda. Con reducir la tasa de envío del nodo de \acrshort{ros} encargado de publicar la imagen sería suficientemente, pero debido a que el rosbag se grabó dicho nodo a 30 Hz, se ha optado por ejecutar el paquete \textit{topic\_tools} de \acrshort{ros}, que permite publicar una réplica de un tópico a una menor frecuencia.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{imagenes/SYSTESTING.jpg}
+    \caption{Ejecución de las pruebas del sistema}
+    \label{fig:systesting}
+\end{figure}
+
+\subsection{Resultados}
+
+La tabla \ref{tab:scaleperf} muestra los resultados de los dispositivos en función del número de cámaras. Atendiendo a la tabla \ref{tab:scaleresources}, los recursos de la \acrshort{gpu} se llevan al límite con 10 cámaras en el caso de los equipos de sobremesa.
 
 \input{contenido/tables/tests/scaleperf.tex}
 
-La tabla \ref{tab:scaleresources}
-
 \input{contenido/tables/tests/scaleresources.tex}
-
-\subsection{Sistema en ROS 2}
 
 \input{contenido/tables/tests/scaleros2.tex}
 
-Tabla \ref{tab:scaleros2}
+En la tabla \ref{tab:scaleros2} se muestra el rendimiento del sistema en los dispositivos restantes. Los resultados mostrados no tienen en cuenta el nodo \acrshort{lidar} por los motivos comentados en la sección \ref{subsec:ROS2}. En estos dispositivos no es posible instalar \acrshort{ros} Noetic, al menos para poder contar con las últimas versiones del software de los mismos.
 
 \section{Ajuste de parámetros del aprendizaje y reconocimiento}
 \label{seq:paramtunning}

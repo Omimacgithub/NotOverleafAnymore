@@ -1,24 +1,26 @@
-\begin{landscape}
-    \centering
-    \begin{table}[]
-        \begin{tabular}{cc|lll}
-            \hline
-            \multicolumn{2}{c|}{\multirow{2}{*}{\textit{\begin{tabular}[c]{@{}c@{}}Number of\\ cameras\end{tabular}}}} & \multicolumn{3}{c}{\textit{Desktop}}                                                                                                                       \\
-            \multicolumn{2}{c|}{}                                                                                      & \multicolumn{1}{c}{\textbf{Lab PC}}                                & \multicolumn{1}{c}{\textbf{Laptop (*)}} & \textbf{Reference \cite{andrew}}            \\ \hline
-            \multicolumn{1}{c|}{\multirow{4}{*}{\textit{\begin{tabular}[c]{@{}c@{}}2\\ cameras\end{tabular}}}}         & \textit{\begin{tabular}[c]{@{}c@{}}Det\\ precision\end{tabular}}   & 0.869487 ± 0.008972                     & 0.877509 ± 0.006809              & 0.912358 \\ \cline{2-2}
-            \multicolumn{1}{c|}{}                                                                                      & \textit{\begin{tabular}[c]{@{}c@{}}Det\\ recall\end{tabular}}      & 0.575452 ± 0.012952                     & 0.544148 ± 0.025549              & 0.528254 \\ \cline{2-2}
-            \multicolumn{1}{c|}{}                                                                                      & \textit{\begin{tabular}[c]{@{}c@{}}Ident\\ F1 score\end{tabular}}  & 0.689474 ± 0.017967                     & 0.646300 ± 0.039168              & 0.649701 \\ \cline{2-2}
-            \multicolumn{1}{c|}{}                                                                                      & \textit{\begin{tabular}[c]{@{}c@{}}Ident\\ precision\end{tabular}} & 0.929938 ± 0.015667                     & 0.896087 ± 0.037446              & 0.930586 \\ \hline
-            \multicolumn{1}{c|}{\multirow{4}{*}{\textit{\begin{tabular}[c]{@{}c@{}}5\\ cameras\end{tabular}}}}         & \textit{\begin{tabular}[c]{@{}c@{}}Det\\ precision\end{tabular}}   & 0.826939 ± 0.001086                     &                                  &          \\ \cline{2-2}
-            \multicolumn{1}{c|}{}                                                                                      & \textit{\begin{tabular}[c]{@{}c@{}}Det\\ recall\end{tabular}}      & 0.519979 ± 0.002911                     &                                  &          \\ \cline{2-2}
-            \multicolumn{1}{c|}{}                                                                                      & \textit{\begin{tabular}[c]{@{}c@{}}Ident\\ F1 score\end{tabular}}  & 0.622861 ± 0.000887                     &                                  &          \\ \cline{2-2}
-            \multicolumn{1}{c|}{}                                                                                      & \textit{\begin{tabular}[c]{@{}c@{}}Ident\\ precision\end{tabular}} & 0.887686 ± 0.004756                     &                                  &          \\ \hline
-            \multicolumn{1}{c|}{\multirow{4}{*}{\textit{\begin{tabular}[c]{@{}c@{}}10\\ cameras\end{tabular}}}}        & \textit{\begin{tabular}[c]{@{}c@{}}Det\\ precision\end{tabular}}   & 0.652736 ± 0.010305                     & 0.691066 ± 0.009587              &          \\ \cline{2-2}
-            \multicolumn{1}{c|}{}                                                                                      & \textit{\begin{tabular}[c]{@{}c@{}}Det\\ recall\end{tabular}}      & 0.498889 ± 0.003563                     & 0.511520 ± 0.005504              &          \\ \cline{2-2}
-            \multicolumn{1}{c|}{}                                                                                      & \textit{\begin{tabular}[c]{@{}c@{}}Ident\\ F1 score\end{tabular}}  & 0.605140 ± 0.010546                     & 0.579697 ± 0.010082              &          \\ \cline{2-2}
-            \multicolumn{1}{c|}{}                                                                                      & \textit{\begin{tabular}[c]{@{}c@{}}Ident\\ precision\end{tabular}} & 0.894189 ± 0.016829                     & 0.820312 ± 0.014890              &          \\ \hline
-        \end{tabular}
-        \caption{Rendimiento del sistema al escalar múltiples cámaras}
-    \end{table}
-    \label{tab:scaleperf}
-\end{landscape}
+%\begin{landscape}
+%\centering
+% Please add the following required packages to your document preamble:
+% \usepackage{multirow}
+\begin{table}[]
+    \begin{tabular}{cc|lll}
+        \hline
+        \multicolumn{2}{c|}{\multirow{2}{*}{\textit{\begin{tabular}[c]{@{}c@{}}Number of\\ cameras\end{tabular}}}} & \multicolumn{3}{c}{\textit{Desktop}}                                                                                                                            \\
+        \multicolumn{2}{c|}{}                                                                                      & \multicolumn{1}{c}{\textbf{Lab PC}}                                & \multicolumn{1}{c}{\textbf{Laptop (*)}} & \textbf{Reference \cite{andrew}}                 \\ \hline
+        \multicolumn{1}{c|}{\multirow{4}{*}{\textit{\begin{tabular}[c]{@{}c@{}}2\\ cameras\end{tabular}}}}         & \textit{\begin{tabular}[c]{@{}c@{}}Det\\ precision\end{tabular}}   & 86.9 ± 0.9                              & 87.8 ± 0.7                       & \textbf{91.2} \\ \cline{2-2}
+        \multicolumn{1}{c|}{}                                                                                      & \textit{\begin{tabular}[c]{@{}c@{}}Det\\ recall\end{tabular}}      & \textbf{57.5 ± 1.3}                     & 54.4 ± 2.6                       & 52.8          \\ \cline{2-2}
+        \multicolumn{1}{c|}{}                                                                                      & \textit{\begin{tabular}[c]{@{}c@{}}Ident\\ F1 score\end{tabular}}  & \textbf{68.9 ± 1.8}                     & 64.6 ± 3.9                       & 65.0          \\ \cline{2-2}
+        \multicolumn{1}{c|}{}                                                                                      & \textit{\begin{tabular}[c]{@{}c@{}}Ident\\ precision\end{tabular}} & 92.9 ± 1.6                              & 89.6 ± 3.7                       & \textbf{93.1} \\ \hline
+        \multicolumn{1}{c|}{\multirow{4}{*}{\textit{\begin{tabular}[c]{@{}c@{}}5\\ cameras\end{tabular}}}}         & \textit{\begin{tabular}[c]{@{}c@{}}Det\\ precision\end{tabular}}   & 82.7 ± 0.1                              & 75.0 ± 1.8                       &               \\ \cline{2-2}
+        \multicolumn{1}{c|}{}                                                                                      & \textit{\begin{tabular}[c]{@{}c@{}}Det\\ recall\end{tabular}}      & 52.0 ± 0.3                              & 50.6 ± 1.1                       &               \\ \cline{2-2}
+        \multicolumn{1}{c|}{}                                                                                      & \textit{\begin{tabular}[c]{@{}c@{}}Ident\\ F1 score\end{tabular}}  & 62.3 ± 0.1                              & 56.2 ± 4.0                       &               \\ \cline{2-2}
+        \multicolumn{1}{c|}{}                                                                                      & \textit{\begin{tabular}[c]{@{}c@{}}Ident\\ precision\end{tabular}} & 88.8 ± 0.5                              & 80.8 ± 5.6                       &               \\ \hline
+        \multicolumn{1}{c|}{\multirow{4}{*}{\textit{\begin{tabular}[c]{@{}c@{}}10\\ cameras\end{tabular}}}}        & \textit{\begin{tabular}[c]{@{}c@{}}Det\\ precision\end{tabular}}   & 65.3 ± 1.0                              & 69.1 ± 1.0                       &               \\ \cline{2-2}
+        \multicolumn{1}{c|}{}                                                                                      & \textit{\begin{tabular}[c]{@{}c@{}}Det\\ recall\end{tabular}}      & 49.9 ± 0.4                              & 51.2 ± 0.6                       &               \\ \cline{2-2}
+        \multicolumn{1}{c|}{}                                                                                      & \textit{\begin{tabular}[c]{@{}c@{}}Ident\\ F1 score\end{tabular}}  & 60.5 ± 1.1                              & 58.0 ± 1.0                       &               \\ \cline{2-2}
+        \multicolumn{1}{c|}{}                                                                                      & \textit{\begin{tabular}[c]{@{}c@{}}Ident\\ precision\end{tabular}} & 89.4 ± 1.7                              & 82.0 ± 1.5                       &               \\ \hline
+    \end{tabular}
+    \caption{Rendimiento del sistema al escalar múltiples cámaras}
+\end{table}
+\label{tab:scaleperf}
+%\end{landscape}
