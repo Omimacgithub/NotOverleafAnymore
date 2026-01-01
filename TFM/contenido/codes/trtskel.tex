@@ -1,0 +1,60 @@
+\begin{lstlisting}[language=Python, caption=Esqueleto del código de las inferencias con TensorRT]
+# Import common libs
+import cv2
+import numpy as np
+import tensorrt as trt
+import pycuda.driver as cuda
+
+# BATCH_SIZE: 
+# NUM_CHANNELS: number of image channels, typically 3 (red, green and blue)
+# size: input tensor size of the model
+# osize: output tensor size of the model
+# ifp: input tensor precision of the model
+# ofp: output tensor precision of the model
+# isversion10: flag that indicates TensorRT API version 10 when True, else version 8 
+
+class CNN_model:
+    def __init__(self, cuda_ctx):
+        super().__init__()
+        self.ctx = cuda_ctx
+        self.ctx.push()
+        f = open(str('path_to_trt_engine'), "rb")
+        runtime = trt.Runtime(trt.Logger(trt.Logger.WARNING)) 
+        self.engine = runtime.deserialize_cuda_engine(f.read())
+        self.context = self.engine.create_execution_context()
+        # Pre-allocate GPU memory using memory pool
+        self.stream = cuda.Stream()
+        self.input_size = BATCH_SIZE * NUM_CHANNELS * size * size * ifp().itemsize
+        self.output_size = BATCH_SIZE * features * osize * ofp().itemsize
+        self.d_input = cuda.mem_alloc(self.input_size)
+        self.d_output = cuda.mem_alloc(self.output_size)
+        self.bindings = [int(self.d_input), int(self.d_output)]
+
+        if isversion10:
+          for binding in range(self.engine.num_io_tensors):
+            tensor_name = self.engine.get_tensor_name(binding)
+            self.context.set_tensor_address(tensor_name, self.bindings[binding])
+        self.ctx.pop()
+
+    def infer(self, frame):
+      self.ctx.push()
+      try:
+        outputs = np.empty([BATCH_SIZE, osize], dtype=ofp)
+        preprocesed_frame = PREPROCESING(frame)
+        # Transfer input data to device
+        cuda.memcpy_htod_async(self.d_input, preprocesed_frame.astype(ifp), self.stream)
+        # Execute model
+        if isversion10:
+          self.context.execute_async_v3(self.stream.handle)
+        else:
+          self.context.execute_async_v2(self.bindings, self.stream.handle, None)
+        # Transfer predictions back
+        cuda.memcpy_dtoh_async(outputs, self.d_output, self.stream)
+        self.stream.synchronize()
+        #Post-procesing
+        postprocesed_output = POSTPROCESING(outputs)
+        return postprocesed_output
+      finally:
+        self.ctx.pop()
+\end{lstlisting}
+\label{coud:trtskel}

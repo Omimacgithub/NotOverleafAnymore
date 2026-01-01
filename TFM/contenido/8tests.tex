@@ -47,6 +47,8 @@ La tabla \ref{tab:scaleperf} muestra los resultados de los dispositivos en funci
 
 En la tabla \ref{tab:scaleros2} se muestra el rendimiento del sistema en los dispositivos restantes. Los resultados mostrados no tienen en cuenta el nodo \acrshort{lidar} por los motivos comentados en la sección \ref{subsec:ROS2}. En estos dispositivos no es posible instalar \acrshort{ros} Noetic, al menos para poder contar con las últimas versiones del software de los mismos.
 
+TODO: se ha conseguido optimizar YOLO en GPU, que suponía el cuello de botella del sistema para funcionar en tiempo real.
+
 \section{Ajuste de parámetros del aprendizaje y reconocimiento}
 \label{seq:paramtunning}
 
@@ -55,8 +57,6 @@ En esta sección se realiza un estudio acerca de la configuración óptima de pa
 TODO: En la fase de inicialización de los modelos (o fase de entrenamiento), el sistema guarda la información estadística que representa a cierto modelo. Durante el funcionamiento del sistema, puede ocurrir que los datos que recibe de un individuo registrado varíen respecto a la información de entrenamiento, lo que se conoce como \textbf{concept drift}. Se debe de corregir el concept drift para evitar una pérdida en la precisión de reconocimiento.
 
 TODO: actualización del modelo, añadir nuevas entidades puede corromper la información de las entidades iniciales (catastrophic forgetting).
-
-TODO: los criterios que conforman el módulo de limitación tienen en cuenta el signo de la puntuación de forma exclusiva, lo que puede no funcionar siempre, sobretodo si se dispone de pocos frames que definan al individuo.
 
 \begin{itemize}
     \item \textbf{Umbral de Weibull (\textit{Tw})}: valor que determina si una entidad es desconocida o no. El rango probado es (0.05 0.1 0.25)
@@ -102,7 +102,7 @@ TODO: comentar como el solapamiento puede influir en la creación de nuevas SVM.
 \section{Influencia del número de usuarios en el rendimiento}
 El número de usuarios registrados es un factor crítico, ya que el sistema implementado se nutre de los datos de los individuos. Por un lado, tener más individuos se traduce en más comités, por lo tanto se dispone de más puntos para definir la distribución de Weibull, lo que refuerza las predicciones. Por otra parte, se dispone de un mayor número de muestras negativas, lo que permite definir mejor las fronteras de las \acrshort{svm} y así mejorar la capacidad de predicción.
 
-La calidad de la función RDF viene determinada por el número de puntos que componen la función de Weibull, cuantos más puntos, mayor definición y por tanto reconocimientos más precisos \cite{Erik}. Con un universo de 20 individuos, sólo 5 puntos componen la función de Weibull (de las 20 entidades sólo 10 se registran en el sistema, a modo de probar el open-set, y de esos 10, la mitad definen la función), lo que lleva a un comportamiento más impreciso que con un universo mayor. El sistema inicial cuenta con un universo de \textbf{6 individuos}, lo que claramente \textbf{es insuficiente} para realizar una diferenciación precisa de los IoI respecto a lo desconocido.
+La calidad de la función de reconocimiento viene determinada por el número de puntos que componen la función de Weibull, cuantos más puntos, mayor definición y por tanto reconocimientos más precisos \cite{Erik}. Con un universo de 20 individuos, sólo 5 puntos componen la función de Weibull (de las 20 entidades sólo 10 se registran en el sistema, a modo de probar el open-set, y de esos 10, la mitad definen la función), lo que lleva a un comportamiento más impreciso que con un universo mayor. El sistema inicial cuenta con un universo de \textbf{6 individuos}, lo que claramente \textbf{es insuficiente} para realizar una diferenciación precisa de los IoI respecto a lo desconocido.
 
 \section{Métodos de inicialización del sistema}
 

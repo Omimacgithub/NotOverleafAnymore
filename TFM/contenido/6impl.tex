@@ -1,12 +1,37 @@
 \chapter{Implementación del sistema}
 \label{chap:impl}
 
-\lettrine{E}{n} este capítulo se ahonda en los fundamentos y detalles de implementación de los nuevos componentes.
+\lettrine{E}{n} este capítulo se ahonda en los detalles de implementación de ciertos componentes que se han considerado relevantes de comentar.
+
+TODO: explicar en algún momento que implementamos el reconocimiento adaptativo como módulo por separado del sistema, y que realmente a excepción de la escalabilidad y el ROS 2, el sistema sigue igual.
+
+\section{Códigos de inferencia para el \textit{backend} de TensorRT}
+En la figura \ref{fig:finalsys} se muestran los 4 modelos utilizados en el nodo cámara y que se detallarán en la sección \ref{sec:models}. Dichos modelos cuentan con su implementación optimizada para OpenVINO creada en \cite{andrew}, excepto para el modelo de detección de caras, que se ejecuta en el \textit{backend} de OpenCV. En este proyecto se han implementado nuevas versiones adaptadas para su uso en \acrshort{gpu} por medio de TensorRT y PyCUDA.
+
+El código \ref{coud:trtskel} muestra el esqueleto de dichas inferencias, cada vez que se crea una instancia del modelo en Python, se reservan los siguientes recursos:
+\begin{itemize}
+    \item Contexto de CUDA: en este caso se recibe como parámetro, ya que es necesario crear dicho contexto en el mismo código donde se ejecuta el bucle infinito de ROS (ejemplo: nodo cámara), de modo que pueda manejarse correctamente.
+    \item Contexto del modelo: dicho contexto se crea a partir del \textit{engine} de TensorRT compilado para el modelo.
+    \item CUDA Stream: canal que utilizará la \acrshort{gpu} para ejecutar todas las inferencias.
+    \item Input size: memoria del \gls{tensor} que representa los datos de entrada.
+    \item Output size: memoria del \gls{tensor} que representa los datos de salida.
+    \item Device input: memoria del \gls{tensor} de entrada reservado en la \acrshort{gpu}.
+    \item Device output: memoria del \gls{tensor} de salida reservado en la \acrshort{gpu}.
+    \item Bindings: lista de direcciones de memoria de los \glspl{tensor} que reservará el contexto del modelo.
+\end{itemize}
+
+Dichos recursos se reservan \textbf{una sola vez}, que corresponde con el momento de creación de la instancia del modelo.
+
+La función infer del código \ref{coud:trtskel} se ejecuta por cada vez que se recibe una imagen de entrada a procesar. Se reserva un array de NumPy para almacenar la salida de la inferencia y se ejecuta la función PREPROCESING con la imagen de entrada, que representa el pipeline de preprocesado específico para cada modelo. La imagen preprocesada se copia a la memoria de la \acrshort{gpu} y se realiza la inferencia en el stream de CUDA correspondiente. Finalmente, los resultados se copian de vuelta a la memoria principal y se devuelven tras ejecutar el pipeline de postprocesado definido en la función POSTPROCESING.
+
+\input{contenido/codes/trtskel.tex}
 
 \section{Creación de las SVM}
 \label{sec:training}
 
 El código \ref{coud:training} corresponde al proceso seguido a la hora de crear y entrenar nuevos clasificadores. De todas las muestras de individuos de la base de datos, se \textbf{excluyen las del propio sujeto} en el caso de crear una \acrshort{svm} para un comité existente. Posteriormente, se extrae un subconjunto aleatorio de estas (función random\_pick), que representará al conjunto de muestras negativas del entrenamiento. Finalmente, se crea la \acrshort{svm} y se entrena con el conjunto de positivos (variable d1) y negativos, etiquetados con 1 (variable labels) y -1 (variable plabels) respectivamente. De esta forma, cuando el clasificador determine que las muestras pertenecen a la clase que representa, devolverá como máximo una puntuación de -1, en caso contrario devolverá un 1 TODO: no sé porqué se comporta al revés. Este comportamiento se ha aplicado simplemente por comodidad, pero la \acrshort{svm} podría entrenarse para que cause el efecto contrario.
+
+La función comentada se invoca durante la inicialización del sistema y cuando se llama al módulo de actualización, o lo que es lo mismo, cada vez que se necesite crear un nuevo clasificador a registrar en el sistema.
 
 \input{contenido/codes/training.tex}
 
@@ -14,7 +39,7 @@ El código \ref{coud:training} corresponde al proceso seguido a la hora de crear
 
 Esta función determina si la entidad detectada se corresponde a un individuo previamente reclutado o a una entidad \textbf{desconocida}.
 
-El código \ref{coud:weib} muestra la implementación de la función RDF. Del conjunto de scores ordenados, se excluye el primer score de la distribución (que corresponde con el más bajo, por lo tanto el mejor) y se compone la distribución de distancias de cada puntuación respecto a la mediana. De los puntos de la distribución, se obtienen los parámetros \textit{shape} y \textit{scale}, que modelan la función de Weibull. Finalmente, se calcula la probabilidad de pertenencia a la distribución del mejor score (función weib) y se toma la decisión en base a un umbral (Tw). Si la probabilidad es inferior al umbral, se reconoce el caso como un extremo y se asigna la identidad correspondiente al sujeto (\textit{drift}), en caso contrario se devuelve como desconocido (\textit{unknown}).
+El código \ref{coud:weib} (función RDF) muestra la implementación de dicha función. Del conjunto de scores ordenados, se excluye el primer score de la distribución (que corresponde con el más bajo, por lo tanto el mejor) y se compone la distribución de distancias de cada puntuación respecto a la mediana. De los puntos de la distribución, se obtienen los parámetros \textit{shape} y \textit{scale}, que modelan la función de Weibull. Finalmente, se calcula la probabilidad de pertenencia a la distribución del mejor score (función weib) y se toma la decisión en base a un umbral (Tw). Si la probabilidad es inferior al umbral, se reconoce el caso como un extremo y se asigna la identidad correspondiente al sujeto (\textit{drift}), en caso contrario se devuelve como desconocido (\textit{unknown}).
 
 \input{contenido/codes/weib.tex}
 

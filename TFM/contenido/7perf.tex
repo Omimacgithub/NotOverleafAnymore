@@ -18,7 +18,7 @@ ArcFace \cite{deng2019arcface} ha demostrado ser de las mejores redes en el \acr
 
 \subsection{YOLO}
 
-\textit{You Only Look Once} (YOLO) es una red de detección de objetos que otorga una velocidad de inferencia asombrosa manteniendo una buena precisión \cite{redmon2016you}. En \cite{andrew} se empleó una versión de YOLOv8n para la detección de personas. Se han realizado pruebas con YOLOv11n, se ha optimizado el postprocesado explotando la librería de NumPy y los resultados son muy notorios.
+\textit{You Only Look Once} (YOLO) es una red de detección de objetos que otorga una velocidad de inferencia asombrosa manteniendo una buena precisión \cite{redmon2016you}. Existen múltiples versiones de YOLO, en \cite{andrew} se probaron las versiones 3, 5 y 8 en el tamaño nano, más ligero y veloz, pero al mismo tiempo más impreciso. En este proyecto a mayores se ha probado la versión 11, la última existente a día de hoy, en su tamaño nano, en los \textit{backends} OpenVINO y TensorRT. Se ha optimizado el postprocesado explotando la librería de NumPy y los resultados son muy notorios.
 
 \subsection{OSNet}
 
