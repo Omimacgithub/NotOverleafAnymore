@@ -141,6 +141,7 @@ MEM: 33.4 GB
 \section{Software específico}
 \label{sec:sw}
 
+
 \subsection{ROS}
 \acrfull{ros} es un middleware de \textbf{código abierto} que incorpora las herramientas necesarias para la interacción y desarrollo de software en robots. Cuenta con una amplia biblioteca de distribuciones y librerías. TODO: importante hablar del launch file.
 
@@ -175,18 +176,3 @@ Es un software de virtualización de \textbf{código abierto}. Permite realizar 
 \subsection{Git}
 \subsection{Trello}
 \subsection{Draw.io}
-
-\section{Dataset de las pruebas}
-\label{sec:dataset}
-
-A modo de evaluar el rendimiento en términos de precisión del sistema y de los modelos de visión artificial vistos en los capítulos \ref{chap:cnn} y \ref{chap:systesting}, se parte de un \gls{dataset} creado en \cite{andrew}. El \gls{dataset} contiene datos etiquetados extraídos de un fichero Rosbag, que contiene la información de las dos cámaras Kinect \acrshort{rgbd} y del sensor \acrshort{lidar} instalados en el Summit\_XL durante la realización de una prueba. Dicha prueba se ha realizado a partir de los datos grabados de una prueba de 2 minutos dentro del laboratorio de robótica del \acrshort{citic} con 6 personas. Cada entrada en el fichero \acrshort{json} del \gls{dataset} se compone de los siguientes objetos \cite{andrew}:
-
-\begin{itemize}
-    \item Identificador del frame
-    \item Lista de las personas presentes, que contiene lo siguiente:
-          \begin{itemize}
-              \item Coordenadas de la \gls{bbox} corporal del sujeto, así como la confianza de la detección y su tamaño.
-              \item Coordenadas de la \gls{bbox} facial del sujeto, así como la confianza de la detección, su tamaño y la orientación de la cara.
-              \item Etiqueta del individuo registrado.
-          \end{itemize}
-\end{itemize}

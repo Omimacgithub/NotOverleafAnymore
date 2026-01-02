@@ -7,7 +7,20 @@ Se ha realizado un análisis de la escalabilidad desde 2 hasta 10 cámaras, que 
 
 También se exponen resultados que prueban las capacidades del módulo adaptativo, se realiza un conjunto de pruebas con diferentes valores de parámetros para evaluar su impacto y por qué generan los resultados expuestos. Con el fin de obtener un sistema completamente autónomo, se ha estudiado varios métodos de inicialización de la base de datos, desde un método supervisado hasta uno totalmente controlado por el propio sistema. Se han comparado los resultados entre las diferentes inicializaciones y se ha explicado el motivo de los resultados y de los factores implicados. Debido a que el sistema se adapta a lo largo del tiempo, se han realizado pruebas que midan la consistencia del sistema a lo largo de varias repeticiones del video, para averiguar si este sufre de una caída repentina en el rendimiento por algún fallo del software. Todas las pruebas mencionadas se ejecutan en las modalidades \textit{Open-Set}, que detecta desconocidos y actualiza las entidades existentes y \textit{Open-World}, que realiza las mismas funciones que \textit{Open-Set}, pero con la capacidad de registrar a los desconocidos en el sistema. De este modo, se analizan las diferencias entre ambas modalidades.
 
+\section{Datasets de las pruebas}
+Las pruebas que analizan los métodos de inicialización y las capacidades del reconocimiento adaptativo se realizaron por separado del sistema bajo el modelo de reconocimiento facial \textbf{ArcFace}. Por lo tanto, para dichas pruebas se ha empleado el \gls{dataset} expuesto en la sección \ref{sec:modset}. En el caso que ocupa al sistema (pruebas de la sección \ref{sec:syscal}), se dispone de un \gls{dataset} que representa el \gls{gt} del nodo integración de sensores (ver sección \ref{sec:basearch}), ya que cada entrada del fichero es idéntica a la salida de dicho nodo. Cada entrada está compuesta por los siguientes objetos:
+\begin{itemize}
+    \item secs: \gls{timestamp} del tiempo de UNIX en segudos
+    \item nsecs: \gls{timestamp} del tiempo en nanosegundos del segundo correspondiente al campo secs.
+    \item people: lista de objetos, cada uno compuesto por los siguientes elementos:
+          \begin{itemize}
+              \item person\_id: etiqueta que identifica al usuario detectado (ejemplo: carlos)
+              \item position: coordenadas del espacio \acrshort{3d} compartido por las cámaras y el \acrshort{lidar} en el que se sitúa dicho usuario.
+          \end{itemize}
+\end{itemize}
+
 \section{Escalabilidad en el número de cámaras}
+\label{sec:syscal}
 
 Esta sección pretende evaluar el techo del sistema al elevar el número de cámaras implicadas.
 
