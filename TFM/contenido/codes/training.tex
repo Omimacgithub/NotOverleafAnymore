@@ -1,9 +1,9 @@
-\begin{lstlisting}[language=Python, float=t, label=coud:training, caption=Código de entrenamiento de las SVM]
+\begin{lstlisting}[language=Python, label=coud:training, caption=Código de entrenamiento de las SVM]
 def def_svm(samples, idx, d1, unk):
 # samples shape: (IoIs, num_svm, num_samples, feature_dim)
 # idx: index that points to the entity ensemble in the database
 # d1: positive samples 
-# unk: flag to mark if d1 samples belong to a unknown entity
+# unk: flag to mark if d1 samples belong to an unknown entity
 
     samplesNegative = deepcopy(samples)
     if not unk:

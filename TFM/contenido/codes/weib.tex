@@ -1,4 +1,4 @@
-\begin{lstlisting}[language=Python, float=t, label=coud:weib, caption=Recognition Decision Function, basicstyle=\footnotesize]
+\begin{lstlisting}[language=Python, label=coud:weib, caption=Módulo de reconocimiento, basicstyle=\footnotesize]
 import numpy as np
 from scipy import stats
 
@@ -11,24 +11,21 @@ def RDF(R, sorted_ens_scr, Tw):
   #R: original set of ensemble scores
   #sorted_ens_scr: sorted set of ensemble scores
   #Tw: Weibull threshold
-  
   c = sorted_ens_scr[0]
   set_of_mins = sorted_ens_scr[1:int(len(sorted_ens_scr))]
-
   m = np.median(sorted_ens_scr[1:])
-
+  #Non-match distribution
   v = np.abs(set_of_mins - m)
-  
+  #Best score
   cand_scr = np.abs(c - m)
-  
-  shape,loc,scale = stats.weibull_min.fit(v, floc=0)
-  
+  #Obtain shape and scale Weibull parameters
+  shape,loc,scale = stats.weibull_min.fit(v, floc=0) 
+  #Calculate PDF
   pdf = weib(cand_scr, scale, shape)
-  
   # Decision
   if (pdf<Tw):
-    ioiId = np.where( R == c )[0][0]
+    decision = np.where( R == c )[0][0] # Drift
   else:
-    ioiId = -1
-  
+    decision = -1 # Unknown
+  return decision
 \end{lstlisting}
