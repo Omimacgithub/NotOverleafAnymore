@@ -51,9 +51,7 @@ class CNN_model:
         # Transfer predictions back
         cuda.memcpy_dtoh_async(outputs, self.d_output, self.stream)
         self.stream.synchronize()
-        #Post-procesing
-        postprocesed_output = POSTPROCESING(outputs)
-        return postprocesed_output
+        return POSTPROCESING(outputs)
       finally:
         self.ctx.pop()
 \end{lstlisting}

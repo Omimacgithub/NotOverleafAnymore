@@ -26,14 +26,25 @@ La función infer del código \ref{coud:trtskel} se ejecuta por cada vez que se 
 
 \input{contenido/codes/trtskel.tex}
 
-\section{Creación de las SVM}
-\label{sec:training}
+%\section{Creación de las SVM}
+%\label{sec:training}
+
+\section{Inicialización de personas registradas}
+\label{sec:init}
+
+Como se ha comentado en la sección \ref{sec:initarch}, la base de datos de usuarios se puede inicializar de un modo supervisado o no supervisado. Para que el algoritmo de clasificación y el método de reconocimiento funcionen, es necesario disponer de varias muestras representativas del individuo (a partir de ahora este parámetro se definirá como \textbf{tamaño de plantilla}).
+
+En el modo supervisado, se cuenta con un directorio con las muestras (recortes de caras y/o cuerpos) agrupadas por subdirectorios para cada usuario. Se inicializa la base de datos con los \glspl{embedding} generados por los modelos de reconocimiento para cada muestra, tras obtener los \glspl{embedding} de todos los usuarios, se entrenan las \acrshort{svm} que compondrán los comités iniciales. El conjunto de positivos de dichos clasificadores se compone de las muestras del propio usuario, mientras que el conjunto de negativos se corresponde con una selección aleatoria de las muestras del resto de individuos.
+
+En el modo no supervisado, se parte puramente de la información de las cámaras en el momento de ejecución del sistema, en el caso de las pruebas realizadas se utilizan los frames de los videos grabados. Se recoge el mismo instante del video (frame) de todas las cámaras operativas y se aplica el respectivo modelo de detección, si el número de individuos detectados supera un valor mínimo prefijado (5 en este caso, ya que es el mínimo necesario de puntos para que Weibull pueda converger), se aplica el módulo de seguimiento y reidentificación para una cantidad de frames prefijada (generalmente un valor superior al \textbf{tamaño de plantilla}), de forma que se agrupan los recortes (o \glspl{bbox}) generados según el individuo. Dichos recortes se filtran basándose en una serie de condiciones, como que el recorte se encuentre parcialmente fuera del rango de visión de la cámara, o que el ancho de la \gls{bbox} sea más largo que el alto. Finalmente, si no se ha logrado recolectar un mínimo de \glspl{bbox} para un mínimo de usuarios, el sistema descarta todas las muestras adquiridas y empieza sin ningún conocimiento.
 
 El código \ref{coud:training} corresponde al proceso seguido a la hora de crear y entrenar nuevos clasificadores. De todas las muestras de individuos de la base de datos, se \textbf{excluyen las del propio sujeto} en el caso de crear una \acrshort{svm} para un comité existente. Posteriormente, se extrae un subconjunto aleatorio de estas (función random\_pick), que representará al conjunto de muestras negativas del entrenamiento. Finalmente, se crea la \acrshort{svm} y se entrena con el conjunto de positivos (variable d1) y negativos, etiquetados con 1 (variable labels) y -1 (variable plabels) respectivamente. De esta forma, cuando el clasificador determine que las muestras pertenecen a la clase que representa, devolverá como máximo una puntuación de -1, en caso contrario devolverá un 1 TODO: no sé porqué se comporta al revés. Este comportamiento se ha aplicado simplemente por comodidad, pero la \acrshort{svm} podría entrenarse para que cause el efecto contrario.
 
-La función comentada se invoca durante la inicialización del sistema y cuando se llama al módulo de actualización, o lo que es lo mismo, cada vez que se necesite crear un nuevo clasificador a registrar en el sistema.
+%La función comentada se invoca durante la inicialización del sistema y cuando se llama al módulo de actualización, o lo que es lo mismo, cada vez que se necesite crear un nuevo clasificador a registrar en el sistema.
 
 \input{contenido/codes/training.tex}
+
+TODO: poner algún extracto de código?
 
 \section{Seguimiento y reidentificación}
 La implementación sigue el flujo expuesto en la sección \ref{sec:tracker}.
@@ -54,22 +65,13 @@ El código \ref{coud:weib} (función RDF) muestra la implementación de dicha fu
 
 \section{Módulo de actualización}
 
-La implementación del módulo sigue el flujo descrito en la sección \ref{sec:reckon}. La creación de las \acrshort{svm} se realiza a partir de la función \textit{def\_svm} vista en la sección \ref{sec:training}.
+La implementación del módulo sigue el flujo descrito en la sección \ref{sec:reckon}. La creación de las \acrshort{svm} se realiza a partir de la función \textit{def\_svm} vista en la sección \ref{sec:init}.
 
 \section{Módulo de limitación}
 Este módulo se activa cuando se crea una nueva \acrshort{svm} en la actualización para un comité existente y este excede el límite prefijado de clasificadores. Se invoca a la función que calcula el criterio de favorabilidad, que a su vez invoca a los criterios de diversidad y coherencia para el comité. Se fusionan los resultados de dichos criterios, almacenados en un array de NumPy de longitud igual al número de clasificadores, multiplicados por las constantes $\alpha$ y $\gamma$ a 1. Finalmente, se ordenan los valores devueltos mediante la función \textit{argsort} de NumPy, por lo que la \acrshort{svm} a eliminar se corresponde con la primera entrada del vector (es decir, el valor de favorabilidad más bajo).
 
-\section{Inicialización de personas registradas}
-Como se ha comentado en la sección \ref{sec:initarch}, la base de datos de usuarios se puede inicializar de un modo supervisado o no supervisado. Para que el algoritmo de clasificación y el método de reconocimiento funcionen, es necesario disponer de varias muestras representativas del individuo (a partir de ahora este parámetro se definirá como \textbf{tamaño de plantilla}).
-
-En el modo supervisado, se cuenta con un directorio con las muestras (recortes de caras y/o cuerpos) agrupadas por subdirectorios para cada usuario. Se inicializa la base de datos con los \glspl{embedding} generados por los modelos de reconocimiento para cada muestra, tras obtener los \glspl{embedding} de todos los usuarios, se entrenan las \acrshort{svm} que compondrán los comités iniciales. El conjunto de positivos de dichos clasificadores se compone de las muestras del propio usuario, mientras que el conjunto de negativos se corresponde con una selección aleatoria de las muestras del resto de individuos. La creación de los clasificadores se realiza con la función \textit{def\_svm} vista en la sección \ref{sec:training}.
-
-En el modo no supervisado, se parte puramente de la información de las cámaras en el momento de ejecución del sistema, en el caso de las pruebas realizadas se utilizan los frames de los videos grabados. Se recoge el mismo instante del video (frame) de todas las cámaras operativas y se aplica el respectivo modelo de detección, si el número de individuos detectados supera un valor mínimo prefijado (5 en este caso, ya que es el mínimo necesario de puntos para que Weibull pueda converger), se aplica el módulo de seguimiento y reidentificación para una cantidad de frames prefijada (generalmente un valor superior al \textbf{tamaño de plantilla}), de forma que se agrupan los recortes (o \glspl{bbox}) generados según el individuo. Dichos recortes se filtran basándose en una serie de condiciones, como que el recorte se encuentre parcialmente fuera del rango de visión de la cámara, o que el ancho de la \gls{bbox} sea más largo que el alto. Finalmente, si no se ha logrado recolectar un mínimo de \glspl{bbox} para un mínimo de usuarios, el sistema descarta todas las muestras adquiridas y empieza sin ningún conocimiento.
-
-TODO: poner algún extracto de código?
-
 \section{TODO: Escalabilidad y tolerancia a fallos de las cámaras}
-Cuando se fusionan los resultados procesados por los distintos sensores (nodo integración de sensores en la figura \ref{fig:finalsys}), se requiere que todos ellos se encuentren \textbf{sincronizados} dentro de un intervalo temporal (ejemplo: 100 milisegundos), de forma que las predicciones no se realizan a partir de información desactualizada. En \cite{andrew} se utiliza una clase del paquete \textit{message\_filters} de \acrshort{ros} llamado \textit{ApproximateTimeSynchronizer}. Esta clase utiliza un algoritmo para emparejar mensajes a partir de su \gls{timestamp} \cite{ApproximateTime}. El problema de \textit{ApproximateTimeSynchronizer} es que espera recibir datos \textbf{de todas las fuentes en todo momento}, lo que no es una situación realista y que puede provocar una caída del sistema en el momento que uno de los sensores falle. Como solución a este problema, se ha realizado una sustitución por la clase \textit{MessageFiltersCache} de la misma librería \cite{MFC}. En esta nueva implementación, cada nodo posee una caché en la que se almacenan sus mensajes, a una frecuencia establecida se recuperan los datos de todas las cachés, TODO: si en una de las cachés el último dato no se corresponde con el intervalo actual, este no se tiene en cuenta para dicho intervalo. El código \ref{coud:cash} muestra la implementación de dicho mecanismo.
+Cuando se fusionan los resultados procesados por los distintos sensores (nodo integración de sensores en la figura \ref{fig:finalsys}), se requiere que todos ellos se encuentren \textbf{sincronizados} dentro de un intervalo temporal (ejemplo: 100 milisegundos), de forma que las predicciones no se realizan a partir de información desactualizada. En \cite{andrew} se utiliza una clase del paquete \textit{message\_filters} de \acrshort{ros} llamado \textit{ApproximateTimeSynchronizer}, esta clase utiliza un algoritmo para emparejar mensajes a partir de su \gls{timestamp} \cite{ApproximateTime}. El problema de \textit{ApproximateTimeSynchronizer} es que espera recibir datos \textbf{de todas las fuentes en todo momento}, lo que no es una situación realista y que puede provocar una caída del sistema en el momento que uno de los sensores falle. Como solución a este problema, se ha sustituido dicha clase por \textit{MessageFiltersCache} de la misma librería \cite{MFC}. En esta nueva implementación, cada nodo posee una caché en la que se almacenan sus mensajes, que pueden recuperarse especificando un timestamp, que según la función que se utilize, recupera los mensajes anteriores, posteriores o dentro de un intervalo. El código \ref{coud:cash} muestra una función para recuperar los datos de las caches.
 
 \input{contenido/codes/cash.tex}
 
@@ -77,3 +79,5 @@ Cuando se fusionan los resultados procesados por los distintos sensores (nodo in
 \label{subsec:ROS2}
 
 Con el motivo del fin de soporte de ROS 1 \cite{ROSEOL}, se ha optado por migrar el sistema para ser ejecutado en ROS 2 con el fin de mantener su continuidad. El proceso de migración se ha llevado a cabo por medio de la guía oficial de \acrshort{ros} \cite{ros2tuto}. Se han migrado los nodos cámara e integrador, la migración del nodo \acrshort{lidar} requeriría actualizar el código a una versión soportada para Ubuntu 22.04 de la librería pcl, entre otros detalles que llevarían a rediseñar casi todo el código. Por último, el sensor \acrshort{lidar} instalado no es compatible con \acrshort{ros} 2, lo que impide la migración a menos que se haga un recambio.
+
+En ROS 2 se ha introducido la posibilidad de escribir scripts de lanzamiento en Python. El archivo de lanzamiento del sistema se ha convertido del formato \acrshort{xml} a un script de Python para aprovechar la flexibilidad que el propio lenguaje ofrece y para aprovechar las nuevas funcionalidades. %Ref a esto: https://docs.ros.org/en/foxy/How-To-Guides/Launch-file-different-formats.html#launch-file-examples
