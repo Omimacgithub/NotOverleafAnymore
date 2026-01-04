@@ -21,83 +21,9 @@ A continuación se expone el listado de dispositivos sujetos de las pruebas de e
 \subsubsection{NVIDIA Jetson}
 Es una familia de \textbf{\glspl{embsystem}} pensados para aplicaciones de \acrshort{ia}. Dichos dispositivos incluyen un kit de desarrollo llamado \textbf{JetPack}, diseñado para exprimir la potencia de la NVIDIA Jetson en aplicaciones como la robótica, \acrshort{ia} generativa y visión artificial \cite{jason}.
 
-Actualmente existe una amplia variedad en la potencia y precio de estos dispositivos \cite{jason}. Para este proyecto se han empleado cuatro modelos diferentes que se exponen a continuación (se encuentran ordenados de menores a mayores prestaciones).
+Actualmente existe una amplia variedad en la potencia y precio de estos dispositivos \cite{jason}. Para este proyecto se han empleado cuatro modelos diferentes que se exponen en la tabla \ref{tab:devices} (se encuentran ordenados de menores a mayores prestaciones).
 
-\textbf{Jetson Xavier NX}
-
-Specs \cite{jxavier}
-
-\acrshort{cpu}: 6-core NVIDIA Carmel Armv8.2 64-bit CPU 1.9 GHz
-
-\acrshort{gpu}: 384-core NVIDIA Volta™ architecture GPU with 48 Tensor Cores 1.1 GHz
-
-Memoria: 8GB 128-bit LPDDR4x 59.7GB/s
-
-Red: Gigabit Ethernet
-
-Consumo: entre 10 W y 20 W
-
-AI Performance: 21 TOPS (TODO: en qué precisión? INT8?)
-
-Desde 399\$ \cite{price}.
-
-
-\textbf{Jetson Orin Nano}
-
-Specs \cite{jorin}
-
-\acrshort{cpu}: 6-core Arm® Cortex®-A78AE v8.2 64-bit CPU 1.5MB L2 + 4MB L3 1.7 GHz
-
-\acrshort{gpu}: 1024-core NVIDIA Ampere architecture GPU with 32 Tensor Cores 1020 MHz
-
-Memoria: 8 GB LPDDR5 128 bits 102 GB/s
-
-Red: Gigabit Ethernet
-
-Consumo: 7W - 15W - 25W
-
-AI Performance: 67 TOPS INT8
-
-Es la más barata desde 249\$ \cite{price}.
-
-\textbf{Jetson AGX Orin}
-
-Specs \cite{jorin}:
-
-\acrshort{cpu}: 12-core Arm Cortex-A78AE v8.2 64-bit 3MB L2 + 6MB L3 CPU 2.2 GHz
-
-\acrshort{gpu}: 2048-core NVIDIA Ampere architecture GPU with 64 Tensor Cores 1.3 GHz
-
-Memoria: 64GB 256-bit LPDDR5 204.8GB/s
-
-Red: 10 Gigabit Ethernet
-
-AI Performance: 275 TOPS
-
-Consumo: entre 15 W y 60 W
-
-La placa AGX Orin aumenta considerablemente las prestaciones de memoria principal y núcleos de CPU respecto la familia NX o Nano. En las placas AGX podría ser viable entrenar modelos \acrshort{cnn}.
-
-1999\$ \cite{price}.
-
-\textbf{Jetson AGX Thor}
-
-Specs \cite{jthor}:
-
-\acrshort{cpu}: 14-core Arm Neoverse-V3AE 64-bit CPU 1 MB L2 cache per core 16 MB shared system L3 cache 2.6 GHz
-
-\acrshort{gpu}: 2560-core NVIDIA Blackwell architecture GPU with 96 fifth-gen Tensor Cores Multi-Instance GPU (MIG) with 10 TPCs 1.57 GHz
-
-Memoria: 128 GB 256-bit LPDDR5X 273 GB/s
-
-Red: 1 puerto RJ45 de 5 Gigabit Ethernet y 1 puerto QSFP28 de hasta 4 canales x 25 Gigabit Ethernet (TODO: lo mismo que 100 Gigabit Etherneta? <- mirar con lshw -class network)
-
-AI Performance: 2070 TFLOPS (FP4—Sparse)
-
-Consumo: entre 40 W y 130 W
-
-Desde 3499\$ \cite{price}
-
+\input{contenido/tables/devices.tex}
 
 \subsubsection{Portátil personal}
 Cuenta con una CPU \textbf{Intel i7 i7-12650H}, una GPU \textbf{NVIDIA GeForce RTX 3050} con \textbf{4 GB de RAM}. Tiene una memoria principal de \textbf{16 GB} y el sistema operativo Linux Mint 21.3 (equivalente a un Ubuntu 22.04).
@@ -137,6 +63,16 @@ SM Freq: 2.1 GHz
 MEM Freq: 6 GHz
 
 MEM: 33.4 GB
+
+\subsubsection{Arquitecturas de GPU}
+
+Según la arquitectura de la \acrshort{gpu} de NVIDIA a tratar se agregan nuevas características que maximizan el rendimiento de la inferencia de los modelos, se ahondará en este tema en el capítulo \ref{chap:cnn}. Las arquitecturas que se muestran a continuación están ordenadas de menor a mayor generación:
+\begin{itemize}
+    \item Volta: se introducen los \textbf{tensor cores}.
+    \item Turing:
+    \item Ampere: incorpora los tensor cores de tercera generación, que incluyen el tipo de dato \textbf{TF32}, que funciona como FP32 pero optimizado en \acrshort{gpu} sin realizar ningún cambio en el código \cite{ampere}.
+    \item Blackwell: incorpora tensor cores de quinta generación.
+\end{itemize}
 
 \section{Software específico}
 \label{sec:sw}
