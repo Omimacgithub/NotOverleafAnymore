@@ -20,9 +20,18 @@ Atendiendo a la definición de \cite{rudd2017extreme}, un sistema de reconocimie
     \item Actualizar el modelo.
 \end{itemize}
 
-\section{TODO: Clasificadores}
+\section{Clasificadores}
 
-TODO: hablar de los tipos y de que finalmente se escoge \acrfull{svm}.
+Random Forest: Number of trees, maximum depth, minimum samples per leaf
+
+Neural Networks: Learning rate, batch size, network architecture, regularization strength
+
+Support Vector Machines: Kernel type, regularization parameter, kernel-specific parameters
+
+Gradient Boosting: Learning rate, number of boosting rounds, maximum tree depth
+
+
+\subsection{SVM}
 
 Es un algoritmo de \textbf{clasificación} que dibuja un hiperplano entre categorías de datos, buscando siempre el mayor margen (distancia entre el punto que define la frontera de la categoría, denominado \textit{support vector}, y el hiperplano), de modo que agrega cierta tolerancia al posible ruido producido. Es un \textbf{algoritmo de aprendizaje supervisado} (requiere de un conjunto inicial de datos para su entrenamiento) y conforma la unidad más básica de clasificación dentro del sistema de este proyecto \cite{SVM}. Dicho algoritmo pertenece al aprendizaje \textit{Closed-Set}, es decir, no es capaz de discernir entre clases fuera del conjunto de datos de entrenamiento, por lo que un dato desconocido se clasificaría erróneamente como una de las clases del entrenamiento \cite{rudd2017extreme}.
 

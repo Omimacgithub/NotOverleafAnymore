@@ -3,8 +3,7 @@
 
 \lettrine{E}{n} este capítulo se exponen las pruebas y los resultados de rendimiento del sistema final.
 
-Se ha realizado un análisis de la escalabilidad desde 2 hasta 10 cámaras, que es la cifra máxima a la que se ha aspirado sin experimentar una caída grave en el rendimiento. El sistema se ha probado en las distribuciones ROS 1 y ROS 2. Según el dispositivo, solo hay opción a ejecutar una de las distribuciones (ejemplo: dispositivos Jetson). Se discuten los resultados de rendimiento atendiendo a múltiples factores como los recursos utilizados.
-
+\section{Introducción}
 También se exponen resultados que prueban las capacidades del módulo adaptativo, se realiza un conjunto de pruebas con diferentes valores de parámetros para evaluar su impacto y por qué generan los resultados expuestos. Con el fin de obtener un sistema completamente autónomo, se ha estudiado varios métodos de inicialización de la base de datos, desde un método supervisado hasta uno totalmente controlado por el propio sistema. Se han comparado los resultados entre las diferentes inicializaciones y se ha explicado el motivo de los resultados y de los factores implicados. Debido a que el sistema se adapta a lo largo del tiempo, se han realizado pruebas que midan la consistencia del sistema a lo largo de varias repeticiones del video, para averiguar si este sufre de una caída repentina en el rendimiento por algún fallo del software. Todas las pruebas mencionadas se ejecutan en las modalidades \textit{Open-Set}, que detecta desconocidos y actualiza las entidades existentes y \textit{Open-World}, que realiza las mismas funciones que \textit{Open-Set}, pero con la capacidad de registrar a los desconocidos en el sistema. De este modo, se analizan las diferencias entre ambas modalidades.
 
 \section{Datasets de las pruebas}
@@ -44,7 +43,7 @@ En el caso de la imagen de distancia, en sí no es un objeto pesado, por lo que 
 \begin{figure}
     \centering
     \includegraphics[width=1\linewidth]{imagenes/SYSTESTING.jpg}
-    \caption{Ejecución de las pruebas del sistema}
+    \caption{Reproducción y transmisión del rosbag por la red}
     \label{fig:systesting}
 \end{figure}
 

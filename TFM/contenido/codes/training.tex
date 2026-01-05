@@ -1,4 +1,4 @@
-\begin{lstlisting}[language=Python, label=coud:training, caption=Código de entrenamiento de las SVM]
+\begin{lstlisting}[language=Python, label=coud:training, caption=Entrenamiento de las SVM, basicstyle=\footnotesize]
 def def_svm(samples, idx, d1, unk):
 # samples shape: (IoIs, num_svm, num_samples, feature_dim)
 # idx: index that points to the entity ensemble in the database
@@ -13,10 +13,10 @@ def def_svm(samples, idx, d1, unk):
 
     samplesNegative = random_pick(np.array(l), size=k)
 
-    trainData = np.vstack( [samplesNegative, d1 ], dtype=np.float32 )
+    trainData = np.vstack([samplesNegative, d1], dtype=np.float32)
     labels = -np.ones([samplesNegative.shape[0], 1], dtype=np.int32)
-    plabels = np.ones( [len(d1), 1], dtype=np.int32 )
-    labels = np.vstack( [labels, plabels] )
+    plabels = np.ones([len(d1), 1], dtype=np.int32)
+    labels = np.vstack([labels, plabels])
 
     # SVM creation
     svm = cv2.ml.SVM_create()

@@ -14,57 +14,23 @@ Para este proyecto, se cuenta con dos de estas cámaras, cada una con una cobert
 
 El sistema que se expondrá se ha construido para funcionar en el robot móvil Summit\_XL. Dicho robot es de tipo diferencial (permite el movimiento en todas las direcciones excepto en los laterales) y cuenta con 4 ruedas de goma, de gran utilidad para moverse en entornos de exteriores. Entre sus componentes, tiene instalado un sensor Velodyne \acrshort{lidar} que otorga nubes de puntos \acrshort{3d} del entorno y dos cámaras Kinect instaladas en los laterales.
 
-\section{Dispositivos}
+\subsection{Familia Jetson}
 
-A continuación se expone el listado de dispositivos sujetos de las pruebas de este proyecto.
+%A continuación se expone el listado de dispositivos sujetos de las pruebas de este proyecto.
 
-\subsubsection{NVIDIA Jetson}
 Es una familia de \textbf{\glspl{embsystem}} pensados para aplicaciones de \acrshort{ia}. Dichos dispositivos incluyen un kit de desarrollo llamado \textbf{JetPack}, diseñado para exprimir la potencia de la NVIDIA Jetson en aplicaciones como la robótica, \acrshort{ia} generativa y visión artificial \cite{jason}.
 
-Actualmente existe una amplia variedad en la potencia y precio de estos dispositivos \cite{jason}. Para este proyecto se han empleado cuatro modelos diferentes que se exponen en la tabla \ref{tab:devices} (se encuentran ordenados de menores a mayores prestaciones).
+\input{contenido/tables/jetsons.tex}
 
-\input{contenido/tables/devices.tex}
+Actualmente existe una amplia variedad en la potencia y precio de estos dispositivos \cite{jason}. Para este proyecto se han empleado cuatro modelos diferentes que se exponen en la tabla \ref{tab:jetsons} (se encuentran ordenados de menores a mayores prestaciones).
 
-\subsubsection{Portátil personal}
-Cuenta con una CPU \textbf{Intel i7 i7-12650H}, una GPU \textbf{NVIDIA GeForce RTX 3050} con \textbf{4 GB de RAM}. Tiene una memoria principal de \textbf{16 GB} y el sistema operativo Linux Mint 21.3 (equivalente a un Ubuntu 22.04).
+\subsection{Familia Intel}
 
-CPU: i7-12650H
+\input{contenido/tables/x86.tex}
 
-Nº threads: 16
+La tabla \ref{tab:x86} muestra los equipos con \acrshort{cpu}s Intel empleados en el proyecto.
 
-Freq: 4.7 GHz
-
-GPU: GeForce RTX 3050 (4 GiB)
-
-SMs: 18
-
-SM Freq: 2.1 GHz
-
-MEM Freq: 7 GHz
-
-MEM: 15 GB
-
-
-\subsubsection{PC del laboratorio del CITIC}
-Cuenta con una CPU \textbf{Intel i7 i7-12700}, una GPU \textbf{NVIDIA GeForce GTX 1650} con \textbf{4 GB de RAM}. Tiene una memoria principal de \textbf{32 GB} y el sistema operativo Ubuntu 24.04.
-
-CPU: i7-12700
-
-Nº threads: 20
-
-Freq: 4.9 GHz
-
-GPU: GeForce GTX 1650 (4 GiB)
-
-SMs: 14
-
-SM Freq: 2.1 GHz
-
-MEM Freq: 6 GHz
-
-MEM: 33.4 GB
-
-\subsubsection{Arquitecturas de GPU}
+\subsection{Arquitecturas de GPU}
 
 Según la arquitectura de la \acrshort{gpu} de NVIDIA a tratar se agregan nuevas características que maximizan el rendimiento de la inferencia de los modelos, se ahondará en este tema en el capítulo \ref{chap:cnn}. Las arquitecturas que se muestran a continuación están ordenadas de menor a mayor generación:
 \begin{itemize}

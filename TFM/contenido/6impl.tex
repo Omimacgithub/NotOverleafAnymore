@@ -3,6 +3,8 @@
 
 \lettrine{E}{n} este capítulo se ahonda en los detalles de implementación de ciertos componentes que se han considerado relevantes de comentar.
 
+\input{contenido/codes/trtskel.tex}
+
 TODO: explicar en algún momento que implementamos el reconocimiento adaptativo como módulo por separado del sistema, y que realmente a excepción de la escalabilidad y el ROS 2, el sistema sigue igual.
 
 \section{Códigos de inferencia para el \textit{backend} de TensorRT}
@@ -24,21 +26,21 @@ Dichos recursos se reservan \textbf{una sola vez}, que corresponde con el moment
 
 La función infer del código \ref{coud:trtskel} se ejecuta por cada vez que se recibe una imagen de entrada a procesar. Se reserva un array de NumPy para almacenar la salida de la inferencia y se ejecuta la función PREPROCESING con la imagen de entrada, que representa el pipeline de preprocesado específico para cada modelo. La imagen preprocesada se copia a la memoria de la \acrshort{gpu} y se realiza la inferencia en el stream de CUDA correspondiente. Finalmente, los resultados se copian de vuelta a la memoria principal y se devuelven tras ejecutar el pipeline de postprocesado definido en la función POSTPROCESING.
 
-\input{contenido/codes/trtskel.tex}
-
 %\section{Creación de las SVM}
 %\label{sec:training}
 
-\section{Inicialización de personas registradas}
+\section{Personas registradas}
 \label{sec:init}
 
 Como se ha comentado en la sección \ref{sec:initarch}, la base de datos de usuarios se puede inicializar de un modo supervisado o no supervisado. Para que el algoritmo de clasificación y el método de reconocimiento funcionen, es necesario disponer de varias muestras representativas del individuo (a partir de ahora este parámetro se definirá como \textbf{tamaño de plantilla}).
 
 En el modo supervisado, se cuenta con un directorio con las muestras (recortes de caras y/o cuerpos) agrupadas por subdirectorios para cada usuario. Se inicializa la base de datos con los \glspl{embedding} generados por los modelos de reconocimiento para cada muestra, tras obtener los \glspl{embedding} de todos los usuarios, se entrenan las \acrshort{svm} que compondrán los comités iniciales. El conjunto de positivos de dichos clasificadores se compone de las muestras del propio usuario, mientras que el conjunto de negativos se corresponde con una selección aleatoria de las muestras del resto de individuos.
 
-En el modo no supervisado, se parte puramente de la información de las cámaras en el momento de ejecución del sistema, en el caso de las pruebas realizadas se utilizan los frames de los videos grabados. Se recoge el mismo instante del video (frame) de todas las cámaras operativas y se aplica el respectivo modelo de detección, si el número de individuos detectados supera un valor mínimo prefijado (5 en este caso, ya que es el mínimo necesario de puntos para que Weibull pueda converger), se aplica el módulo de seguimiento y reidentificación para una cantidad de frames prefijada (generalmente un valor superior al \textbf{tamaño de plantilla}), de forma que se agrupan los recortes (o \glspl{bbox}) generados según el individuo. Dichos recortes se filtran basándose en una serie de condiciones, como que el recorte se encuentre parcialmente fuera del rango de visión de la cámara, o que el ancho de la \gls{bbox} sea más largo que el alto. Finalmente, si no se ha logrado recolectar un mínimo de \glspl{bbox} para un mínimo de usuarios, el sistema descarta todas las muestras adquiridas y empieza sin ningún conocimiento.
+En el modo no supervisado, se parte puramente de la información de las cámaras en el momento de ejecución del sistema, en el caso de las pruebas realizadas se utilizan los frames de los videos grabados.
 
-El código \ref{coud:training} corresponde al proceso seguido a la hora de crear y entrenar nuevos clasificadores. De todas las muestras de individuos de la base de datos, se \textbf{excluyen las del propio sujeto} en el caso de crear una \acrshort{svm} para un comité existente. Posteriormente, se extrae un subconjunto aleatorio de estas (función random\_pick), que representará al conjunto de muestras negativas del entrenamiento. Finalmente, se crea la \acrshort{svm} y se entrena con el conjunto de positivos (variable d1) y negativos, etiquetados con 1 (variable labels) y -1 (variable plabels) respectivamente. De esta forma, cuando el clasificador determine que las muestras pertenecen a la clase que representa, devolverá como máximo una puntuación de -1, en caso contrario devolverá un 1 TODO: no sé porqué se comporta al revés. Este comportamiento se ha aplicado simplemente por comodidad, pero la \acrshort{svm} podría entrenarse para que cause el efecto contrario.
+El código \ref{coud:training} corresponde al proceso seguido a la hora de crear y entrenar nuevos clasificadores. De todas las muestras de individuos de la base de datos, se \textbf{excluyen las del propio sujeto} en el caso de crear una \acrshort{svm} para un comité existente. Posteriormente, se extrae un subconjunto aleatorio de estas (función random\_pick), que representará al conjunto de muestras negativas del entrenamiento.
+
+A la hora de entrenar las \acrshort{svm}, se asigna la etiqueta 1 (variable plabels) cuando la muestra se corresponde con el conjunto de positivos (variable d1) y -1 (variable labels) cuando corresponde con el de negativos (variable samplesNegative). De esta forma, cuando el clasificador determine que las muestras pertenecen a la clase que representa, devolverá como máximo una puntuación de -1, en caso contrario devolverá un 1 TODO: no sé porqué se comporta al revés. Este comportamiento se ha aplicado simplemente por comodidad, pero la \acrshort{svm} podría entrenarse para que cause el efecto contrario.
 
 %La función comentada se invoca durante la inicialización del sistema y cuando se llama al módulo de actualización, o lo que es lo mismo, cada vez que se necesite crear un nuevo clasificador a registrar en el sistema.
 
@@ -59,21 +61,32 @@ La implementación sigue el funcionamiento descrito en la sección \ref{sec:val}
 
 Esta función determina si la entidad detectada se corresponde a un individuo previamente reclutado o a una entidad \textbf{desconocida} (sección \ref{sec:reckon}).
 
-El código \ref{coud:weib} (función RDF) muestra la implementación de dicha función. Del conjunto de scores ordenados, se excluye el primer score de la distribución (que corresponde con el más bajo, por lo tanto el mejor) y se compone la distribución de distancias de cada puntuación respecto a la mediana. De los puntos de la distribución, se obtienen los parámetros \textit{shape} y \textit{scale}, que modelan la función de Weibull. Finalmente, se calcula la probabilidad de pertenencia del mejor score a la distribución (función weib) y se toma la decisión en base a un umbral (Tw). Si la probabilidad es inferior al umbral, se reconoce el caso como un extremo y se asigna la identidad correspondiente al sujeto (\textit{drift}), en caso contrario se devuelve como desconocido (\textit{unknown}).
-
 \input{contenido/codes/weib.tex}
+
+El código \ref{coud:weib} (función RDF) muestra la implementación de dicha función. Del conjunto de scores ordenados, se excluye el primer score de la distribución (que corresponde con el más bajo, por lo tanto el mejor) y se compone la distribución de distancias de cada puntuación respecto a la mediana. De los puntos de la distribución, se obtienen los parámetros \textit{shape} y \textit{scale}, que modelan la función de Weibull. Finalmente, se calcula la probabilidad de pertenencia del mejor score a la distribución (función weib) y se toma la decisión en base a un umbral (Tw). Si la probabilidad es inferior al umbral, se reconoce el caso como un extremo y se asigna la identidad correspondiente al sujeto (\textit{drift}), en caso contrario se devuelve como desconocido (\textit{unknown}).
 
 \section{Módulo de actualización}
 
 La implementación del módulo sigue el flujo descrito en la sección \ref{sec:reckon}. La creación de las \acrshort{svm} se realiza a partir de la función \textit{def\_svm} vista en la sección \ref{sec:init}.
 
 \section{Módulo de limitación}
-Este módulo se activa cuando se crea una nueva \acrshort{svm} en la actualización para un comité existente y este excede el límite prefijado de clasificadores. Se invoca a la función que calcula el criterio de favorabilidad, que a su vez invoca a los criterios de diversidad y coherencia para el comité. Se fusionan los resultados de dichos criterios, almacenados en un array de NumPy de longitud igual al número de clasificadores, multiplicados por las constantes $\alpha$ y $\gamma$ a 1. Finalmente, se ordenan los valores devueltos mediante la función \textit{argsort} de NumPy, por lo que la \acrshort{svm} a eliminar se corresponde con la primera entrada del vector (es decir, el valor de favorabilidad más bajo).
+Este módulo se activa cuando se excede el límite prefijado de clasificadores para un comité.
+
+Se invoca a la función que calcula el criterio de favorabilidad, que otorga un valor para cada \acrshort{svm} a partir de la suma de los criterios de diversidad y coherencia. Se almacenan los resultados en un array de NumPy y se ordenan los valores devueltos mediante la función \textit{argsort} de NumPy, por lo que la \acrshort{svm} a eliminar se corresponde con la primera entrada del vector (es decir, el que tenga el valor de favorabilidad más bajo).
 
 \section{TODO: Escalabilidad y tolerancia a fallos de las cámaras}
-Cuando se fusionan los resultados procesados por los distintos sensores (nodo integración de sensores en la figura \ref{fig:finalsys}), se requiere que todos ellos se encuentren \textbf{sincronizados} dentro de un intervalo temporal (ejemplo: 100 milisegundos), de forma que las predicciones no se realizan a partir de información desactualizada. En \cite{andrew} se utiliza una clase del paquete \textit{message\_filters} de \acrshort{ros} llamado \textit{ApproximateTimeSynchronizer}, esta clase utiliza un algoritmo para emparejar mensajes a partir de su \gls{timestamp} \cite{ApproximateTime}. El problema de \textit{ApproximateTimeSynchronizer} es que espera recibir datos \textbf{de todas las fuentes en todo momento}, lo que no es una situación realista y que puede provocar una caída del sistema en el momento que uno de los sensores falle. Como solución a este problema, se ha sustituido dicha clase por \textit{MessageFiltersCache} de la misma librería \cite{MFC}. En esta nueva implementación, cada nodo posee una caché en la que se almacenan sus mensajes, que pueden recuperarse especificando un timestamp, que según la función que se utilize, recupera los mensajes anteriores, posteriores o dentro de un intervalo. El código \ref{coud:cash} muestra una función para recuperar los datos de las caches.
 
 \input{contenido/codes/cash.tex}
+
+Cuando se fusionan los resultados procesados por los distintos sensores (nodo integración de sensores en la figura \ref{fig:finalsys}), se requiere que todos ellos se encuentren \textbf{sincronizados} dentro de un intervalo temporal (ejemplo: 100 milisegundos), de forma que las predicciones no se realizan a partir de información desactualizada.
+
+En \cite{andrew} se utiliza una clase del paquete \textit{message\_filters} de \acrshort{ros} llamado \textit{ApproximateTimeSynchronizer}, que utiliza un algoritmo adaptativo para emparejar mensajes a partir de su \gls{timestamp} \cite{ApproximateTime}. El problema de \textit{ApproximateTimeSynchronizer} es que espera recibir datos \textbf{de todas las fuentes en todo momento}, de modo que si uno de los sensores falla, el sistema \textbf{se congela} debido a que se dejan de recibir mensajes de dicha fuente.
+
+Se ha decidido sustituir dicha clase por \textit{MessageFiltersCache} de la misma librería \cite{MFC}. En esta nueva implementación, cada nodo posee una caché en la que se almacenan sus mensajes, que pueden recuperarse especificando un timestamp.
+
+La función \ref{coud:cash} recoge los datos de las cachés a una frecuencia fija (ejemplo: 10 Hz), de modo que se recuperan los últimos mensajes de los sensores que emitieron dentro del intervalo, sin esperar por sensores que hayan sufrido latencias o fallos.
+
+
 
 \section{Migración a ROS 2}
 \label{subsec:ROS2}

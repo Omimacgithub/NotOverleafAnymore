@@ -1,11 +1,10 @@
-\begin{lstlisting}[language=Python, caption=Esqueleto del código de las inferencias con TensorRT]
-# Import common libs
+\begin{lstlisting}[language=Python, float=t, caption=Esqueleto del código de las inferencias con TensorRT, basicstyle=\footnotesize]
 import cv2
 import numpy as np
 import tensorrt as trt
 import pycuda.driver as cuda
 
-# BATCH_SIZE: 
+# BATCH_SIZE: number of images to be processed in a single inference
 # NUM_CHANNELS: number of image channels, typically 3 (red, green and blue)
 # size: input tensor size of the model
 # osize: output tensor size of the model
