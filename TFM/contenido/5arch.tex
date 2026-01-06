@@ -234,10 +234,10 @@ La fase de inicialización es fundamental, debido a que la \acrshort{svm} inicia
 
 En esta primera fase del sistema se crean los registros que representarán a los individuos iniciales. En este proyecto se han probado 2 aproximaciones, una \textbf{supervisada}, es decir, con intervención del operador, y la otra \textbf{no supervisada}, en la que el sistema se inicializa de manera completamente autónoma.
 \subsection{Supervisado}
-El operador realiza una selección de los frames más representativos para cada individuo. El sistema crea el registro a partir de las características extraídas de dichos frames.
+El operador realiza una selección de los frames más representativos para cada individuo. El sistema crea la base de datos de personas registradas a partir de las características extraídas de dichos frames.
 
 \subsection{No supervisado}
-El sistema se encarga de recoger los frames en el instante en el que aparezcan un mínimo de entidades simultáneas en escena. A partir de los frames de las cámaras, que estarán sincronizadas, se obtienen las \glspl{bbox}, se agrupan por el individuo mediante el método de tracking y se procede a la creación de los comités con los \textit{\gls{embedding}} generados. En este modo \textbf{no se requiere de ninguna intervención del operador}.
+El sistema se encarga de recoger los frames en el instante en el que aparezcan un mínimo de entidades simultáneas en escena. A partir de los frames de las cámaras, que estarán sincronizadas, se obtienen las \glspl{bbox} y se agrupan por individuo mediante el método de tracking. En este modo \textbf{no se requiere de ninguna intervención del operador}.
 
 \begin{figure}
     \centering
@@ -246,7 +246,7 @@ El sistema se encarga de recoger los frames en el instante en el que aparezcan u
     \label{fig:init}
 \end{figure}
 
-El funcionamiento se muestra en la figura \ref{fig:init}. Dado un número de cámaras \textbf{sincronizadas}, se busca un instante (o frame) en el que mínimo se detecten \textbf{5 personas} (equivalente al mínimo de puntos necesario para formar una distribución de Weibull consistente \cite{Erik}) de forma simultánea entre todas las cámaras y se agrupan las \glspl{bbox} por medio del método de \textit{tracking}. En caso de no encontrar suficientes \glspl{bbox} para definir al individuo (ejemplo: desaparece de la visión de la cámara demasiado rápido), el sistema \textbf{no se puede inicializar satisfactoriamente}. En caso contrario, se obtienen las características (o \textit{\glspl{embedding}/features}) y se almacenan para emplearse en el entrenamiento de las \acrshort{svm}. Finalmente, se crean los comités que conforman las \textbf{personas registradas}.
+El funcionamiento se muestra en la figura \ref{fig:init}. Dado un número de cámaras \textbf{sincronizadas}, se busca un instante (o frame) en el que mínimo se detecten \textbf{5 personas} (equivalente al mínimo de puntos necesario para formar una distribución de Weibull consistente \cite{Erik}) de forma simultánea entre todas las cámaras. En caso de no encontrar suficientes \glspl{bbox} para definir al individuo (ejemplo: desaparece de la visión de la cámara demasiado rápido), el sistema \textbf{no se puede inicializar satisfactoriamente}. En caso contrario, se obtienen las características (o \textit{\glspl{embedding}/features}) y se almacenan para emplearse en el entrenamiento de las \acrshort{svm}. Finalmente, se crean los comités que conforman las \textbf{personas registradas}.
 
 Las \glspl{bbox} se someten a un método de filtrado, que puede descartarlas si no cumplen con las siguientes condiciones:
 
@@ -255,7 +255,7 @@ Las \glspl{bbox} se someten a un método de filtrado, que puede descartarlas si 
     \item La \gls{bbox} es más alta que ancha.
 \end{itemize}
 
-\subsection{Conjunto de negativos}
+\subsection{Conjunto de comités}
 
 Para cada individuo, se crea un \textit{ensemble} a partir de una \acrshort{svm} entrenada con las propias características del sujeto como positivos y las características del \textbf{resto de usuarios} como negativos.
 

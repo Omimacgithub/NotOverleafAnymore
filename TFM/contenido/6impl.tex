@@ -74,7 +74,7 @@ Este módulo se activa cuando se excede el límite prefijado de clasificadores p
 
 Se invoca a la función que calcula el criterio de favorabilidad, que otorga un valor para cada \acrshort{svm} a partir de la suma de los criterios de diversidad y coherencia. Se almacenan los resultados en un array de NumPy y se ordenan los valores devueltos mediante la función \textit{argsort} de NumPy, por lo que la \acrshort{svm} a eliminar se corresponde con la primera entrada del vector (es decir, el que tenga el valor de favorabilidad más bajo).
 
-\section{TODO: Escalabilidad y tolerancia a fallos de las cámaras}
+\section{Escalabilidad y tolerancia a fallos de las cámaras}
 
 \input{contenido/codes/cash.tex}
 
@@ -86,7 +86,7 @@ Se ha decidido sustituir dicha clase por \textit{MessageFiltersCache} de la mism
 
 La función \ref{coud:cash} recoge los datos de las cachés a una frecuencia fija (ejemplo: 10 Hz), de modo que se recuperan los últimos mensajes de los sensores que emitieron dentro del intervalo, sin esperar por sensores que hayan sufrido latencias o fallos.
 
-
+Se otorga una ventana de 500 ms para mensajes que llegan con cierto retardo antes de su descarte. Si un nodo no procesa y envía su mensaje antes de acabar el intervalo (ejemplo: 100ms), \textbf{se sigue aplicando el último mensaje recibido de este}, siempre y cuando no se exceda la ventana de tiempo ya comentada.
 
 \section{Migración a ROS 2}
 \label{subsec:ROS2}

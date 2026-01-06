@@ -1,25 +1,26 @@
-\begin{lstlisting}[language=Python, float=t, label=coud:cash, caption=Recolección de mensajes de las cachés de los sensores, basicstyle=\footnotesize]
+\begin{lstlisting}[language=Python, float=t, label=coud:cash, caption=Recolección de mensajes de las cachés de los sensores (ROS Noetic), basicstyle=\footnotesize]
 def process(self):
 # lidar_cash: MessageFiltersCache corresponding to LiDAR node.
 # cam_cash: list of MessageFiltersCache objects, as many as camera nodes are launched.
+    #Collect lidar message
     last_stamp = self.lidar_cash.getLatestTime()
     elapsed = rospy.Time.now().to_sec() - last_stamp.to_sec() if last_stamp else 1
-    lidar = self.lidar_cash.getElemBeforeTime(last_stamp) if elapsed < 0.5 else None
+    lidar = self.lidar_cash.getElemBeforeTime(last_stamp) if elapsed <= 0.5 else None
     nl = False if lidar else True
     message_list = [lidar] if not nl else []
+    #Collect cameras messages
     pre = len(message_list)
     for cam in self.cam_cashes:
       camlast = cam.getLatestTime()
       report = cam.getElemBeforeTime(camlast)
       if report:
-        message_list.append(report)
         camlapsed = rospy.Time.now().to_sec() - camlast.to_sec()
-        if camlapsed > 0.5:
-          print(f"Cam msg arrived late: {camlapsed:.2f}")
+        if camlapsed <= 0.5:
+          message_list.append(report)
     post = len(message_list)
     nc = True if pre == post else False
     if len(message_list) > 0:
-      #Call integration node processing
+      #Call integration node with collected messages
       self.on_frame(message_list, nl, nc)
     else:
       print("No new content in the queue")
