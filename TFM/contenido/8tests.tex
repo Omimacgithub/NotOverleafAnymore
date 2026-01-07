@@ -49,7 +49,11 @@ En el caso de la imagen de distancia, en sí no es un objeto pesado, por lo que 
 
 \subsection{Resultados}
 
-La tabla \ref{tab:scaleperf} muestra los resultados de los dispositivos en función del número de cámaras. Atendiendo a la tabla \ref{tab:scaleresources}, los recursos de la \acrshort{gpu} se llevan al límite con 10 cámaras en el caso de los equipos de sobremesa.
+La tabla \ref{tab:scaleperf} muestra los resultados de los dispositivos en función del número de cámaras. La columna \textit{Reference} muestra los resultados del sistema obtenidos en \cite{andrew}, en el que solo se registraron datos del sistema funcionando con 2 cámaras.
+
+Atendiendo a los datos de precisión en detección y reconocimiento, se muestra una ligera caída en contra de los dispositivos del proyecto, que puede deberse a su vez por la subida en el \textit{recall} (TODO: puede ser), ya que se han generado más detecciones. La subida en el \textit{recall} demuestra que el sistema tiene una mayor capacidad de procesamiento
+
+Atendiendo a la tabla \ref{tab:scaleresources}, los recursos de la \acrshort{gpu} se llevan al límite con 10 cámaras en el caso de los equipos de sobremesa.
 
 \input{contenido/tables/tests/scaleperf.tex}
 
@@ -59,7 +63,7 @@ La tabla \ref{tab:scaleperf} muestra los resultados de los dispositivos en funci
 
 En la tabla \ref{tab:scaleros2} se muestra el rendimiento del sistema en los dispositivos restantes. Los resultados mostrados no tienen en cuenta el nodo \acrshort{lidar} por los motivos comentados en la sección \ref{subsec:ROS2}. En estos dispositivos no es posible instalar \acrshort{ros} Noetic, al menos para poder contar con las últimas versiones del software de los mismos.
 
-Se puede apreciar como todas las Jetson mostradas mantienen y en algunos casos superan los números obtenidos en \cite{andrew}, lo cual es especialmente relevante
+Se puede apreciar como todos los dispositivos mantienen y en algunos casos superan los números obtenidos en \cite{andrew}, lo cual es especialmente relevante en el caso de la Jetson Orin Nano, con sólo 25 W de potencia y un procesador muy inferior a un Intel Core i5.
 
 TODO: se ha conseguido optimizar YOLO en GPU, que suponía el cuello de botella del sistema para funcionar en tiempo real.
 
