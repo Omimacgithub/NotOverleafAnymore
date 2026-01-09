@@ -3,7 +3,18 @@
 
 \section{Conclusiones}
 
-Cuando tenga los valores concretos de los resultados.
+\dots
+
+La ejecución de los modelos de redes neuronales y del sistema en múltiples arquitecturas era uno de los objetivos principales, que se ha cumplido con hasta 6 arquitecturas distintas. Los resultados arrojados muestran las similitudes y diferencias entre las arquitecturas de dichos dispositivos. Adicionalmente, se ha probado el sistema ante cargas de trabajo crecientes, cuyo objetivo es acotar el número máximo de cámaras que el sistema puede soportar, todo operado en tiempo real.
+
+Se ha exprimido la capacidad de las \acrshort{gpu}s de todos los dispositivos del proyecto. Los resultados del sistema obtenidos en las placas NVIDIA Jetson llegan incluso a superar el sistema de referencia, que dispone de una \acrshort{cpu} superior, demostrando así la capacidad de las \acrshort{gpu}s de hacer frente a cargas de trabajo relacionadas con la visión artificial.
+
+La integración del sistema en contenedores de Docker fue clave para el éxito del análisis, ya que de otro modo no sería posible integrar el sistema en todas las arquitecturas, teniendo en cuenta que 3 de los dispositivos (Orin Nano, AGX Orin y AGX Thor) pasaron a estar disponibles con tan sólo 3 meses de antelación (desde finales de Septiembre).
+
+Por motivos relacionados con el fin de soporte de \acrshort{ros} 1 y de poder aplicar las últimas librerías disponibles para los distintos dispositivos, se ha realizado una migración del sistema a \acrshort{ros} 2.
+
+Por otra parte, se ha incorporado una nueva funcionalidad, que permite al sistema actualizar su conocimiento ante nuevos individuos detectados. Fue necesario cambiar el funcionamiento del sistema base, de forma que pueda procesar secuencias de frames en vez de un solo frame. Debido al contexto de las pruebas, que implican a múltiples individuos que se entrecruzan, se han tenido que desarrollar algoritmos que mantengan el rastro de dichos individuos, con capacidad de reidentificación ante la pérdida de visión los mismos. Todos los componentes se han sometido a análisis, que exponen el comportamiento del sistema desde múltiples puntos de vista. TODO: resultados
+
 
 \section{Trabajo Futuro}
 El sistema \textit{Open-World} no se ha comportado según lo previsto. Se ha observado que dicho sistema es \textbf{muy sensible} a la hora de ajustar el parámetro del umbral de Weibull. Ajustando el umbral a un valor bajo, el número de comités nuevos por entidad se dispara, ya que añade incertidumbre al sistema rápidamente (puesto que no se generan casos extremos si la entidad en cuestión se encuentra en la distribución de non-match scores). Un valor alto del umbral mitiga este problema, a costa de comprometer la precisión. Se podría estudiar la implementación de un nuevo criterio para agrupar los comités y así solventar esta problemática.
