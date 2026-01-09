@@ -1,15 +1,12 @@
 \chapter{Arquitectura del sistema propuesto}
 \label{chap:sysarch}
-\lettrine{E}{n} este capítulo se expone una idea general de la arquitectura planteada y se comentan sus componentes en detalle.
+\lettrine{E}{n} este capítulo se comenta brevemente la arquitectura de partida y se expone el diseño de los nuevos componentes.
 
 \section{Arquitectura general}
 
-En esta sección se explica el sistema de partida y todas las mejoras que componen el nuevo sistema extendido.
+Se parte de un sistema compuesto por 2 cámaras \acrshort{rgbd} y un sensor \acrshort{lidar}, que detecta y reconoce personas a partir de nodos que aplican los respectivos modelos de redes neuronales (o \acrshort{cnn}). El sistema posee la capacidad de fusionar la información de todos los nodos, de forma que se obtiene un único reconocimiento robusto para cada individuo, junto a su posición concreta en el espacio \acrshort{3d}.
 
-\subsection{Arquitectura del sistema base}
-\label{sec:basearch}
-
-Se parte de un sistema que detecta y reconoce personas a través de 2 cámaras \acrshort{rgbd} combinado con un sensor \acrshort{lidar}, que permite rastrear las detecciones fuera del ángulo de visión de las cámaras (cada una con un rango de visión horizontal de 57º), de forma que se mantienen detecciones robustas y persistentes en el tiempo \cite{andrew}.
+Toda la arquitectura se ejecuta en el \textit{framework} \acrshort{ros} \cite{ROS} (sección \ref{sec:ros}). \acrshort{ros} se encarga de crear los procesos para cada nodo, comprobar su estado, regular la frecuencia a la que trabajan, crear la red en la que dichos procesos intercambian mensajes, entre otros muchos detalles que resultan transparentes para el programador.
 
 \begin{figure}[hp!]
     \centering
@@ -18,7 +15,19 @@ Se parte de un sistema que detecta y reconoce personas a través de 2 cámaras \
     \label{fig:sysarch}
 \end{figure}
 
-En la figura \ref{fig:sysarch} se muestra la arquitectura planteada en \cite{andrew}. Se ejecutan 1 o varios nodos que procesan las imágenes de las cámaras (nodo cámara), cada nodo cámara recibe los datos \textbf{de una sola cámara}, que devuelve un mensaje con la detección y el reconocimiento del individuo, junto con su posición \acrshort{3d} a partir de la imagen de distancias de la cámara. La posición \acrshort{3d} se contrasta con las detecciones realizadas por un modelo que procesa una \gls{pcl} otorgada por un sensor \acrshort{lidar} (nodo \acrshort{lidar}). Finalmente, las salidas de todos los nodos se fusionan para reforzar las predicciones (nodo integración de sensores).
+En la figura \ref{fig:sysarch} se muestra la arquitectura planteada en \cite{andrew}, compuesta por un nodo que procesa los datos del \acrshort{lidar}, 1 o varios nodos que procesan los datos de las cámaras (2 en el caso del robot) y un nodo que devuelve una lista final de todos los individuos reconocidos y su posición a partir de la información de todos los nodos anteriores en un frame.
+
+Cada cámara otorga una imagen \acrshort{rgb}, que es procesada por los modelos de detección y reconocimiento, y otra de distancias, que permite realizar una conversión a coordenadas \acrshort{3d}. Cada nodo cámara recibe los datos \textbf{de una sola cámara}.
+
+El sensor \acrshort{lidar} otorga una \gls{pcl} del entorno, que sirve como entrada del nodo \acrshort{lidar}, que ejecuta un modelo de detección de objetos en \gls{pcl} y etiqueta los puntos devueltos.
+
+Finalmente, mediante los datos de todos los nodos, el uso de la coherencia espacio-temporal y la aplicación de métodos como la distancia relativa y/o la identidad probable (definidos en \cite{andrew}), se obtiene la lista final de identidades. La posición \acrshort{3d} de cada individuo se obtiene mediante el contraste de las posiciones devueltas del nodo cámara y el \acrshort{lidar} para dicho individuo.
+
+TODO: trabajo relacionado? La integración de sensores propuesta en \cite{andrew} ha demostrado mejorar los resultados, debido a su capacidad de rastrear individuos por medio del \acrshort{lidar} fuera del ángulo de visión de las cámaras (cada una con un rango de visión horizontal de 57º), lo que otorga detecciones robustas y persistentes en el tiempo \cite{andrew}.
+
+\subsection{Nodo cámara}
+\label{sec:basearch}
+
 
 \begin{figure}[hp!]
     \centering
@@ -27,7 +36,15 @@ En la figura \ref{fig:sysarch} se muestra la arquitectura planteada en \cite{and
     \label{fig:camnod}
 \end{figure}
 
-En la figura \ref{fig:camnod} se muestra el flujo del nodo cámara. Dicho nodo procesa la información de las cámaras frame a frame, los modelos de detección (expuestos en la sección \ref{sec:models}) devuelven \glspl{bbox} de los rostros y cuerpos detectados, que se comparan para asegurar que cada recorte facial se encuentra contenido en cada recorte corporal. Posteriormente, se procede al reconocimiento facial y corporal (expuestos en la sección \ref{sec:models}) para devolver la etiqueta del individuo dentro de los registrados inicialmente en el sistema, ya que el diseño inicial no cuenta con la capacidad de reconocer desconocidos (\textit{Closed-Set}). Tras obtener el \gls{embedding} generado por el modelo para cada usuario, se calcula la \textbf{distancia} de dicho vector con todos los vectores (sujetos) guardados en la base de datos, este cálculo se realiza mediante el algoritmo de \textbf{distancia de cosenos}, que otorga el grado de similitud entre dos vectores \cite{andrew}. Como resultado, se obtiene una lista ordenada de los sujetos según el grado de similitud. La predicción final puede tomarse como la primera entrada de dicha lista, o pueden aplicarse métodos como la distancia relativa y/o la identidad probable (definidos en \cite{andrew}) sobre el conjunto de usuarios, con el fin de devolver predicciones más precisas (dichos métodos se ejecutan en el nodo integración de sensores). Estos dos posibles comportamientos pueden escogerse con un valor del parámetro \textit{top\_k} de 1 o mayor que 1 respectivamente.
+En la figura \ref{fig:camnod} se muestra el flujo del nodo cámara.
+
+El nodo cámara recibe la información de un frame \acrshort{rgb} de una de las cámaras, que es procesado por 2 modelos de detección (expuestos en la sección \ref{sec:models}), uno destinado a rostros y el otro para cuerpos. Se obtienen \glspl{bbox} de los rostros y cuerpos detectados, que se comparan para asegurar que cada recorte facial se encuentra contenido en cada recorte corporal.
+
+Tras comprobar que cada cara detectada se corresponde con un cuerpo, se procede al reconocimiento facial y corporal mediante los respectivos modelos (expuestos en la sección \ref{sec:models}), que devuelven un vector con las características representativas para un individuo (o \gls{embedding}).
+
+Una vez obtenidos los \glspl{embedding} de cada usuario, se calcula la \textbf{distancia} de dicho vector con todos los vectores (sujetos) guardados en la base de datos, este cálculo se realiza mediante el algoritmo de \textbf{distancia de cosenos}, que otorga el grado de similitud entre dos vectores \cite{andrew}. Como resultado, se obtiene una lista ordenada de los sujetos según el grado de similitud.
+
+La identidad del individuo puede tomarse como la primera entrada de la lista de sujetos (es decir, la identidad más parecida), o puede procesarse la lista por medio de los métodos de distancia relativa y/o identidad probable en el nodo integración de sensores. Estos dos posibles comportamientos pueden escogerse con un valor del parámetro \textit{top\_k} de 1 o mayor que 1 respectivamente.
 
 \subsection{Arquitectura extendida}
 \label{sec:finalsys}
@@ -41,13 +58,23 @@ En la figura \ref{fig:camnod} se muestra el flujo del nodo cámara. Dicho nodo p
 
 En la figura \ref{fig:finalsys} se muestra la arquitectura extendida, los nuevos componentes desarrollados se encuentran marcados en negrita, mientras que el resto de la arquitectura sigue la estructura ya comentada.
 
-El nodo cámara pasa de operar frame a frame a procesar una \textbf{secuencia de frames}, con el fin de explotar la coherencia espacio-temporal. Se agrupan los recortes (o \glspl{bbox}) según el sujeto aplicando un método de seguimiento (\textit{tracking}) y se almacenan en la \textbf{lista de entidades} para un intervalo de la secuencia, junto con los vectores de características (o \glspl{embedding}) generados a partir de las \glspl{bbox} por los respectivos modelos de reconocimiento. Dichos \glspl{embedding} se sirven como entrada para el módulo de \textbf{reconocimiento adaptativo}, que toma la decisión de reconocimiento y actualiza las \textbf{personas registradas}, que es una base de datos compuesta por todos los nodos cámara, cada uno con una copia actualizada con los últimos cambios.
+En concreto, se han implementado los siguientes componentes:
 
-El módulo de reconocimiento adaptativo es el encargado de otorgar el reconocimiento \textbf{\textit{Open-Set} y/o \textit{Open-World}}. Dicho módulo evalúa si la persona detectada en la secuencia es un desconocido o pertenece a las personas registradas. En ambos casos, el sistema se actualiza con la nueva información en forma de un nuevo registro en el sistema si es un desconocido o modificando el registro existente ante los cambios de la entidad (lo que se conoce como \textit{\textbf{concept-drift}}).
+\begin{itemize}
+    \item \textbf{Procesamiento de secuencias de frames:} implementa toda la lógica que permite agrupar las \glspl{bbox} por individuos en más de un frame (secuencia). Todas las \glspl{bbox} se transforman en \glspl{embedding}, que se guardan en una lista para ser procesados por el módulo de \textbf{reconocimiento adaptativo}.
+    \item \textbf{Reconocimiento adaptativo:} implementa la capacidad de detección e inclusión de desconocidos en el sistema (modo \textbf{\textit{Open-Set} y \textit{Open-World}}). Evalúa, mediante el uso de la teoría estadística, si una secuencia de \glspl{embedding} supuesta para un individuo no comparte similitudes con el resto de individuos registrados. En caso afirmativo, se trata de un conocido, en caso contrario, de un desconocido. En ambos casos, el sistema actualiza su conocimiento acerca del individuo por medio de la base de datos de \textbf{personas registradas}.
+    \item \textbf{Personas registradas:} representa al conocimiento existente acerca de los individuos, que es compartido por \textbf{todo el sistema}, es decir, por todos los nodos cámara. Este módulo también abarca la inicialización de dicho registro al arrancar el sistema, los distintos métodos para su compartición entre nodos, así como su composición.
+\end{itemize}
 
-Finalmente, las predicciones de cada nodo se contrastan dentro del nodo integración de sensores, que devuelve el reconocimiento final, coherente con la información otorgada por los nodos (ejemplo: dos cámaras que no están solapadas no pueden reconocer a una misma persona en el mismo instante temporal).
+El nodo \acrshort{lidar} no se incluye en el sistema extendido, debido a que TODO.
 
-(TODO: moverlo a 5.1) Toda la arquitectura vista se ejecuta en el \textit{framework} \acrshort{ros} \cite{ROS}. \acrshort{ros} se encarga de crear los procesos para cada nodo, comprobar su estado, regular la frecuencia a la que trabajan, crear la red en la que dichos procesos intercambian mensajes, entre otros muchos detalles que resultan transparentes para el programador.
+El nodo cámara pasa de operar frame a frame a procesar una \textbf{secuencia de frames}, con el fin de explotar la coherencia espacio-temporal (módulo de procesamiento de secuencias de frames). Se obtiene la \textbf{lista de entidades} con la lista de \glspl{embedding} para cada individuo y se ejecuta el módulo de reconocimiento adaptativo.
+
+El módulo de reconocimiento adaptativo devuelve la decisión de reconocimiento y actualiza las \textbf{personas registradas}. Los nuevos cambios de los individuos son actualizados y compartidos entre todos los nodos.
+
+Finalmente, las predicciones de cada nodo cámara se contrastan dentro del nodo integración de sensores, que devuelve la lista de identidades final junto a la posición \acrshort{3d}.
+
+%coherente con la información otorgada por los nodos (ejemplo: dos cámaras que no están solapadas no pueden reconocer a una misma persona en el mismo instante temporal).
 
 \section{Procesamiento de secuencias de frames}
 \label{sec:video}
@@ -138,8 +165,6 @@ Es el módulo encargado de devolver las predicciones y actualizar el conocimient
 En la figura \ref{fig:ADAPTSYS} se muestra la arquitectura de este módulo, cuyos componentes se han diseñado partiendo de \cite{Erik, CESAR} como referencia.
 
 Tras agrupar las \glspl{bbox} por individuos y calcular sus vectores (\textit{\glspl{embedding}}), estos se comparan contra las personas registradas para averiguar si dichos sujetos pertenecen o no al sistema. La base de datos está compuesta por \textbf{comités (o colecciones) de \acrshort{svm} lineales} para cada individuo. Las \acrshort{svm} de los comités procesan los \textit{\glspl{embedding}}, devolviendo una serie de \textbf{puntuaciones}, que representan la distancia del punto respecto al plano lineal que distingue entre la clase del propio individuo y el resto del universo. Finalmente, se toma la decisión de reconocimiento a partir de dichas puntuaciones y se actualiza la base de datos con los nuevos \glspl{embedding}.
-
-TODO: en trabajo relacionado? Se ha demostrado que múltiples \acrshort{svm} simples (ejemplo: lineales) como conjunto \textbf{generalizan mejor} que una única \acrshort{svm} compleja (ejemplo: sigmoide) \cite{malisiewicz2011ensemble}. Los comités de \acrshort{svm} también favorecen la adaptación a los cambios, ya que permiten agregar conocimiento acerca de una entidad entrenando una nueva \acrshort{svm} lineal o eliminar dicho conocimiento descartando la \acrshort{svm} correspondiente. De esta forma, se obtiene una representación de un individuo a partir de un conjunto de clasificadores ligeros, sin necesidad de reentrenar un clasificadores complejo desde cero \cite{malisiewicz2011ensemble}.
 
 El módulo de reconocimiento adaptativo se compone de los siguientes componentes, presentes en la figura \ref{fig:ADAPTSYS}:
 \begin{itemize}
@@ -253,7 +278,7 @@ Para satisfacer los requerimientos del diseño expuesto, cada entrada en el regi
     \item \textbf{coherence:} lista de valores de coherencia obtenidos de cada clasificador, inicializado a 0.
 \end{itemize}
 
-\section{Inicialización}
+\subsection{Inicialización}
 
 La fase de inicialización es fundamental, debido a que la \acrshort{svm} inicial es la que define la identidad del comité. Si dicha \acrshort{svm} está compuesta por muestras de baja calidad (ejemplo: caras borrosas o parcialmente ocluidas), entonces el comité \textbf{no se identificará correctamente consigo mismo} y, por lo tanto, generará \textbf{mayor confusión} a la hora de aplicar Weibull, es decir, \textbf{se generarán más desconocidos}.
 

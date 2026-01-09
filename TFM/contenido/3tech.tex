@@ -14,23 +14,9 @@ Para este proyecto, se cuenta con dos de estas cámaras, cada una con una cobert
 
 El sistema que se expondrá se ha construido para funcionar en el robot móvil Summit\_XL. Dicho robot es de tipo diferencial (permite el movimiento en todas las direcciones excepto en los laterales) y cuenta con 4 ruedas de goma, de gran utilidad para moverse en entornos de exteriores. Entre sus componentes, tiene instalado un sensor Velodyne \acrshort{lidar} que otorga nubes de puntos \acrshort{3d} del entorno y dos cámaras Kinect instaladas en los laterales.
 
-\subsection{Familia Jetson}
+\subsection{Dispositivos de altas prestaciones}
 
-%A continuación se expone el listado de dispositivos sujetos de las pruebas de este proyecto.
-
-Es una familia de \textbf{\glspl{embsystem}} pensados para aplicaciones de \acrshort{ia}. Dichos dispositivos incluyen un kit de desarrollo llamado \textbf{JetPack}, diseñado para exprimir la potencia de la NVIDIA Jetson en aplicaciones como la robótica, \acrshort{ia} generativa y visión artificial \cite{jason}.
-
-\input{contenido/tables/jetsons.tex}
-
-Actualmente existe una amplia variedad en la potencia y precio de estos dispositivos \cite{jason}. Para este proyecto, se han empleado cuatro modelos diferentes que se exponen en la tabla \ref{tab:jetsons} (se encuentran ordenados de menores a mayores prestaciones).
-
-\subsection{Familia Intel}
-
-\input{contenido/tables/x86.tex}
-
-La tabla \ref{tab:x86} muestra los equipos con \acrshort{cpu}s Intel empleados en el proyecto. La columna \textit{Reference} muestra el equipo de pruebas utilizado en \cite{andrew} para realizar comparaciones de resultados.
-
-\subsection{Arquitecturas de GPU}
+\subsubsection{Arquitecturas de GPU}
 
 Según la arquitectura de la \acrshort{gpu} de NVIDIA a tratar se agregan nuevas características que maximizan el rendimiento de la inferencia de los modelos (se ahondará en este tema en el capítulo \ref{chap:cnn}). Las arquitecturas que se muestran a continuación están ordenadas de menor a mayor generación:
 \begin{itemize}
@@ -40,21 +26,55 @@ Según la arquitectura de la \acrshort{gpu} de NVIDIA a tratar se agregan nuevas
     \item Blackwell: incorpora los tensor cores de quinta generación, que permiten operar en precisión \textbf{FP4} y \textbf{FP6} (punto flotante de 4 y 6 bits respectivamente) sin apenas pérdida en la precisión, gracias a la incorporación de \textit{micro-tensor scaling}, que aplica diferentes factores de escalado a los elementos de un \gls{tensor} \cite{blackwell}. La \textbf{Jetson AGX Thor} sigue esta arquitectura.
 \end{itemize}
 
+\subsubsection{Familia Jetson}
+
+%A continuación se expone el listado de dispositivos sujetos de las pruebas de este proyecto.
+
+Es una familia de \textbf{\glspl{embsystem}} pensados para aplicaciones de \acrshort{ia}. Dichos dispositivos incluyen un kit de desarrollo llamado \textbf{JetPack}, diseñado para exprimir la potencia de la NVIDIA Jetson en aplicaciones como la robótica, \acrshort{ia} generativa y visión artificial \cite{jason}.
+
+\input{contenido/tables/jetsons.tex}
+
+Actualmente existe una amplia variedad en la potencia y precio de estos dispositivos \cite{jason}. Para este proyecto, se han empleado cuatro modelos diferentes que se exponen en la tabla \ref{tab:jetsons} (se encuentran ordenados de menores a mayores prestaciones).
+
+\subsubsection{Familia Intel}
+
+\input{contenido/tables/x86.tex}
+
+La tabla \ref{tab:x86} muestra los equipos con \acrshort{cpu}s Intel empleados en el proyecto. La columna \textit{Reference} muestra el equipo de pruebas utilizado en \cite{andrew} para realizar comparaciones de resultados.
+
+
 \section{Software específico}
 \label{sec:sw}
 
-
 \subsection{ROS}
-\acrfull{ros} es un middleware de \textbf{código abierto} que incorpora las herramientas necesarias para la interacción y desarrollo de software en robots. Cuenta con una amplia biblioteca de distribuciones y librerías. Cualquier entorno de desarrollo creado a partir de este \textit{framework} está compuesto por los siguientes componentes:
+\label{sec:ros}
+
+\acrfull{ros} es un middleware de \textbf{código abierto} que incorpora las herramientas necesarias para la interacción y desarrollo de software en robots. Cuenta con una amplia biblioteca de distribuciones y librerías.
+
+Cualquier entorno de desarrollo de \acrshort{ros} está compuesto por \textbf{paquetes}, los paquetes son las unidades funcionales del entorno de \acrshort{ros} y estas contienen el código, archivos de configuración y de lanzamiento de los nodos, entre otros componentes.
+
+\acrshort{ros} crea y mantiene una \textbf{red distribuida} en la que los nodos se ejecutan e intercambian mensajes. Sigue un patrón \textit{publish/subscribe}, en el que existen nodos que publican información por medio de \textbf{tópicos}, disponibles para cualquier nodo que se suscriba a dicho tópico. Según la versión, la arquitectura de la red varía en una de las siguientes:
+
+\begin{figure}[tbp]
+    \centering
+    \includegraphics[width=0.5\linewidth]{imagenes/mastel.png}
+    \caption{Arquitectura maestro-esclavo, figura extraída de \cite{mastel}}
+    \label{fig:mastel}
+\end{figure}
+
+\begin{figure}[tbp]
+    \centering
+    \includegraphics[width=0.5\linewidth]{imagenes/dds.jpg}
+    \caption{Topología bus de Data Distribution Service (DDS), figura extraída de \cite{bus}}
+    \label{fig:mastel}
+\end{figure}
 
 \begin{itemize}
-    \item
+    \item Maestro-esclavo (\acrshort{ros} 1): el maestro (denominado \acrshort{ros}\_MASTER) registra a todos los publicadores/subscriptores de la red, de forma que si un nodo quiere suscribirse/publicar un tópico, este se comunica con el maestro para registrar/conocer la manera de conectarse a dicho tópico \cite{mastel}. El principal inconveniente es que el nodo central es un \textbf{punto único de fallo} (si el maestro falla, todo el sistema se cae). La figura \ref{fig:mastel} describe el comportamiento descrito.
+    \item Data Distribution Service (\acrshort{ros} 2): es un \textit{middleware} que permite la comunicación de los nodos mediante una topología tipo bus (figura ). Los nodos notifican su presencia en la red y esperan mensajes de respuesta con información sobre el resto de nodos existentes \cite{dds}. De esta forma, todos los nodos conocen el estado de la red sin depender de un maestro que gestione todas las comunicaciones.
 \end{itemize}
 
-TODO: importante hablar del launch file.
-
-TODO: comentar que ROS 1 es maestro esclavo (topología estrella) y ROS 2 es masterless (topología bus)
-
+Existe una amplia variedad de distribuciones de este software según la versión del \acrshort{so}. Para este proyecto, se han empleado las distribuciones Noetic, Humble y Rolling, para Ubuntu 20.04, 22.04 y 24.04 respectivamente, el Summit\_XL tiene la distribución Melodic, ya que tiene la versión 18.04 de Ubuntu. Melodic y Noetic corresponden a ROS 1 (descontinuado), mientras que Humble y Rolling pertenecen a ROS 2.
 \subsubsection{Rosbag}
 
 Existe una herramienta del ecosistema \acrshort{ros} que graba y reproduce los datos capturados de la ejecución de un sistema \acrshort{ros} en un momento concreto en el tiempo. Los \glspl{dataset} creados en \cite{andrew} se construyeron partiendo de un fichero rosbag, que contiene toda la información generada por los diferentes sensores. En este proyecto se emplearán dichos ficheros rosbag para reproducir las pruebas en tiempo real.

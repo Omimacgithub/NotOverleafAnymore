@@ -35,6 +35,10 @@ Gradient Boosting: Learning rate, number of boosting rounds, maximum tree depth
 
 Es un algoritmo de \textbf{clasificación} que dibuja un hiperplano entre categorías de datos, buscando siempre el mayor margen (distancia entre el punto que define la frontera de la categoría, denominado \textit{support vector}, y el hiperplano), de modo que agrega cierta tolerancia al posible ruido producido. Es un \textbf{algoritmo de aprendizaje supervisado} (requiere de un conjunto inicial de datos para su entrenamiento) y conforma la unidad más básica de clasificación dentro del sistema de este proyecto \cite{SVM}. Dicho algoritmo pertenece al aprendizaje \textit{Closed-Set}, es decir, no es capaz de discernir entre clases fuera del conjunto de datos de entrenamiento, por lo que un dato desconocido se clasificaría erróneamente como una de las clases del entrenamiento \cite{rudd2017extreme}.
 
+\subsection{Comités}
+
+Se ha demostrado que múltiples \acrshort{svm} simples (ejemplo: lineales) como conjunto \textbf{generalizan mejor} que una única \acrshort{svm} compleja (ejemplo: sigmoide) \cite{malisiewicz2011ensemble}. Los comités de \acrshort{svm} también favorecen la adaptación a los cambios, ya que permiten agregar conocimiento acerca de una entidad entrenando una nueva \acrshort{svm} lineal o eliminar dicho conocimiento descartando la \acrshort{svm} correspondiente. De esta forma, se obtiene una representación de un individuo a partir de un conjunto de clasificadores ligeros, sin necesidad de reentrenar un clasificadores complejo desde cero \cite{malisiewicz2011ensemble}.
+
 \section{Métricas de evaluación de modelos de clasificación}
 \label{sec:modeleval}
 

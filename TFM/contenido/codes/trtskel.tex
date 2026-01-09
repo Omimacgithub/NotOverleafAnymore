@@ -1,5 +1,4 @@
-\begin{lstlisting}[language=Python, float=t, caption=Esqueleto del código de las inferencias con TensorRT, basicstyle=\footnotesize]
-import cv2
+\begin{lstlisting}[language=Python, float=t, caption=Esqueleto del código de las inferencias con TensorRT]
 import numpy as np
 import tensorrt as trt
 import pycuda.driver as cuda
@@ -11,7 +10,6 @@ import pycuda.driver as cuda
 # ifp: input tensor precision of the model
 # ofp: output tensor precision of the model
 # isversion10: flag that indicates TensorRT API version 10 when True, else version 8 
-
 class CNN_model:
     def __init__(self, cuda_ctx):
         super().__init__()
@@ -42,7 +40,6 @@ class CNN_model:
         preprocesed_frame = PREPROCESING(frame)
         # Transfer input data to device
         cuda.memcpy_htod_async(self.d_input, preprocesed_frame.astype(ifp), self.stream)
-        # Execute model
         if isversion10:
           self.context.execute_async_v3(self.stream.handle)
         else:
