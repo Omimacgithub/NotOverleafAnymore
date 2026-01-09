@@ -22,7 +22,7 @@ Es una familia de \textbf{\glspl{embsystem}} pensados para aplicaciones de \acrs
 
 \input{contenido/tables/jetsons.tex}
 
-Actualmente existe una amplia variedad en la potencia y precio de estos dispositivos \cite{jason}. Para este proyecto se han empleado cuatro modelos diferentes que se exponen en la tabla \ref{tab:jetsons} (se encuentran ordenados de menores a mayores prestaciones).
+Actualmente existe una amplia variedad en la potencia y precio de estos dispositivos \cite{jason}. Para este proyecto, se han empleado cuatro modelos diferentes que se exponen en la tabla \ref{tab:jetsons} (se encuentran ordenados de menores a mayores prestaciones).
 
 \subsection{Familia Intel}
 
@@ -32,12 +32,12 @@ La tabla \ref{tab:x86} muestra los equipos con \acrshort{cpu}s Intel empleados e
 
 \subsection{Arquitecturas de GPU}
 
-Según la arquitectura de la \acrshort{gpu} de NVIDIA a tratar se agregan nuevas características que maximizan el rendimiento de la inferencia de los modelos, se ahondará en este tema en el capítulo \ref{chap:cnn}. Las arquitecturas que se muestran a continuación están ordenadas de menor a mayor generación:
+Según la arquitectura de la \acrshort{gpu} de NVIDIA a tratar se agregan nuevas características que maximizan el rendimiento de la inferencia de los modelos (se ahondará en este tema en el capítulo \ref{chap:cnn}). Las arquitecturas que se muestran a continuación están ordenadas de menor a mayor generación:
 \begin{itemize}
-    \item Volta: se introducen los \textbf{tensor cores}.
-    \item Turing:
-    \item Ampere: incorpora los tensor cores de tercera generación, que incluyen el tipo de dato \textbf{TF32}, que funciona como FP32 pero optimizado en \acrshort{gpu} sin realizar ningún cambio en el código \cite{ampere}.
-    \item Blackwell: incorpora tensor cores de quinta generación.
+    \item Volta: se introducen los \textbf{tensor cores}, que son cores destinados para acelerar multiplicaciones y sumas de matrices (conocido también como MMA). La \textbf{Jetson Xavier NX} sigue esta arquitectura.
+    \item Turing: . La \textbf{GeForce GTX 1650} (gráfica del PC lab) sigue esta arquitectura.
+    \item Ampere: incorpora los tensor cores de tercera generación, que incluyen el tipo de dato \textbf{TF32}, que funciona como FP32 pero optimizado en \acrshort{gpu} sin realizar ningún cambio en el código \cite{ampere}. La \textbf{Jetson Orin Nano}, \textbf{Jetson AGX Orin} y la \textbf{GeForce RTX 3050} (gráfica del portátil) siguen esta arquitectura.
+    \item Blackwell: incorpora los tensor cores de quinta generación, que permiten operar en precisión \textbf{FP4} y \textbf{FP6} (punto flotante de 4 y 6 bits respectivamente) sin apenas pérdida en la precisión, gracias a la incorporación de \textit{micro-tensor scaling}, que aplica diferentes factores de escalado a los elementos de un \gls{tensor} \cite{blackwell}. La \textbf{Jetson AGX Thor} sigue esta arquitectura.
 \end{itemize}
 
 \section{Software específico}
@@ -45,7 +45,13 @@ Según la arquitectura de la \acrshort{gpu} de NVIDIA a tratar se agregan nuevas
 
 
 \subsection{ROS}
-\acrfull{ros} es un middleware de \textbf{código abierto} que incorpora las herramientas necesarias para la interacción y desarrollo de software en robots. Cuenta con una amplia biblioteca de distribuciones y librerías. TODO: importante hablar del launch file.
+\acrfull{ros} es un middleware de \textbf{código abierto} que incorpora las herramientas necesarias para la interacción y desarrollo de software en robots. Cuenta con una amplia biblioteca de distribuciones y librerías. Cualquier entorno de desarrollo creado a partir de este \textit{framework} está compuesto por los siguientes componentes:
+
+\begin{itemize}
+    \item
+\end{itemize}
+
+TODO: importante hablar del launch file.
 
 TODO: comentar que ROS 1 es maestro esclavo (topología estrella) y ROS 2 es masterless (topología bus)
 

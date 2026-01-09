@@ -26,7 +26,7 @@ ArcFace \cite{deng2019arcface} ha demostrado ser de las mejores redes en el \acr
 
 TODO: Que los nodos cámara trabajen a 10 Hz implica que a cada \textbf{100 ms se recibe un nuevo frame} (10 * 100 = 1000 ms = 1 segundo), la figura \ref{fig:finalsys} muestra el procesado realizado por dicho nodo en cada frame, que debe de finalizar \textbf{antes de que transcurran 100 ms}. En cada iteración del procesado, se ejecutan \textbf{4 redes neuronales (\acrshort{cnn})}. 2 de ellas, YOLOv8n y YuNet, para la detección de cuerpos y de caras respectivamente. Las otras 2, OSNet\_x1 y ArcFace, para el reconocimiento de cuerpos y caras respectivamente. A pesar de lo que la figura \ref{fig:finalsys} muestra, las redes de detección YOLOv8n y YuNet \textbf{no se ejecutan en paralelo}, lo mismo sucede con las redes ArcFace y OSNet\_x1. Se ha considerado ejecutar en paralelo estas redes. Sin embargo, las limitaciones de memoria principal de la Jetson restringen tomar esta aproximación.
 
-\section{Dataset de las pruebas}
+\section{Datasets de las pruebas}
 \label{sec:modset}
 
 A modo de evaluar el rendimiento en términos de precisión de los modelos de visión artificial, se parte de un \gls{dataset} compuesto de la información extraída de un fichero Rosbag, que contiene los datos generados por dos cámaras Kinect \acrshort{rgbd} y un sensor \acrshort{lidar} instalados en el Summit\_XL durante la realización de una prueba. (TODO: redacción) Dicha prueba se ha realizado a partir de los datos grabados de 2 minutos dentro del laboratorio de robótica del \acrshort{citic} con 6 personas.
@@ -39,6 +39,17 @@ Para medir el rendimiento de los modelos, se cuenta con un \gls{dataset} especí
               \item Coordenadas de la \gls{bbox} corporal del sujeto, así como la confianza de la detección y su tamaño.
               \item Coordenadas de la \gls{bbox} facial del sujeto, así como la confianza de la detección, su tamaño y la orientación de la cara.
               \item Etiqueta del individuo registrado.
+          \end{itemize}
+\end{itemize}
+
+En el caso que ocupa al sistema (pruebas de la sección \ref{sec:syscal}), se dispone de un \gls{dataset} que representa el \gls{gt} del nodo integración de sensores (ver sección \ref{sec:basearch}), ya que cada entrada del fichero es idéntica a la salida de dicho nodo. Cada entrada está compuesta por los siguientes objetos:
+\begin{itemize}
+    \item \textbf{\textit{secs}}: \gls{timestamp} del tiempo de UNIX en segudos
+    \item \textbf{\textit{nsecs}}: \gls{timestamp} del tiempo en nanosegundos del segundo correspondiente al campo secs.
+    \item \textbf{\textit{people}}: lista de objetos, cada uno compuesto por los siguientes elementos:
+          \begin{itemize}
+              \item \textbf{\textit{person\_id}}: etiqueta que identifica al usuario detectado (ejemplo: carlos)
+              \item \textbf{\textit{position}}: coordenadas del espacio \acrshort{3d} compartido por las cámaras y el \acrshort{lidar} en el que se sitúa dicho usuario.
           \end{itemize}
 \end{itemize}
 
@@ -85,3 +96,64 @@ Las arquitecturas anteriores a Blackwell demuestran ser más conservadoras a la 
 TensorRT exprime todas las bondades que ofrece cada arquitectura de \acrshort{gpu}s de NVIDIA, demostrando resultados que superan en rendimiento a equipos con \acrshort{cpu}s de Intel respecto a \acrshort{arm}, como es el caso de la Jetson AGX Thor, aunque en el caso de OSNet, dichas optimizaciones pueden afectar significativamente en la precisión al ser demasiado agresivas.
 
 OSNet con tactics de Blackwell: baja de 3.7 a 1.7 (toquetear el flag builderOptimizationLevel de trtexec)
+
+\section{Realización de pruebas del sistema}
+\label{sec:syscal}
+
+Esta sección pretende evaluar el techo del sistema al elevar el número de cámaras implicadas.
+
+Se inicializa el sistema con el nodo integración de sensores, el nodo \acrshort{lidar} y el número de nodos cámara deseado (ver sección \ref{sec:basearch}). Se reproduce el fichero rosbag una vez inicializado el sistema, que lo nutrirá con la información generada por los sensores en tiempo real. Cada predicción generada por el nodo integrador se almacena en memoria y se vuelca en un fichero \acrshort{json} una vez el sistema se detiene (por ejemplo, con un Ctrl-C). Los datos guardados en el fichero \acrshort{json} se procesan contra el \textit{\gls{dataset}} y se devuelven los resultados finales en forma de las siguientes métricas:
+
+\begin{itemize}
+    \item \textit{\textbf{Det precision}}: es la proporción de personas detectadas en la posición correcta (campo \textit{position} del \gls{dataset}) respecto al total de personas detectadas.
+    \item \textit{\textbf{Det recall}}: representa la proporción de personas detectadas en la posición correcta respecto al total de personas en el \gls{dataset}.
+    \item \textit{\textbf{Ident F1 score}}: corresponde con el \textit{F1\_score} global de los modelos de reconocimiento.
+    \item \textit{\textbf{Ident precision}}: corresponde con la precisión global de los modelos de reconocimiento.
+\end{itemize}
+
+\subsection{Entorno de las pruebas}
+
+La figura \ref{fig:systesting} ilustra el proceso comentado al inicio de la sección. Debido a que el rosbag utilizado es un archivo pesado (41 \acrshort{gb}), en ciertas situaciones ha sido necesario reproducir dicho fichero desde una \textbf{fuente externa} al no disponer de almacenamiento local suficiente. La comunicación con la fuente externa se realiza a través de una red \acrshort{lan} Gigabit Ethernet, que posee un ancho de banda limitado para la transmisión de imágenes \acrshort{rgbd}. La fuente externa debe de enviar $(|imagen\_RGB| + |imagen\_profundidad)*nºcams + |nube\_de\_puntos\_LiDAR|$ megabytes de datos cada 100 ms (que es la frecuencia a la que trabaja el sistema), siendo $|imagen\_RGB| = 40 MB/s$, $|imagen\_profundidad| = 20 MB/s$ y $|nube de puntos LiDAR| = 5 MB/s$, lo que supera el ancho de banda máximo (125 \acrshort{mb}/s) utilizando únicamente dos cámaras.
+
+Para reducir el ancho de banda necesario para la transmisión, se ha optado por desplegar nodos encargados de comprimir la imagen \acrshort{rgb}. La compresión se realiza por medio del paquete \textit{image\_transport} de \acrshort{ros}, que logra reducir hasta 10 veces el tamaño de la imagen (resultando en 4 \acrshort{mb}/s). Los nodos cámara se suscriben al tópico con la imagen comprimida y se descomprime en el destino.
+
+En el caso de la imagen de distancia, en sí no es un objeto pesado, por lo que no necesita compresión. Sin embargo, la frecuencia elevada de transmisión (30 Hz), hace que se requiera de un mayor ancho de banda. Como el resto de los sensores funcionan a 10 Hz, la tasa de la imagen de profundidad puede reducirse a dicha frecuencia, de forma que el sistema no nota el cambio y se logra reducir el ancho de banda. Con reducir la tasa de envío del nodo de \acrshort{ros} encargado de publicar la imagen sería suficientemente, pero debido a que el rosbag se grabó dicho nodo a 30 Hz, se ha optado por ejecutar el paquete \textit{topic\_tools} de \acrshort{ros}, que permite publicar una réplica de un tópico a una menor frecuencia.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{imagenes/SYSTESTING.jpg}
+    \caption{Reproducción y transmisión del rosbag por la red}
+    \label{fig:systesting}
+\end{figure}
+
+\subsection{Resultados}
+
+\input{contenido/tables/tests/scaleperf.tex}
+
+La tabla \ref{tab:scaleperf} muestra los resultados de los dispositivos en función del número de cámaras. La columna \textit{Reference} muestra los resultados del sistema obtenidos en \cite{andrew}, en el que solo se registraron datos del sistema funcionando con 2 cámaras.
+
+Atendiendo a los datos de precisión en detección y reconocimiento, se muestra una ligera caída en contra de los dispositivos del proyecto, que puede deberse a su vez por la subida en el \textit{recall} (TODO: puede ser), ya que se han generado más detecciones. La subida en el \textit{recall} demuestra que el sistema tiene una mayor capacidad de procesamiento, en cierta medida influida por la potencia de los procesadores Intel Core i7 respecto a Core i5.
+
+La precisión en la detección empeora al aumentar el número de cámaras. Ya que el nodo integrador debe de fusionar los datos procedentes de todos los sensores, al aumentar su número también se aumenta la cantidad de procesamiento. Por lo tanto, más tiempo se demorará en devolver una predicción, que se emparejará con el frame del \gls{dataset} con el mismo \gls{timestamp}, que corresponde a un instante real \textbf{anterior}.
+
+El recall también empeora al aumentar la cantidad de cámaras, debido a la alta demanda de cómputo del sistema (para 10 cámaras, se deben de procesar un total de 40 redes neuronales en 100 milisegundos) lo que hace que se pierdan los frames que no tengan espacio en la cola. Sin embargo, la caída de rendimiento en ambos dispositivos \textbf{no es crítica} y permite atender a la mayoría de las peticiones, aunque los resultados reflejan una clara congestión en los nodos.
+
+La precisión de los reconocimientos no baja del \textbf{80\%} en todos los casos, lo que demuestra que los modelos de reconocimiento funcionan de manera eficaz ante un enorme estrés del sistema. El \textit{F1\_score} del reconocimiento depende del \textit{recall} de detección, por lo que es de esperar un valor bajo, compensado en cierta medida por la precisión en el reconocimiento.
+
+\input{contenido/tables/tests/scaleresources.tex}
+
+La tabla \ref{tab:scaleresources} muestra el uso de recursos durante la prueba para los equipos de sobremesa. Se puede apreciar que, hasta las 10 cámaras, el sistema se desempeña de forma fluida, con una media de poco más de la mitad de recursos utilizados.
+
+Los recursos de la \acrshort{gpu} se llevan al límite con 10 cámaras. La gráfica del portátil (Ampere) frente a la del PC del laboratorio (Turing) es capaz de gestionar mejor la memoria (debido a \dots). Por otro lado, la \acrshort{gpu} Ampere es capaz de lidiar mejor con la carga, debido a TODO: el número de SM seguramente.
+
+El uso elevado de recursos explica, junto a otros factores, la bajada en el recall cuando se ejecutan 10 nodos cámara simultáneamente, más el nodo \acrshort{lidar} y el integrador.
+
+\input{contenido/tables/tests/scaleros2.tex}
+
+En la tabla \ref{tab:scaleros2} se muestra el rendimiento del sistema en \textbf{\gls{ros} 2} para el resto de equipos Jetson.
+
+En estos dispositivos no es posible instalar \acrshort{ros} Noetic, al menos para poder contar con las últimas versiones del software de los mismos. Por los motivos comentados en la sección \ref{subsec:ROS2}, el sistema en \gls{ros} 2 no puede ejecutar el nodo \acrshort{lidar}, por lo que los resultados mostrados sólo tienen en cuenta los nodos cámara.
+
+El recall de las detecciones se muestra claramente inferior respecto a los anteriores resultados, ya que el \gls{lidar} otorgaba cobertura completa a la reducida visión de las cámaras de aproximadamente 117º. Las 3 Jetson logran superar el valor de referencia en esta métrica, lo que demuestra el excelente rendimiento de las \gls{gpu}, capaces de compensar las limitaciones de una \acrshort{cpu} de \acrshort{arm} respecto a un Intel Core i5 (procesador del equipo de referencia).
+
+TODO: se ha conseguido optimizar YOLO en GPU, que suponía el cuello de botella del sistema para funcionar en tiempo real.

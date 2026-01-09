@@ -189,7 +189,7 @@ El algoritmo expuesto otorga un conocimiento robusto, ya que convierte puntuacio
 \subsection{Módulo de actualización}
 Es el módulo que implementa la actualización de los comités tras el reconocimiento realizado en la anterior función.
 
-Según la entidad predicha, se toma una cierta decisión de actualización. Si el sujeto es desconocido, se crea un nuevo comité con una \acrshort{svm} que se añade al registro. La \acrshort{svm} se entrena con las muestras (\textit{\glspl{embedding}} de caras o cuerpos) obtenidas del propio sujeto como conjunto de positivos, mientras que el conjunto de negativos se compone de muestras aleatorias extraídas directamente de la base de datos. Si el sujeto es conocido, se agrega una nueva \acrshort{svm} al comité, entrenada con las muestras del propio individuo como positivos y como negativos un muestreo aleatorio de todas las entidades \textbf{excepto el propio sujeto}.
+Según la entidad predicha, se toma una cierta decisión de actualización. Si el sujeto es \textbf{desconocido}, se crea un nuevo comité con una \acrshort{svm} que se añade al registro. La \acrshort{svm} se entrena con las muestras (\textit{\glspl{embedding}} de caras o cuerpos) obtenidas del propio sujeto como conjunto de positivos, mientras que el conjunto de negativos se compone de muestras aleatorias extraídas directamente de la base de datos. Si el sujeto es \textbf{conocido}, se agrega una nueva \acrshort{svm} al comité, entrenada con las muestras del propio individuo como positivos y como negativos un muestreo aleatorio de todas las entidades \textbf{excepto el propio sujeto}.
 
 Una condición necesaria para que este módulo se ejecute es que la secuencia de entrada para el individuo \textbf{contenga un mínimo de \textit{\glspl{embedding}} para su inicialización}, dicho mínimo es fijado por el operador de antemano. Otra precondición, que aplica a las entidades conocidas, es comprobar si las muestras a añadir son lo suficientemente representativas. Las puntuaciones cerca del cero indican que las muestras se encuentran en el borde de lo que es nuevo y lo que la \acrshort{svm} ya conoce. Si la mediana de las puntuaciones de los \glspl{embedding} para un comité se encuentra por debajo de un umbral (\textit{update\_th}), se procede a seleccionar las muestras más cercanas al 0 (función sample selection en la figura \ref{fig:ADAPTSYS}), que compondrán el conjunto de positivos del clasificador.
 
@@ -255,9 +255,22 @@ Las \glspl{bbox} se someten a un método de filtrado, que puede descartarlas si 
     \item La \gls{bbox} es más alta que ancha.
 \end{itemize}
 
-\subsection{Conjunto de comités}
+\subsection{Composición}
 
-Para cada individuo, se crea un \textit{ensemble} a partir de una \acrshort{svm} entrenada con las propias características del sujeto como positivos y las características del \textbf{resto de usuarios} como negativos.
+Para satisfacer los requerimientos del diseño expuesto, cada entrada en el registro de usuarios se compone de los siguientes objetos:
+
+\begin{itemize}
+    \item \textbf{person\_id:} etiqueta asignada al usuario (ejemplo: andres).
+    \item \textbf{ensemble:} lista con las \acrshort{svm} del usuario, inicialmente 1.
+    \item \textbf{descriptors:} lista de los vectores de características (\glspl{embedding}) del usuario de cada \acrshort{svm}. Dichos vectores se aplican como conjunto de positivos para el propio usuario y como parte del conjunto de negativos para el resto de usuarios.
+    \item \textbf{coherence:} lista de valores de coherencia obtenidos de cada clasificador, inicializado a 0.
+\end{itemize}
 
 \subsection{Propagación de los cambios}
-TODO: hablar de la difusión de los datos de la base de datos entre nodos cámara.
+
+Como ya se ha comentado anteriormente, este registro es compartido por una o más cámaras que conforman el sistema. Debido a que el sistema es distribuido (computación en nodos de cálculo distintos) y los nodos están implementados en Python, es necesario explorar otras vías diferentes a la memoria compartida entre procesos. Para este proyecto, se han propuesto 2 alternativas:
+
+\begin{itemize}
+    \item \textbf{Base de datos centralizada:} todos los nodos acceden a una base de datos de baja latencia (ejemplo: base de datos puramente en memoria RAM), de la que reciben el registro de personas actualizado. Dicha base de datos se encontraría junto al nodo integración de sensores, que realizaría las peticiones de escritura. Finalmente, la base de datos propaga las modificaciones a todos los nodos conectados.
+    \item \textbf{Difusión de los cambios:} aprovechando la red creada por \acrshort{ros}, el nodo integración de sensores recibe los mensajes acerca de las entidades reconocidas por los nodos cámara. El nodo integrador difunde un mensaje con los cambios a un tópico en el que todos los nodos estarán suscritos, de forma que mantienen su propia copia actualizada.
+\end{itemize}
