@@ -38,30 +38,30 @@ TODO: trabajo relacionado? La integración de sensores propuesta en \cite{andrew
 
 En la figura \ref{fig:camnod} se muestra el flujo del nodo cámara.
 
-El nodo cámara recibe la información de un frame \acrshort{rgb} de una de las cámaras, que es procesado por 2 modelos de detección (expuestos en la sección \ref{sec:models}), uno destinado a rostros y el otro para cuerpos. Se obtienen \glspl{bbox} de los rostros y cuerpos detectados, que se comparan para asegurar que cada recorte facial se encuentra contenido en cada recorte corporal.
+El nodo cámara recibe la información de un frame \acrshort{rgb} de una de las cámaras, que es procesado por 2 modelos de detección, uno destinado a rostros (YuNet en la figura \ref{fig:camnod}) y el otro a cuerpos (YOLO en la figura \ref{fig:camnod}). Se obtienen las \glspl{bbox} de los rostros y cuerpos detectados, que se comparan para asegurar que cada recorte facial se encuentra contenido en cada recorte corporal.
 
-Tras comprobar que cada cara detectada se corresponde con un cuerpo, se procede al reconocimiento facial y corporal mediante los respectivos modelos (expuestos en la sección \ref{sec:models}), que devuelven un vector con las características representativas para un individuo (o \gls{embedding}).
+Tras comprobar que cada cara detectada se corresponde con un cuerpo, se procede al reconocimiento facial (ArcFace en la figura \ref{fig:camnod}) y corporal (OSNet en la figura \ref{fig:camnod}), que devuelven un vector con las características representativas para un individuo (o \gls{embedding}).
 
 Una vez obtenidos los \glspl{embedding} de cada usuario, se calcula la \textbf{distancia} de dicho vector con todos los vectores (sujetos) guardados en la base de datos, este cálculo se realiza mediante el algoritmo de \textbf{distancia de cosenos}, que otorga el grado de similitud entre dos vectores \cite{andrew}. Como resultado, se obtiene una lista ordenada de los sujetos según el grado de similitud.
 
 La identidad del individuo puede tomarse como la primera entrada de la lista de sujetos (es decir, la identidad más parecida), o puede procesarse la lista por medio de los métodos de distancia relativa y/o identidad probable en el nodo integración de sensores. Estos dos posibles comportamientos pueden escogerse con un valor del parámetro \textit{top\_k} de 1 o mayor que 1 respectivamente.
 
-\subsection{Arquitectura extendida}
+\section{Arquitectura extendida}
 \label{sec:finalsys}
 
 \begin{figure}
     \centering
     \includegraphics[width=1\linewidth]{imagenes/FINALSYS.jpg}
-    \caption{Arquitectura general del sistema, los módulos en negrita se corresponden con los nuevos componentes desarrollados.}
+    \caption{Arquitectura del sistema extendido, los módulos en negrita se corresponden con los nuevos componentes desarrollados.}
     \label{fig:finalsys}
 \end{figure}
 
 En la figura \ref{fig:finalsys} se muestra la arquitectura extendida, los nuevos componentes desarrollados se encuentran marcados en negrita, mientras que el resto de la arquitectura sigue la estructura ya comentada.
 
-En concreto, se han implementado los siguientes componentes:
+En concreto, se han propuesto los siguientes componentes:
 
 \begin{itemize}
-    \item \textbf{Procesamiento de secuencias de frames:} implementa toda la lógica que permite agrupar las \glspl{bbox} por individuos en más de un frame (secuencia). Todas las \glspl{bbox} se transforman en \glspl{embedding}, que se guardan en una lista para ser procesados por el módulo de \textbf{reconocimiento adaptativo}.
+    \item \textbf{Procesamiento de video (o secuencias de frames):} implementa toda la lógica que permite agrupar las \glspl{bbox} por individuos en más de un frame (video o secuencia). Todas las \glspl{bbox} se transforman en \glspl{embedding}, que se guardan en una lista para ser procesados por el módulo de \textbf{reconocimiento adaptativo}.
     \item \textbf{Reconocimiento adaptativo:} implementa la capacidad de detección e inclusión de desconocidos en el sistema (modo \textbf{\textit{Open-Set} y \textit{Open-World}}). Evalúa, mediante el uso de la teoría estadística, si una secuencia de \glspl{embedding} supuesta para un individuo no comparte similitudes con el resto de individuos registrados. En caso afirmativo, se trata de un conocido, en caso contrario, de un desconocido. En ambos casos, el sistema actualiza su conocimiento acerca del individuo por medio de la base de datos de \textbf{personas registradas}.
     \item \textbf{Personas registradas:} representa al conocimiento existente acerca de los individuos, que es compartido por \textbf{todo el sistema}, es decir, por todos los nodos cámara. Este módulo también abarca la inicialización de dicho registro al arrancar el sistema, los distintos métodos para su compartición entre nodos, así como su composición.
 \end{itemize}
@@ -76,16 +76,20 @@ Finalmente, las predicciones de cada nodo cámara se contrastan dentro del nodo 
 
 %coherente con la información otorgada por los nodos (ejemplo: dos cámaras que no están solapadas no pueden reconocer a una misma persona en el mismo instante temporal).
 
-\section{Procesamiento de secuencias de frames}
-\label{sec:video}
-El sistema de partida trabaja a nivel de frame \cite{andrew}, es decir, devuelve predicciones de los individuos presentes en una sola imagen. Esta aproximación permite trabajar a altas frecuencias (ejemplo: devolver un reconocimiento cada 100 ms), sin embargo, las predicciones dependen enteramente de la calidad del frame (ejemplo: nivel de borrosidad). En este proyecto se ha optado por trabajar con \textbf{secuencias (o intervalos) de frames}, de esta forma, se devuelve un reconocimiento más robusto basado en la coherencia espacio-temporal.
+A continuación, se exponen en detalle los componentes recién comentados.
 
-De cada frame de la secuencia, se extrae la información de los individuos presentes a partir de un modelo de detección de caras (YuNet) y/o de cuerpos (YOLO) y se agrupan por cada individuo a lo largo del intervalo aplicando el método de seguimiento y reidentificación a partir del frame actual y el anterior. El resultado final es una lista (lista de entidades en la figura \ref{fig:finalsys}) que contiene los \glspl{embedding} generados por los modelos de reconocimiento agrupados por el usuario en cada frame. El tamaño del intervalo en número de frames es ajustable según las necesidades del operador (ejemplo: intervalo de 10 frames, que equivale a 1 segundo si las cámaras funcionan a 10 Hz).
+\section{Procesamiento de video}
+\label{sec:video}
+El sistema de partida trabaja a nivel de frame \cite{andrew}, es decir, devuelve predicciones de los individuos presentes en una sola imagen. Esta aproximación permite trabajar a altas frecuencias (ejemplo: devolver un reconocimiento cada 100 ms), sin embargo, las predicciones dependen enteramente de la calidad del frame (ejemplo: nivel de borrosidad). En este proyecto se ha optado por trabajar con \textbf{secuencias (o intervalos) de frames}, de esta forma, se devuelve un reconocimiento más robusto basado en múltiples muestras.
+
+En cada frame, se extraen las \glspl{bbox} de los individuos presentes a partir de los modelos de detección de caras y cuerpos. Posteriormente, se relacionan dichos datos entre el \textbf{frame actual y el anterior}, hasta establecer la secuencia completa. El tamaño de la secuencia en número de frames es ajustable según las necesidades del operador (ejemplo: intervalo de 10 frames, que equivale a 1 segundo si las cámaras funcionan a 10 Hz).
+
+El resultado final es una lista (lista de entidades en la figura \ref{fig:finalsys}), que contiene a su vez una lista de \glspl{embedding} generados por los modelos de reconocimiento de cada \gls{bbox} por cada individuo.
 
 \subsection{Seguimiento de entidades}
 \label{sec:tracker}
 
-En casos como los del \textit{\gls{dataset}} FACE COX \cite{cox}, donde en los videos siempre aparece una sola persona, la agrupación de las entidades es trivial. Sin embargo, en un video donde aparecen múltiples individuos que se entrecruzan, es necesario adoptar un método para seguir el rastro de cada persona entre frames.
+En casos como los del \textit{\gls{dataset}} FACE COX \cite{cox}, donde en los videos siempre aparece una sola persona, la agrupación de las entidades es trivial. Sin embargo, en un video donde aparecen múltiples individuos que se entrecruzan, es necesario adoptar un método para \textbf{seguir} el rastro de cada persona entre frames.
 
 \begin{figure}
     \centering
@@ -96,7 +100,7 @@ En casos como los del \textit{\gls{dataset}} FACE COX \cite{cox}, donde en los v
 
 El \textbf{método húngaro} es un algoritmo que resuelve el problema de la asignación óptima. Dada una matriz de costes en el que cada fila establece una correlación con cada columna, dicho algoritmo buscará la \textbf{asignación óptima}, es decir, de menor coste entre elementos, en este caso, dos frames adyacentes \cite{Hungarian}.
 
-La figura \ref{fig:seq} muestra un ejemplo de funcionamiento del método, que consiste en lo siguiente: se aplica el modelo de detección pertinente y se generan las \glspl{bbox} del \textbf{frame anterior y el actual}. Posteriormente, se genera la matriz de costes, donde las \glspl{bbox} del frame anterior se encuentran en las filas y las \glspl{bbox} del frame actual en las columnas. Para cada par de \glspl{bbox} de la matriz, se calcula el \textbf{\acrfull{iou}} \cite{iou}. Finalmente, el método húngaro devuelve los pares de menor coste, que en este caso representan las \glspl{bbox} con mayor solape y similitud (es necesario invertir el valor del \acrshort{iou} restándole 1). Tras repetir el método en todos los frames de la secuencia, se obtiene la información agrupada de cada persona según el rastro generado por el algoritmo.
+Se aplica el modelo de detección pertinente y se generan las \glspl{bbox} del \textbf{frame anterior y el actual}. Posteriormente, se genera la matriz de costes, donde las \glspl{bbox} del frame anterior se encuentran en las filas y las \glspl{bbox} del frame actual en las columnas. Para cada par de \glspl{bbox} de la matriz, se calcula el \textbf{\acrfull{iou}} \cite{iou}. Finalmente, el método húngaro devuelve los pares de menor coste, es decir, de mayor valor de \acrshort{iou} (el resultado se invierte restándole un 1). Tras repetir el método en todos los frames de la secuencia, se obtiene la información agrupada de cada persona según el rastro generado por el algoritmo. La figura \ref{fig:seq} muestra un ejemplo de funcionamiento del método.
 
 La métrica \acrshort{iou} devuelve el porcentaje de solapamiento y similitud entre \glspl{bbox} (como se muestra en la figura \ref{fig:iou}), de forma que recortes de diferente tamaño (cuando más cerca esté el sujeto de la cámara, más grande será el recorte) den un valor bajo al solaparse (ejemplo: personas que coinciden en la imagen en diferentes distancias). Dadas dos \glspl{bbox} A y B, el \acrshort{iou} se calcula como sigue en la ecuación \ref{eq:iou}.
 
@@ -113,26 +117,27 @@ La métrica \acrshort{iou} devuelve el porcentaje de solapamiento y similitud en
 
 \subsection{Reidentificación de entidades}
 \label{subsec:reiden}
-Es posible que durante la detección, las \glspl{bbox} de una misma persona en frames consecutivos no se solapen debido a la velocidad de movimiento de la propia persona o a un movimiento de la cámara, lo que imposibilita la aplicación del método húngaro. Otro problema es el no seguimiento de la persona cuando esta se encuentra totalmente ocluida (ejemplo: se cruza un individuo justo delante) y reaparece o si simplemente la persona gira su cara fuera de la visión de la cámara y vuelve a detectarse después, en estos casos se crearía una nueva entidad para el mismo individuo, lo que no es un comportamiento deseable.
+Es posible que durante la detección, las \glspl{bbox} de una misma persona en frames consecutivos no se solapen debido a la velocidad de movimiento de la propia persona o a un movimiento de la cámara, lo que causa una incorrecta aplicación del método húngaro. En este caso, se asigna el mayor coste (valor de 1) a la relación (es decir, un valor de \acrshort{iou} de 0), lo que genera el riesgo de asociar 2 \glspl{bbox} de individuos diferentes.
 
-El \textbf{filtro de Kalman} predice la próxima posición del individuo a partir de la probabilidad Gausiana, de tal forma que puede mantenerse el rastro cuando la persona desaparece por unos frames. A pesar de ser una técnica efectiva, el filtro necesita de un mínimo de frames para converger cuando una nueva persona aparece \cite{MangoYOLO}, lo que no es beneficioso para intervalos de secuencia cortos. Finalmente se ha optado por un método más sencillo basado en la \textbf{distancia euclidiana}.
+%También existe la posibilidad de que el método húngaro realice una mala asignación cuando 2 \glspl{bbox} no coinciden, en este caso tendrían el coste máximo (valor de 1), pero igualmente se relacionarían al no existir otras relaciones de menor coste.
 
-Dicho método consiste en los siguiente: en el caso de que haya un movimiento veloz del individuo o de la cámara, se calcula la distancia entre el \textbf{centro} de la \gls{bbox} actual con la \glspl{bbox} posterior que no tiene solape, si la distancia calculada es \textbf{inferior a un umbral}, \textbf{se valida la asociación}. En el caso de perder el rastro del individuo, se guarda la posición de la última aparición del mismo y se calcula la distancia con las \glspl{bbox} sin asociación en futuros frames, si la distancia no es inferior al umbral en un máximo de frames (prefijado por el operador), \textbf{se abandona el rastreo}, en caso contrario se restablece. El valor del umbral se fija de antemano \textbf{y se ajusta automáticamente en función de la resolución} de la cámara utilizando un escalado a partir de la diagonal (se calcula la diagonal de la resolución prefijada y la nueva resolución y se divide la diagonal de la resolución nueva entre la prefijada, el resultado se multiplica por el valor de umbral).
+Otro problema es el no seguimiento de la persona cuando esta se encuentra totalmente ocluida (ejemplo: se cruza un individuo justo delante) y reaparece o si simplemente la persona gira su cabeza, dejando la cara fuera de la visión de la cámara, y la vuelve a girar. En estos casos, se crearía una nueva entidad para el mismo individuo, lo que no es un comportamiento deseable.
+
+Debido a estas situaciones, es necesario aplicar un método que pueda \textbf{reidentificar} a los individuos "desaparecidos".
+
+El \textbf{filtro de Kalman} predice la próxima posición del individuo a partir de la probabilidad Gausiana, de tal forma que puede mantenerse el rastro cuando la persona desaparece por unos frames. A pesar de ser una técnica efectiva, el filtro necesita de un mínimo de frames para converger cuando una nueva persona aparece \cite{MangoYOLO}, lo que no es beneficioso para intervalos de secuencia cortos. Finalmente, se ha optado por un método más sencillo basado en la \textbf{distancia euclidiana}.
+
+En el caso de que haya un movimiento veloz del individuo o de la cámara, se calcula la distancia entre el \textbf{centro} de la \gls{bbox} actual con la \gls{bbox} posterior que no tiene solape, si la distancia calculada es \textbf{inferior a un umbral}, \textbf{se valida la asociación}.
+
+En el caso de perder el rastro del individuo, se guarda la posición de la última aparición del mismo y se calcula la distancia con las \glspl{bbox} sin asociación en futuros frames, si la distancia es \textbf{superior} al umbral en un máximo de frames (prefijado por el operador), \textbf{se abandona el rastreo}, en caso contrario se restablece.
+
+El valor del umbral se fija de antemano \textbf{y se ajusta automáticamente en función de la resolución} de la cámara utilizando un escalado a partir de la diagonal (se calcula la diagonal de la resolución prefijada y la nueva resolución y se divide la diagonal de la resolución nueva entre la prefijada, el resultado se multiplica por el valor de umbral).
+
+Siendo $\Delta x$ y $\Delta y$ la diferencia entre las coordenadas \acrshort{2d} de los centros de dos \glspl{bbox}, la distancia euclidiana se calcula como se muestra en la ecuación \ref{eq:eucl}.
 
 \begin{equation}
     \Delta r_{euclid} = \sqrt{\Delta x^{2} + \Delta y^{2}} \label{eq:eucl}
 \end{equation}
-
-Siendo $\Delta x$ y $\Delta y$ la diferencia entre las coordenadas \acrshort{2d} de los centros de dos \glspl{bbox}, la distancia euclidiana se calcula como se muestra en la figura \ref{eq:eucl}.
-
-\begin{figure}
-    \centering
-    \includegraphics[width=1\linewidth]{imagenes/FOLREID.jpg}
-    \caption{Diagrama de flujo del seguimiento y reidentificación}
-    \label{fig:reident}
-\end{figure}
-
-La figura \ref{fig:reident} muestra el diagrama de flujo del módulo de seguimiento y reidentificación. El seguimiento de las entidades a lo largo de los frames se guarda en la \textbf{lista de entidades} vista en la figura \ref{fig:finalsys}, en cada iteración se revisan todas las entidades de la lista, TODO: seguir explicando
 
 \begin{figure}[hp!]
     \centering
@@ -151,6 +156,17 @@ La figura \ref{fig:reident} muestra el diagrama de flujo del módulo de seguimie
 
 En la figura \ref{fig:eucls} se expone un ejemplo real, en el primer frame, se muestran dos entidades etiquetadas con un identificador (0 y 1) y como se aplica la distancia euclidiana para la entidad 0, cuyas \glspl{bbox} no se solapan, también se muestra como la entidad 1 está a punto de ser ocluida, al no haber \glspl{bbox} en frames posteriores asociables a la entidad 1, la posición del sujeto se guarda. En el segundo frame (figura \ref{fig:eucls}), la entidad 1 se encuentra totalmente ocluida por la entidad 0, como en el instante posterior a dicho frame existe una \gls{bbox} sin ninguna asociación, se calcula la distancia euclidiana entre dicha \gls{bbox} respecto a la última detectada de la entidad 1. En el último frame (figura \ref{fig:eucls}) se muestra la entidad 1 reasignada.
 
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{imagenes/FOLREID.jpg}
+    \caption{Diagrama de flujo del procesamiento de video}
+    \label{fig:reident}
+\end{figure}
+
+La figura \ref{fig:reident} muestra el diagrama de flujo que conforma todo el módulo de procesamiento de video.
+
+Se aplica el método húngaro para asociar detecciones entre el frame anterior y el actual. Si algún individuo posee la asignación de mayor coste, o no se ha establecido mediante el método húngaro, se aplica el método de reidentificación durante un máximo de frames (variable max\_tries). En caso de encontrar TODO.
+
 \section{Reconocimiento adaptativo}
 
 \begin{figure}[tb]
@@ -164,7 +180,7 @@ Es el módulo encargado de devolver las predicciones y actualizar el conocimient
 
 En la figura \ref{fig:ADAPTSYS} se muestra la arquitectura de este módulo, cuyos componentes se han diseñado partiendo de \cite{Erik, CESAR} como referencia.
 
-Tras agrupar las \glspl{bbox} por individuos y calcular sus vectores (\textit{\glspl{embedding}}), estos se comparan contra las personas registradas para averiguar si dichos sujetos pertenecen o no al sistema. La base de datos está compuesta por \textbf{comités (o colecciones) de \acrshort{svm} lineales} para cada individuo. Las \acrshort{svm} de los comités procesan los \textit{\glspl{embedding}}, devolviendo una serie de \textbf{puntuaciones}, que representan la distancia del punto respecto al plano lineal que distingue entre la clase del propio individuo y el resto del universo. Finalmente, se toma la decisión de reconocimiento a partir de dichas puntuaciones y se actualiza la base de datos con los nuevos \glspl{embedding}.
+Tras agrupar las \glspl{bbox} por individuos y calcular sus vectores (o \textit{\glspl{embedding}}), estos se comparan contra las personas registradas para averiguar si dichos sujetos pertenecen o no al sistema. La base de datos está compuesta por \textbf{comités (o colecciones) de \acrshort{svm} lineales} para cada individuo. Las \acrshort{svm} de los comités procesan los \textit{\glspl{embedding}}, devolviendo una serie de \textbf{puntuaciones}, que representan la distancia del punto respecto al plano lineal que distingue entre la clase del propio individuo y el resto del universo. Finalmente, se toma la decisión de reconocimiento a partir de dichas puntuaciones y se actualiza la base de datos con los nuevos \glspl{embedding}.
 
 El módulo de reconocimiento adaptativo se compone de los siguientes componentes, presentes en la figura \ref{fig:ADAPTSYS}:
 \begin{itemize}
