@@ -3,6 +3,7 @@
 \lettrine{E}{n} este capítulo se comenta brevemente la arquitectura de partida y se expone el diseño de los nuevos componentes.
 
 \section{Arquitectura general}
+\label{sec:partarch}
 
 Se parte de un sistema compuesto por 2 cámaras \acrshort{rgbd} y un sensor \acrshort{lidar}, que detecta y reconoce personas a partir de nodos que aplican los respectivos modelos de redes neuronales (o \acrshort{cnn}). El sistema posee la capacidad de fusionar la información de todos los nodos, de forma que se obtiene un único reconocimiento robusto para cada individuo, junto a su posición concreta en el espacio \acrshort{3d}.
 
@@ -61,8 +62,8 @@ En la figura \ref{fig:finalsys} se muestra la arquitectura extendida, los nuevos
 En concreto, se han propuesto los siguientes componentes:
 
 \begin{itemize}
-    \item \textbf{Procesamiento de video (o secuencias de frames):} implementa toda la lógica que permite agrupar las \glspl{bbox} por individuos en más de un frame (video o secuencia). Todas las \glspl{bbox} se transforman en \glspl{embedding}, que se guardan en una lista para ser procesados por el módulo de \textbf{reconocimiento adaptativo}.
-    \item \textbf{Reconocimiento adaptativo:} implementa la capacidad de detección e inclusión de desconocidos en el sistema (modo \textbf{\textit{Open-Set} y \textit{Open-World}}). Evalúa, mediante el uso de la teoría estadística, si una secuencia de \glspl{embedding} supuesta para un individuo no comparte similitudes con el resto de individuos registrados. En caso afirmativo, se trata de un conocido, en caso contrario, de un desconocido. En ambos casos, el sistema actualiza su conocimiento acerca del individuo por medio de la base de datos de \textbf{personas registradas}.
+    \item \textbf{Procesamiento de video:} implementa toda la lógica necesaria para agrupar las \glspl{bbox} por individuos en más de un frame (video o secuencia). Todas las \glspl{bbox} se transforman en \glspl{embedding}, que se guardan en una lista para ser procesados por el módulo de \textbf{reconocimiento adaptativo}.
+    \item \textbf{Reconocimiento adaptativo:} implementa la capacidad de detección e inclusión de desconocidos en el sistema (modo \textbf{\textit{Open-Set} y \textit{Open-World}}). Evalúa, mediante el uso de la teoría estadística, si una \textbf{puntuación} particular para un individuo no comparte similitudes con el resto de individuos registrados. En caso afirmativo, se trata de un conocido, en caso contrario, de un desconocido. En ambos casos, el sistema actualiza su conocimiento acerca del individuo por medio de la base de datos de \textbf{personas registradas}. Dichas puntuaciones son los resultados de los \textbf{comités de \acrshort{svm}}, que clasifican las secuencias de \glspl{embedding}.
     \item \textbf{Personas registradas:} representa al conocimiento existente acerca de los individuos, que es compartido por \textbf{todo el sistema}, es decir, por todos los nodos cámara. Este módulo también abarca la inicialización de dicho registro al arrancar el sistema, los distintos métodos para su compartición entre nodos, así como su composición.
 \end{itemize}
 
@@ -70,7 +71,7 @@ El nodo \acrshort{lidar} no se incluye en el sistema extendido, debido a que TOD
 
 El nodo cámara pasa de operar frame a frame a procesar una \textbf{secuencia de frames}, con el fin de explotar la coherencia espacio-temporal (módulo de procesamiento de secuencias de frames). Se obtiene la \textbf{lista de entidades} con la lista de \glspl{embedding} para cada individuo y se ejecuta el módulo de reconocimiento adaptativo.
 
-El módulo de reconocimiento adaptativo devuelve la decisión de reconocimiento y actualiza las \textbf{personas registradas}. Los nuevos cambios de los individuos son actualizados y compartidos entre todos los nodos.
+El módulo de reconocimiento adaptativo devuelve la decisión de reconocimiento y actualiza las \textbf{personas registradas}. Los nuevos cambios de los individuos son actualizados y compartidos entre todos los nodos. El método de clasificación pasa de utilizar la \textbf{distancia coseno} a emplear los \textbf{comités de \acrshort{svm}}, que devuelven una serie de \textbf{puntuaciones} que se estudian bajo el teorema estadístico \textbf{\acrfull{evt}}, útil para detectar casos extremos en la distribución de dichas puntuaciones. Este último método permite implementar el reconocimiento \textbf{\textit{Open-Set} y/o \textit{Open-World}}.
 
 Finalmente, las predicciones de cada nodo cámara se contrastan dentro del nodo integración de sensores, que devuelve la lista de identidades final junto a la posición \acrshort{3d}.
 
@@ -80,11 +81,11 @@ A continuación, se exponen en detalle los componentes recién comentados.
 
 \section{Procesamiento de video}
 \label{sec:video}
-El sistema de partida trabaja a nivel de frame \cite{andrew}, es decir, devuelve predicciones de los individuos presentes en una sola imagen. Esta aproximación permite trabajar a altas frecuencias (ejemplo: devolver un reconocimiento cada 100 ms), sin embargo, las predicciones dependen enteramente de la calidad del frame (ejemplo: nivel de borrosidad). En este proyecto se ha optado por trabajar con \textbf{secuencias (o intervalos) de frames}, de esta forma, se devuelve un reconocimiento más robusto basado en múltiples muestras.
+El sistema de partida trabaja a nivel de frame \cite{andrew}, es decir, devuelve predicciones de los individuos presentes en una sola imagen. Esta aproximación permite trabajar a altas frecuencias (ejemplo: devolver un reconocimiento cada 100 ms), sin embargo, las predicciones dependen enteramente de la calidad del frame (ejemplo: nivel de borrosidad). En este proyecto se ha optado por trabajar con \textbf{secuencias de frames} (o videos), de esta forma, se devuelve un reconocimiento más robusto basado en múltiples muestras.
 
-En cada frame, se extraen las \glspl{bbox} de los individuos presentes a partir de los modelos de detección de caras y cuerpos. Posteriormente, se relacionan dichos datos entre el \textbf{frame actual y el anterior}, hasta establecer la secuencia completa. El tamaño de la secuencia en número de frames es ajustable según las necesidades del operador (ejemplo: intervalo de 10 frames, que equivale a 1 segundo si las cámaras funcionan a 10 Hz).
+En cada frame, se extraen las \glspl{bbox} de los individuos presentes a partir de los modelos de detección de caras y cuerpos. Posteriormente, se relacionan dichos datos entre el \textbf{frame actual y el anterior}, hasta establecer la secuencia completa. El tamaño de la secuencia es ajustable según las necesidades del operador (ejemplo: secuencia de 10 frames, que equivale a 1 segundo si las cámaras funcionan a 10 Hz).
 
-El resultado final es una lista (lista de entidades en la figura \ref{fig:finalsys}), que contiene a su vez una lista de \glspl{embedding} generados por los modelos de reconocimiento de cada \gls{bbox} por cada individuo.
+El resultado final es una lista (lista de entidades en la figura \ref{fig:finalsys}), que contiene a su vez una lista de \glspl{bbox} transformadas en \glspl{embedding} (aplicando los modelos de reconocimiento) para cada individuo.
 
 \subsection{Seguimiento de entidades}
 \label{sec:tracker}
@@ -100,7 +101,9 @@ En casos como los del \textit{\gls{dataset}} FACE COX \cite{cox}, donde en los v
 
 El \textbf{método húngaro} es un algoritmo que resuelve el problema de la asignación óptima. Dada una matriz de costes en el que cada fila establece una correlación con cada columna, dicho algoritmo buscará la \textbf{asignación óptima}, es decir, de menor coste entre elementos, en este caso, dos frames adyacentes \cite{Hungarian}.
 
-Se aplica el modelo de detección pertinente y se generan las \glspl{bbox} del \textbf{frame anterior y el actual}. Posteriormente, se genera la matriz de costes, donde las \glspl{bbox} del frame anterior se encuentran en las filas y las \glspl{bbox} del frame actual en las columnas. Para cada par de \glspl{bbox} de la matriz, se calcula el \textbf{\acrfull{iou}} \cite{iou}. Finalmente, el método húngaro devuelve los pares de menor coste, es decir, de mayor valor de \acrshort{iou} (el resultado se invierte restándole un 1). Tras repetir el método en todos los frames de la secuencia, se obtiene la información agrupada de cada persona según el rastro generado por el algoritmo. La figura \ref{fig:seq} muestra un ejemplo de funcionamiento del método.
+Se genera la matriz de costes, donde las \glspl{bbox} (o recortes) del frame anterior se encuentran en las filas y las \glspl{bbox} del frame actual en las columnas. Para cada par de \glspl{bbox} de la matriz, se calcula el \textbf{\acrfull{iou}} \cite{iou}. Finalmente, el método húngaro devuelve los pares de menor coste, es decir, de mayor valor de \acrshort{iou} (el resultado se invierte restándole un 1).
+
+Tras repetir el proceso en toda la secuencia, se obtiene la lista de recortes de cada persona según el rastro generado por el algoritmo. La figura \ref{fig:seq} muestra el funcionamiento ya comentado.
 
 La métrica \acrshort{iou} devuelve el porcentaje de solapamiento y similitud entre \glspl{bbox} (como se muestra en la figura \ref{fig:iou}), de forma que recortes de diferente tamaño (cuando más cerca esté el sujeto de la cámara, más grande será el recorte) den un valor bajo al solaparse (ejemplo: personas que coinciden en la imagen en diferentes distancias). Dadas dos \glspl{bbox} A y B, el \acrshort{iou} se calcula como sigue en la ecuación \ref{eq:iou}.
 
@@ -123,13 +126,13 @@ Es posible que durante la detección, las \glspl{bbox} de una misma persona en f
 
 Otro problema es el no seguimiento de la persona cuando esta se encuentra totalmente ocluida (ejemplo: se cruza un individuo justo delante) y reaparece o si simplemente la persona gira su cabeza, dejando la cara fuera de la visión de la cámara, y la vuelve a girar. En estos casos, se crearía una nueva entidad para el mismo individuo, lo que no es un comportamiento deseable.
 
-Debido a estas situaciones, es necesario aplicar un método que pueda \textbf{reidentificar} a los individuos "desaparecidos".
+Debido a dichos problemas, es necesario aplicar un método que pueda \textbf{reidentificar} a los individuos cuyo rastro se ha perdido temporalmente.
 
-El \textbf{filtro de Kalman} predice la próxima posición del individuo a partir de la probabilidad Gausiana, de tal forma que puede mantenerse el rastro cuando la persona desaparece por unos frames. A pesar de ser una técnica efectiva, el filtro necesita de un mínimo de frames para converger cuando una nueva persona aparece \cite{MangoYOLO}, lo que no es beneficioso para intervalos de secuencia cortos. Finalmente, se ha optado por un método más sencillo basado en la \textbf{distancia euclidiana}.
+El \textbf{filtro de Kalman} predice la próxima posición del individuo a partir de la probabilidad Gausiana, de tal forma que puede mantenerse el rastro cuando la persona desaparece por unos frames. A pesar de ser una técnica efectiva, el filtro necesita de un mínimo de frames para converger cuando una nueva persona aparece \cite{MangoYOLO}, lo que no es beneficioso para tamaños pequeños de secuencia. Finalmente, se ha optado por un método más sencillo basado en la \textbf{distancia euclidiana}.
 
-En el caso de que haya un movimiento veloz del individuo o de la cámara, se calcula la distancia entre el \textbf{centro} de la \gls{bbox} actual con la \gls{bbox} posterior que no tiene solape, si la distancia calculada es \textbf{inferior a un umbral}, \textbf{se valida la asociación}.
+En el caso de que haya un movimiento veloz del individuo o de la cámara o que se haya realizado una asignación con el mayor coste, se calcula la distancia entre el \textbf{centro} de la \gls{bbox} actual con la \gls{bbox} posterior que no tiene solape, si la distancia calculada es \textbf{inferior a un umbral}, \textbf{se valida la asociación}, en caso contrario, la \gls{bbox} del individuo se mantiene, por si se vuelve a localizar en futuros frames.
 
-En el caso de perder el rastro del individuo, se guarda la posición de la última aparición del mismo y se calcula la distancia con las \glspl{bbox} sin asociación en futuros frames, si la distancia es \textbf{superior} al umbral en un máximo de frames (prefijado por el operador), \textbf{se abandona el rastreo}, en caso contrario se restablece.
+En el caso de perder la localización del individuo, se mantiene la \gls{bbox} de la última aparición del mismo y se calcula la distancia con las \glspl{bbox} sin asociación en futuros frames. Si la distancia es \textbf{superior} al umbral en un máximo de frames (prefijado por el operador), \textbf{se abandona el rastreo}, en caso contrario se restablece.
 
 El valor del umbral se fija de antemano \textbf{y se ajusta automáticamente en función de la resolución} de la cámara utilizando un escalado a partir de la diagonal (se calcula la diagonal de la resolución prefijada y la nueva resolución y se divide la diagonal de la resolución nueva entre la prefijada, el resultado se multiplica por el valor de umbral).
 
@@ -165,7 +168,9 @@ En la figura \ref{fig:eucls} se expone un ejemplo real, en el primer frame, se m
 
 La figura \ref{fig:reident} muestra el diagrama de flujo que conforma todo el módulo de procesamiento de video.
 
-Se aplica el método húngaro para asociar detecciones entre el frame anterior y el actual. Si algún individuo posee la asignación de mayor coste, o no se ha establecido mediante el método húngaro, se aplica el método de reidentificación durante un máximo de frames (variable max\_tries). En caso de encontrar TODO.
+Se aplica el método húngaro para asociar detecciones entre el frame anterior y el actual. Se itera la lista de entidades con los individuos detectados hasta el momento, si algún individuo posee la asignación de mayor coste o no se ha establecido, se aplica el método de reidentificación durante un máximo de frames, controlado por la variable intentos\_loc. Por cada intento fallido de localización, se decrementa dicha variable, así hasta llegar al 0, que es el punto en el que se descarta la localización. En el resto de casos, la asignación del frame anterior con el actual se realiza y se restablece de nuevo la variable de intentos (en el caso de reidentificación).
+
+Al final de cada iteración del módulo, se añaden las nuevas detecciones a la lista de entidades. Los nuevos casos se corresponden con asignaciones de \gls{bbox} que no se corresponden con ninguna entidad antes registrada.
 
 \section{Reconocimiento adaptativo}
 
@@ -176,19 +181,21 @@ Se aplica el método húngaro para asociar detecciones entre el frame anterior y
     \label{fig:ADAPTSYS}
 \end{figure}
 
-Es el módulo encargado de devolver las predicciones y actualizar el conocimiento existente a partir de la lista de entidades generada en la anterior sección.
+El módulo de reconocimiento adaptativo se encarga de devolver las predicciones y actualizar el conocimiento existente a partir de la lista de entidades generada (ver sección \ref{sec:video}).
 
 En la figura \ref{fig:ADAPTSYS} se muestra la arquitectura de este módulo, cuyos componentes se han diseñado partiendo de \cite{Erik, CESAR} como referencia.
 
-Tras agrupar las \glspl{bbox} por individuos y calcular sus vectores (o \textit{\glspl{embedding}}), estos se comparan contra las personas registradas para averiguar si dichos sujetos pertenecen o no al sistema. La base de datos está compuesta por \textbf{comités (o colecciones) de \acrshort{svm} lineales} para cada individuo. Las \acrshort{svm} de los comités procesan los \textit{\glspl{embedding}}, devolviendo una serie de \textbf{puntuaciones}, que representan la distancia del punto respecto al plano lineal que distingue entre la clase del propio individuo y el resto del universo. Finalmente, se toma la decisión de reconocimiento a partir de dichas puntuaciones y se actualiza la base de datos con los nuevos \glspl{embedding}.
-
-El módulo de reconocimiento adaptativo se compone de los siguientes componentes, presentes en la figura \ref{fig:ADAPTSYS}:
+El módulo de reconocimiento adaptativo se compone de los siguientes componentes:
 \begin{itemize}
-    \item \textbf{Módulo de valoración}: cada comité asigna una puntuación al intervalo de \glspl{bbox} de un individuo.
+    \item \textbf{Módulo de valoración}: cada comité asigna una puntuación a la secuencia de \glspl{embedding} (o vectores) de un individuo.
     \item \textbf{Módulo de reconocimiento}: devuelve una decisión de reconocimiento basándose en las puntuaciones de cada comité.
-    \item \textbf{Módulo de actualización}: se encarga de crear un nuevo comité si se detecta un usuario nuevo (\textit{unknown}) o de crear un nuevo clasificador para registrar los cambios del usuario existente (\textit{drift}).
-    \item \textbf{Módulo de limitación}: reemplaza la \acrshort{svm} que menos aporta a un comité en el caso de que este exceda el límite establecido.
+    \item \textbf{Módulo de actualización}: se encarga de crear un nuevo comité si se detecta un usuario nuevo (\textit{unknown}) o de crear una nueva \acrshort{svm} para registrar los cambios del usuario existente (\textit{drift}).
+    \item \textbf{Módulo de limitación}: reemplaza la \acrshort{svm} que menos aporta a un comité, en el caso de que este exceda el límite establecido.
 \end{itemize}
+
+TODO: debe de ir en otro lugar? La base de datos de personas registradas está compuesta por \textbf{comités (o colecciones) de \acrshort{svm} lineales} para cada individuo.
+
+El módulo de valoración recibe la secuencia de vectores de un individuo y devuelve las puntuaciones de cada comité, dichas puntuaciones se ordenan de menor a mayor, de forma que la menor puntuación se corresponde supuestamente con el comité del individuo. Las puntuaciones son recibidas por el módulo de reconocimiento, que determina, mediante el \acrfull{evt}, si el comité corresponde realmente al individuo (conocido) o no (desconocido). El módulo de actualización recibe la decisión y agrega una nueva \acrshort{svm}, entrenada con la secuencia de vectores como positivos y con muestras guardadas del resto de individuos como negativos, en caso de determinar que el individuo es conocido, en caso contrario, se crea el nuevo comité con una \acrshort{svm} entrenada del mismo modo. Finalmente, si el comité se excede en el límite fijado de \acrshort{svm}s, el módulo de limitación determina la \acrshort{svm} que menos aporta a dicho comité. En la figura \ref{fig:ADAPTSYS} se muestran el flujo comentado con todos los módulos.
 
 \subsection{Módulo de valoración}
 \label{sec:val}
@@ -234,7 +241,9 @@ Es el módulo que implementa la actualización de los comités tras el reconocim
 
 Según la entidad predicha, se toma una cierta decisión de actualización. Si el sujeto es \textbf{desconocido}, se crea un nuevo comité con una \acrshort{svm} que se añade al registro. La \acrshort{svm} se entrena con las muestras (\textit{\glspl{embedding}} de caras o cuerpos) obtenidas del propio sujeto como conjunto de positivos, mientras que el conjunto de negativos se compone de muestras aleatorias extraídas directamente de la base de datos. Si el sujeto es \textbf{conocido}, se agrega una nueva \acrshort{svm} al comité, entrenada con las muestras del propio individuo como positivos y como negativos un muestreo aleatorio de todas las entidades \textbf{excepto el propio sujeto}.
 
-Una condición necesaria para que este módulo se ejecute es que la secuencia de entrada para el individuo \textbf{contenga un mínimo de \textit{\glspl{embedding}} para su inicialización}, dicho mínimo es fijado por el operador de antemano. Otra precondición, que aplica a las entidades conocidas, es comprobar si las muestras a añadir son lo suficientemente representativas. Las puntuaciones cerca del cero indican que las muestras se encuentran en el borde de lo que es nuevo y lo que la \acrshort{svm} ya conoce. Si la mediana de las puntuaciones de los \glspl{embedding} para un comité se encuentra por debajo de un umbral (\textit{update\_th}), se procede a seleccionar las muestras más cercanas al 0 (función sample selection en la figura \ref{fig:ADAPTSYS}), que compondrán el conjunto de positivos del clasificador.
+Una condición necesaria para que este módulo se ejecute es que la secuencia de entrada \textbf{contenga un mínimo de \textit{\glspl{embedding}} para la inicialización de la \acrshort{svm}}, dicho mínimo es fijado por el operador de antemano.
+
+Otra precondición, que aplica a las entidades conocidas, es comprobar si las muestras a añadir son lo suficientemente representativas. Las puntuaciones cerca del cero indican que las muestras se encuentran en el borde de lo que es nuevo y de lo que la \acrshort{svm} ya conoce. Si la mediana de las puntuaciones de los \glspl{embedding} para un comité se encuentra por debajo de un umbral (\textit{update\_th}), se procede a seleccionar las muestras más cercanas al 0 (función \textit{sample\_selection} en la figura \ref{fig:ADAPTSYS}), que compondrán el conjunto de positivos de la \acrshort{svm}.
 
 \textbf{El tamaño del conjunto de positivos y de negativos es prefijado por el operador}, en la sección \ref{seq:paramtunning} se evalúa su impacto en el rendimiento.
 
@@ -245,7 +254,9 @@ Dicho módulo se encuentra inherente al de actualización. Si un comité excede 
 
 \subsubsection{Diversidad}
 
-Este criterio devuelve un valor que representa el grado de diferenciación de un clasificador respecto a su comité. Se escoge un conjunto aleatorio de \textit{\glspl{embedding}} de entre todos los comités y se calcula el score de cada clasificador del comité. Posteriormente, se acumula el producto de los signos entre scores y se multiplica por -1, de esta forma, el clasificador más discordante (es decir, el único que devuelve un resultado contrario respecto a una amplia mayoría) obtendrá un mayor valor de este criterio y viceversa. El valor de diversidad de cada clasificador se calcula como en \cite{Erik}. Dado un conjunto de \glspl{embedding} \{$x_{0}$, $x_{1}$, ..., $x_{Q-1}$\} y un comité $e^{k}$ con N clasificadores \{$h^{k}_{0}$, $h^{k}_{1}$, ..., $h^{k}_{N-1}$\}, $D(h^{k}_{i})$ se calcula como sigue en la ecuación \ref{eq:diversity}, donde \textit{sgn} es la función \textit{sign}, que devuelve 1 o -1 dependiendo del signo del número real.
+Este criterio devuelve un valor que representa el grado de diferenciación de una \acrshort{svm} respecto a su comité.
+
+Se escoge un conjunto aleatorio de \textit{\glspl{embedding}} de entre todos los comités y se calcula la puntuación de cada \acrshort{svm} del comité. Posteriormente, se acumula el producto de los signos entre scores y se multiplica por -1, de esta forma, el \acrshort{svm} más discordante (es decir, el único que devuelve un resultado contrario respecto a una amplia mayoría) obtendrá un mayor valor de este criterio y viceversa. El valor de diversidad de cada \acrshort{svm} se calcula como en \cite{Erik}. Dado un conjunto de \glspl{embedding} \{$x_{0}$, $x_{1}$, ..., $x_{Q-1}$\} y un comité $e^{k}$ con N \acrshort{svm}s \{$h^{k}_{0}$, $h^{k}_{1}$, ..., $h^{k}_{N-1}$\}, $D(h^{k}_{i})$ se calcula como sigue en la ecuación \ref{eq:diversity}, donde \textit{sgn} es la función \textit{sign}, que devuelve 1 o -1 dependiendo del signo del número real.
 
 \begin{align}
     D(h_{i}^{k})= \sum_{j=0;j\neq i}^{N-1} d(h_{i}^{k}, h_{j}^{k}) \label{eq:diversity} \\
@@ -254,7 +265,9 @@ Este criterio devuelve un valor que representa el grado de diferenciación de un
 
 \subsubsection{Coherencia}
 
-Este criterio viene a determinar la precisión de una \acrshort{svm} en el reconocimiento respecto a las salidas de su comité. El valor de coherencia determina cuantas veces una \acrshort{svm} devuelve el mismo signo que el resultado consensuado del comité para un conjunto de \textit{\glspl{embedding}}. Si los signos coinciden, se suma 1 al valor de coherencia, en caso contrario, se resta 1 a dicho valor, de forma que un valor alto se corresponde con una buena precisión. En el momento de creación de una \acrshort{svm}, este valor se inicializa a 0. Dado un comité ganador $e^{k}$ de N clasificadores \{$h^{k}_{0}$, $h^{k}_{1}$, ..., $h^{k}_{N-1}$\} y un conjunto de \textit{\glspl{embedding}} \{$x_{0}$, $x_{1}$, ..., $x_{Q-1}$\}, $C_{k,i}$ se calcula como sigue en \cite{CESAR} (ecuación \ref{eq:coherence}), donde $1[\cdot]$ representa a un condicional que devuelve 1 si la condición se cumple o 0 en caso contrario.
+Este criterio viene a determinar la precisión de una \acrshort{svm} en el reconocimiento respecto a las salidas de su comité.
+
+El valor de coherencia determina cuantas veces una \acrshort{svm} devuelve el mismo signo que el resultado consensuado del comité para un conjunto de \textit{\glspl{embedding}}. Si los signos coinciden, se suma 1 al valor de coherencia, en caso contrario, se resta 1 a dicho valor, de forma que un valor alto se corresponde con una buena precisión. En el momento de creación de una \acrshort{svm}, este valor se inicializa a 0. Dado un comité ganador $e^{k}$ de N \acrshort{svm}s \{$h^{k}_{0}$, $h^{k}_{1}$, ..., $h^{k}_{N-1}$\} y un conjunto de \textit{\glspl{embedding}} \{$x_{0}$, $x_{1}$, ..., $x_{Q-1}$\}, $C_{k,i}$ se calcula como sigue en \cite{CESAR} (ecuación \ref{eq:coherence}), donde $1[\cdot]$ representa a un condicional que devuelve 1 si la condición se cumple o 0 en caso contrario.
 
 \begin{align}
     C_{k,i} = 1[sgn(e^{k}) == sgn(\bar{y})] - 1 [sgn(e^{k}) \neq sgn(\bar{y})] \label{eq:coherence} \\
@@ -263,47 +276,44 @@ Este criterio viene a determinar la precisión de una \acrshort{svm} en el recon
 
 \subsubsection{Favorabilidad}
 
-Finalmente, los dos criterios anteriores se fusionan en un valor llamado \textbf{índice de favorabilidad}, la \acrshort{svm} con el menor valor de dicho índice \textbf{se elimina del comité}. La fórmula para calcular dicho índice es la misma que en \cite{CESAR}. Dado el valor de coherencia $C_{k,i}$ del clasificador $h^{i}$ del comité ganador $e^{k}$ y el valor de diversidad $D(h^{m})$, la favorabilidad se calcula como sigue en la figura \ref{eq:fav}, donde son $\alpha$ y $\gamma$ constantes que ajustan el peso de la coherencia y la diversidad respectivamente.
+Finalmente, los dos criterios anteriores se fusionan en un valor llamado \textbf{índice de favorabilidad}
+
+La fórmula para calcular dicho índice es la misma que en \cite{CESAR}. Dado el valor de coherencia $C_{k,i}$ de la \acrshort{svm} $h^{i}$ del comité ganador $e^{k}$ y el valor de diversidad $D(h^{m})$, la favorabilidad se calcula como sigue en la figura \ref{eq:fav}, donde son $\alpha$ y $\gamma$ constantes que ajustan el peso de la coherencia y la diversidad respectivamente.
 
 \begin{equation}
     F(h_{i}^{k}) = \alpha C_{k,i} + \gamma D(h_{i}^{k}) \label{eq:fav}
 \end{equation}
 
+Como en los dos criterios anteriores, cuanto mayor sea el valor devuelto, mejor se valora la \acrshort{svm}. De este modo, la \acrshort{svm} con el menor valor de dicho índice \textbf{se elimina del comité}.
+
 \section{Personas registradas}
 \label{sec:initarch}
 
-TODO: comentar la necesidad de la compartición.
-
-\subsection{Registro compartido}
-
-Como ya se ha comentado anteriormente, este registro es compartido por una o más cámaras que conforman el sistema. Debido a que el sistema es distribuido (computación en nodos de cálculo distintos) y los nodos están implementados en Python, es necesario explorar otras vías diferentes a la memoria compartida entre procesos. Para este proyecto, se han propuesto 2 alternativas:
-
-\begin{itemize}
-    \item \textbf{Base de datos centralizada:} todos los nodos acceden a una base de datos de baja latencia (ejemplo: base de datos puramente en memoria RAM), de la que reciben el registro de personas actualizado. Dicha base de datos se encontraría junto al nodo integración de sensores, que realizaría las peticiones de escritura. Finalmente, la base de datos propaga las modificaciones a todos los nodos conectados.
-    \item \textbf{Difusión de los cambios:} aprovechando la red creada por \acrshort{ros}, el nodo integración de sensores recibe los mensajes acerca de las entidades reconocidas por los nodos cámara. El nodo integrador difunde un mensaje con los cambios a un tópico en el que todos los nodos estarán suscritos, de forma que mantienen su propia copia actualizada.
-\end{itemize}
-
-\subsection{Composición}
-
-Para satisfacer los requerimientos del diseño expuesto, cada entrada en el registro de usuarios se compone de los siguientes objetos:
+Conforma la base de datos de todos los individuos registrados en el sistema. Cada entrada en este registro se compone de los siguientes objetos:
 
 \begin{itemize}
     \item \textbf{person\_id:} etiqueta asignada al usuario (ejemplo: andres).
     \item \textbf{ensemble:} lista con las \acrshort{svm} del usuario, inicialmente 1.
     \item \textbf{descriptors:} lista de los vectores de características (\glspl{embedding}) del usuario de cada \acrshort{svm}. Dichos vectores se aplican como conjunto de positivos para el propio usuario y como parte del conjunto de negativos para el resto de usuarios.
-    \item \textbf{coherence:} lista de valores de coherencia obtenidos de cada clasificador, inicializado a 0.
+    \item \textbf{coherence:} lista de valores de coherencia obtenidos de cada \acrshort{svm}, inicializado a 0.
 \end{itemize}
+
+La base de datos de personas registradas se conforma mediante un proceso de \textbf{inicialización}, que crea las entradas de cada individuo dentro de la lista inicial de individuos. Posteriormente, dicho registro se actualiza a partir de los módulos de actualización y limitación dentro del módulo de reconocimiento adaptativo. El registro se comparte a nivel de sistema por todos los nodos.
 
 \subsection{Inicialización}
 
-La fase de inicialización es fundamental, debido a que la \acrshort{svm} inicial es la que define la identidad del comité. Si dicha \acrshort{svm} está compuesta por muestras de baja calidad (ejemplo: caras borrosas o parcialmente ocluidas), entonces el comité \textbf{no se identificará correctamente consigo mismo} y, por lo tanto, generará \textbf{mayor confusión} a la hora de aplicar Weibull, es decir, \textbf{se generarán más desconocidos}.
+%fundamental, debido a que la \acrshort{svm} inicial es la que define la identidad del comité. Si dicha \acrshort{svm} está compuesta por muestras de baja calidad (ejemplo: caras borrosas o parcialmente ocluidas), entonces el comité \textbf{no se identificará correctamente consigo mismo} y, por lo tanto, generará \textbf{mayor confusión} a la hora de aplicar Weibull, es decir, \textbf{se generarán más desconocidos}.
 
-En esta primera fase del sistema se crean los registros que representarán a los individuos iniciales. En este proyecto se han probado 2 aproximaciones, una \textbf{supervisada}, es decir, con intervención del operador, y la otra \textbf{no supervisada}, en la que el sistema se inicializa de manera completamente autónoma.
+En esta primera fase del sistema, se crean los registros que representarán a los individuos iniciales.
+
+Como se ha demostrado en \cite{Erik}, el proceso de inicialización es \textbf{crítico} y depende de la calidad de las muestras escogidas. Las muestras borrosas o parcialmente ocluidas agregan confusión a las \acrshort{svm}, que devuelven puntuaciones similares al no distinguir correctamente las características del individuo.
+
+En este proyecto se han probado 2 aproximaciones, una \textbf{supervisada}, es decir, con intervención del operador, y la otra \textbf{no supervisada}, en la que el sistema se inicializa de manera completamente autónoma. En ambos modos, se requieren de mínimo \textbf{5 muestras} del individuo, acorde a las pruebas de \cite{Erik}.
+
 \subsection{Supervisado}
-El operador realiza una selección de los frames más representativos para cada individuo. El sistema crea la base de datos de personas registradas a partir de las características extraídas de dichos frames.
+El operador realiza una selección de los frames más representativos para cada individuo, de los que se obtienen las características (\glspl{embedding}) a partir de los modelos de reconocimiento.
 
 \subsection{No supervisado}
-El sistema se encarga de recoger los frames en el instante en el que aparezcan un mínimo de entidades simultáneas en escena. A partir de los frames de las cámaras, que estarán sincronizadas, se obtienen las \glspl{bbox} y se agrupan por individuo mediante el método de tracking. En este modo \textbf{no se requiere de ninguna intervención del operador}.
 
 \begin{figure}
     \centering
@@ -312,11 +322,24 @@ El sistema se encarga de recoger los frames en el instante en el que aparezcan u
     \label{fig:init}
 \end{figure}
 
-El funcionamiento se muestra en la figura \ref{fig:init}. Dado un número de cámaras \textbf{sincronizadas}, se busca un instante (o frame) en el que mínimo se detecten \textbf{5 personas} (equivalente al mínimo de puntos necesario para formar una distribución de Weibull consistente \cite{Erik}) de forma simultánea entre todas las cámaras. En caso de no encontrar suficientes \glspl{bbox} para definir al individuo (ejemplo: desaparece de la visión de la cámara demasiado rápido), el sistema \textbf{no se puede inicializar satisfactoriamente}. En caso contrario, se obtienen las características (o \textit{\glspl{embedding}/features}) y se almacenan para emplearse en el entrenamiento de las \acrshort{svm}. Finalmente, se crean los comités que conforman las \textbf{personas registradas}.
+El sistema se encarga de recoger los frames en el instante en el que aparece un mínimo de entidades simultáneas en escena. A partir de los frames de las cámaras, que estarán sincronizadas, se obtienen las \glspl{bbox} por medio de los modelos de detección y se agrupan por individuo mediante el método de tracking. En este modo \textbf{no se requiere de ninguna intervención del operador}. El funcionamiento se muestra en la figura \ref{fig:init}.
 
-Las \glspl{bbox} se someten a un método de filtrado, que puede descartarlas si no cumplen con las siguientes condiciones:
+Dado un número de cámaras \textbf{sincronizadas}, se busca un instante (o frame) en el que mínimo se detecten \textbf{5 personas} (equivalente al mínimo de puntos necesario para formar una distribución de Weibull consistente \cite{Erik}) de forma simultánea entre todas las cámaras. En dicho instante, se aplica el método de procesamiento de video para organizar las \glspl{bbox} por individuo, si no se obtienen suficientes \glspl{bbox} para definirlo (ejemplo: desaparece de la visión de la cámara demasiado rápido), el sistema \textbf{no se puede inicializar satisfactoriamente}. En caso contrario, se obtienen las características (o \textit{\glspl{embedding}/features}) y se almacenan para emplearse en el entrenamiento de las \acrshort{svm}. Finalmente, se crean los comités que conforman las \textbf{personas registradas}.
+
+Las \glspl{bbox} se someten a un método de \textbf{filtrado}, que puede descartarlas si no cumplen con las siguientes condiciones:
 
 \begin{itemize}
     \item La cara se encuentra enteramente dentro del plano
     \item La \gls{bbox} es más alta que ancha.
+\end{itemize}
+
+\subsection{Registro compartido}
+
+En el sistema de partida (ver sección \ref{sec:partarch}), el registro inicial de individuos no se modifica (modo \textit{Closed-Set}), por lo tanto no existe la necesidad de mantener una fuente centralizada de los datos y, en su lugar, se realizan copias para cada uno de los nodos.
+
+Debido a que el sistema es distribuido (computación en nodos de cálculo distintos) y los nodos están implementados en Python, es necesario explorar otras vías diferentes a la memoria compartida entre procesos. Para este proyecto, se han propuesto 2 alternativas:
+
+\begin{itemize}
+    \item \textbf{Base de datos centralizada:} todos los nodos acceden a una base de datos de baja latencia (ejemplo: base de datos puramente en memoria RAM), de la que reciben el registro de personas actualizado. Dicha base de datos se encontraría junto al nodo integración de sensores, que realizaría las peticiones de escritura. Finalmente, la base de datos propaga las modificaciones a todos los nodos conectados.
+    \item \textbf{Difusión de los cambios:} aprovechando la red creada por \acrshort{ros}, el nodo integración de sensores recibe los mensajes acerca de las entidades reconocidas por los nodos cámara. El nodo integrador difunde un mensaje con los cambios a un tópico en el que todos los nodos estarán suscritos, de forma que mantienen su propia copia actualizada.
 \end{itemize}
