@@ -1,33 +1,66 @@
 \chapter{Implementación del sistema}
 \label{chap:impl}
 
-\lettrine{E}{n} este capítulo se ahonda en los detalles de implementación de ciertos componentes que se han considerado relevantes de comentar.
+\lettrine{E}{n} este capítulo se ahonda en los detalles de implementación de los componentes del sistema extendido. También se comentan los cambios relevantes realizados al sistema base.
 
 \input{contenido/codes/trtskel.tex}
+
+\input{contenido/codes/training.tex}
+
+\input{contenido/codes/weib.tex}
+
+\input{contenido/codes/cash.tex}
 
 TODO: explicar en algún momento que implementamos el reconocimiento adaptativo como módulo por separado del sistema, y que realmente a excepción de la escalabilidad y el ROS 2, el sistema sigue igual.
 
 \section{Códigos de inferencia para el \textit{backend} de TensorRT}
-En la figura \ref{fig:finalsys} se muestran los 4 modelos utilizados en el nodo cámara y que se detallarán en la sección \ref{sec:models}. Dichos modelos cuentan con su implementación optimizada para OpenVINO creada en \cite{andrew}, excepto para el modelo de detección de caras, que se ejecuta en el \textit{backend} de OpenCV. En este proyecto se han implementado nuevas versiones adaptadas para su uso en \acrshort{gpu} por medio de TensorRT y PyCUDA.
+En la figura \ref{fig:finalsys} se muestran los 4 modelos utilizados en el nodo cámara y que se detallarán en la sección \ref{sec:models}. Dichos modelos cuentan con su implementación optimizada para OpenVINO creada en \cite{andrew}, excepto para el modelo de detección de caras (YuNet), que se ejecuta en el \textit{backend} de OpenCV. En este proyecto se han implementado nuevas versiones de las inferencias adaptadas para su uso en \acrshort{gpu} por medio de TensorRT y PyCUDA. PyCUDA ofrece una API que facilita gran parte de la interacción con CUDA, aun así, se necesita gestionar en el código temas como la creación de contextos y reserva de la memoria.
+
+TensorRT trabaja con su propio formato de los modelos, por lo que es necesario realizar una conversión de los mismos a dicho formato mediante las herramientas expuestas en el apéndice \ref{chap:procedure}. En el proceso de conversión se aplica un proceso de selección de optimizaciones según la arquitectura de la \acrshort{gpu}, que prueba distintas tácticas para la distribución del trabajo y diferentes precisiones para quedarse con la combinación más rápida, sin comprometer la precisión del modelo.
 
 El código \ref{coud:trtskel} muestra el esqueleto de dichas inferencias, cada vez que se crea una instancia del modelo en Python, se reservan los siguientes recursos:
 \begin{itemize}
-    \item Contexto de CUDA: en este caso se recibe como parámetro, ya que es necesario crear dicho contexto en el mismo código donde se ejecuta el bucle infinito de ROS (ejemplo: nodo cámara), de modo que pueda manejarse correctamente.
-    \item Contexto del modelo: dicho contexto se crea a partir del \textit{engine} de TensorRT compilado para el modelo.
-    \item CUDA Stream: canal que utilizará la \acrshort{gpu} para ejecutar todas las inferencias.
-    \item Input size: memoria del \gls{tensor} que representa los datos de entrada.
-    \item Output size: memoria del \gls{tensor} que representa los datos de salida.
-    \item Device input: memoria del \gls{tensor} de entrada reservado en la \acrshort{gpu}.
-    \item Device output: memoria del \gls{tensor} de salida reservado en la \acrshort{gpu}.
-    \item Bindings: lista de direcciones de memoria de los \glspl{tensor} que reservará el contexto del modelo.
+    \item \textbf{Contexto de CUDA}: en este caso se recibe como parámetro, ya que es necesario crear dicho contexto en el mismo código donde se ejecuta el bucle infinito de \acrshort{ros} (ejemplo: nodo cámara), de modo que pueda manejarse correctamente.
+    \item \textbf{Contexto del modelo}: dicho contexto se crea a partir del modelo deserializado de TensorRT.
+    \item \textbf{CUDA Stream}: canal que utilizará la \acrshort{gpu} para ejecutar todas las inferencias.
+    \item \textbf{Device input}: memoria del \gls{tensor} de entrada reservado en la \acrshort{gpu}. Se especifica el tamaño en bytes del \gls{tensor} que representa los datos de entrada.
+    \item \textbf{Device output}: memoria del \gls{tensor} de salida reservado en la \acrshort{gpu}. Se especifica el tamaño en bytes del \gls{tensor} que representa los datos de salida.
+    \item \textbf{Bindings}: lista de direcciones de memoria de los \glspl{tensor} a utilizar durante la inferencia.
 \end{itemize}
 
-Dichos recursos se reservan \textbf{una sola vez}, que corresponde con el momento de creación de la instancia del modelo.
+Dichos recursos se reservan \textbf{una sola vez}, que corresponde con el momento de creación de la instancia de la clase Python que representa al modelo.
 
-La función infer del código \ref{coud:trtskel} se ejecuta por cada vez que se recibe una imagen de entrada a procesar. Se reserva un array de NumPy para almacenar la salida de la inferencia y se ejecuta la función PREPROCESING con la imagen de entrada, que representa el pipeline de preprocesado específico para cada modelo. La imagen preprocesada se copia a la memoria de la \acrshort{gpu} y se realiza la inferencia en el stream de CUDA correspondiente. Finalmente, los resultados se copian de vuelta a la memoria principal y se devuelven tras ejecutar el pipeline de postprocesado definido en la función POSTPROCESING.
+La función \textit{infer} del código \ref{coud:trtskel} se ejecuta por cada vez que se recibe un frame de entrada a procesar. Se reserva en \acrshort{cpu} un array de NumPy para almacenar la salida de la inferencia y se ejecuta la función PREPROCESING con el frame de entrada, que representa el pipeline de preprocesado específico para cada modelo. El frame preprocesado se copia a la memoria de la \acrshort{gpu} (o \textit{device}) y se realiza la inferencia en el stream de CUDA reservado. Finalmente, los resultados se copian de vuelta a la memoria de la \acrshort{cpu} (o \textit{host}) y se ejecuta el pipeline de postprocesado del resultado definido en la función POSTPROCESING.
+
+Las operaciones de copia de datos y la inferencia se ejecutan de forma \textbf{asíncrona}, por lo que es necesario introducir una barrera de sincronización una vez todas las operaciones se emitan, de forma que nuevos \glspl{thread} no sobrescriben la memoria de la \acrshort{gpu} mientras esta realiza inferencias.
 
 %\section{Creación de las SVM}
 %\label{sec:training}
+\section{Procesamiento de video}
+La implementación sigue el flujo expuesto en la sección \ref{sec:tracker}.
+
+Para realizar una asignación óptima del método húngaro, se utilizó la función \textit{linear\_sum\_assignment} otorgada por el módulo \textit{optimize} de la librería SciPy \cite{lsa}. Dicha librería implementa el algoritmo Jonker-Volgenan, que es una variante del método húngaro con complejidad computacional $O(n^3)$ \cite{lsa, o3}. TODO: el coste es muy elevado, estaría bien poner a partir de qué número de personas se vuelve demasiado costoso.
+
+El cálculo del \acrshort{iou} es realmente sencillo y no entraña ninguna complejidad computacional. La distancia euclidiana se calcula como se expone en la sección \ref{subsec:reiden}, para el cálculo de la raiz cuadrada se empleó la función \textit{sqrt} de la librería \textit{math}.
+
+\section{Módulo de valoración}
+
+La implementación sigue el funcionamiento descrito en la sección \ref{sec:val}. Para calcular los percentiles y la mediana se utilizan las funciones \textit{percentile} y \textit{median} respectivamente de la librería NumPy.
+
+\section{Módulo de reconocimiento}
+
+Esta función determina si la entidad detectada se corresponde a un individuo previamente reclutado o a una entidad \textbf{desconocida} (sección \ref{sec:reckon}).
+
+El código \ref{coud:weib} (función RDF) muestra la implementación de dicha función. Del conjunto de scores ordenados, se excluye el primer score de la distribución (que corresponde con el más bajo, por lo tanto el mejor) y se compone la distribución de distancias de cada puntuación respecto a la mediana. De los puntos de la distribución, se obtienen los parámetros \textit{shape} y \textit{scale}, que modelan la función de Weibull. Finalmente, se calcula la probabilidad de pertenencia del mejor score a la distribución (función weib) y se toma la decisión en base a un umbral (Tw). Si la probabilidad es inferior al umbral, se reconoce el caso como un extremo y se asigna la identidad correspondiente al sujeto (\textit{drift}), en caso contrario se devuelve como desconocido (\textit{unknown}).
+
+\section{Módulo de actualización}
+
+La implementación del módulo sigue el flujo descrito en la sección \ref{sec:reckon}. La creación de las \acrshort{svm} se realiza a partir de la función \textit{def\_svm} vista en la sección \ref{sec:init}.
+
+\section{Módulo de limitación}
+Este módulo se activa cuando se excede el límite prefijado de clasificadores para un comité.
+
+Se invoca a la función que calcula el criterio de favorabilidad, que otorga un valor para cada \acrshort{svm} a partir de la suma de los criterios de diversidad y coherencia. Se almacenan los resultados en un array de NumPy y se ordenan los valores devueltos mediante la función \textit{argsort} de NumPy, por lo que la \acrshort{svm} a eliminar se corresponde con la primera entrada del vector (es decir, el que tenga el valor de favorabilidad más bajo).
 
 \section{Personas registradas}
 \label{sec:init}
@@ -44,39 +77,10 @@ A la hora de entrenar las \acrshort{svm}, se asigna la etiqueta 1 (variable plab
 
 %La función comentada se invoca durante la inicialización del sistema y cuando se llama al módulo de actualización, o lo que es lo mismo, cada vez que se necesite crear un nuevo clasificador a registrar en el sistema.
 
-\input{contenido/codes/training.tex}
-
 TODO: poner algún extracto de código?
 
-\section{Seguimiento y reidentificación}
-La implementación sigue el flujo expuesto en la sección \ref{sec:tracker}.
-
-Para realizar una asignación óptima del método húngaro, se utilizó la función \textit{linear\_sum\_assignment} otorgada por el módulo \textit{optimize} de la librería SciPy.TODO: la complejidad está en O(n3). El cálculo del \acrshort{iou} es realmente sencillo y no entraña ninguna complejidad computacional. La distancia euclidiana se calcula como se expone en la sección \ref{subsec:reiden}, para el cálculo de la raiz cuadrada se empleó la función \textit{sqrt} de la librería \textit{math}.
-
-\section{Módulo de valoración}
-
-La implementación sigue el funcionamiento descrito en la sección \ref{sec:val}. Para calcular los percentiles y la mediana se utilizan las funciones \textit{percentile} y \textit{median} respectivamente de la librería NumPy.
-
-\section{Módulo de reconocimiento}
-
-Esta función determina si la entidad detectada se corresponde a un individuo previamente reclutado o a una entidad \textbf{desconocida} (sección \ref{sec:reckon}).
-
-\input{contenido/codes/weib.tex}
-
-El código \ref{coud:weib} (función RDF) muestra la implementación de dicha función. Del conjunto de scores ordenados, se excluye el primer score de la distribución (que corresponde con el más bajo, por lo tanto el mejor) y se compone la distribución de distancias de cada puntuación respecto a la mediana. De los puntos de la distribución, se obtienen los parámetros \textit{shape} y \textit{scale}, que modelan la función de Weibull. Finalmente, se calcula la probabilidad de pertenencia del mejor score a la distribución (función weib) y se toma la decisión en base a un umbral (Tw). Si la probabilidad es inferior al umbral, se reconoce el caso como un extremo y se asigna la identidad correspondiente al sujeto (\textit{drift}), en caso contrario se devuelve como desconocido (\textit{unknown}).
-
-\section{Módulo de actualización}
-
-La implementación del módulo sigue el flujo descrito en la sección \ref{sec:reckon}. La creación de las \acrshort{svm} se realiza a partir de la función \textit{def\_svm} vista en la sección \ref{sec:init}.
-
-\section{Módulo de limitación}
-Este módulo se activa cuando se excede el límite prefijado de clasificadores para un comité.
-
-Se invoca a la función que calcula el criterio de favorabilidad, que otorga un valor para cada \acrshort{svm} a partir de la suma de los criterios de diversidad y coherencia. Se almacenan los resultados en un array de NumPy y se ordenan los valores devueltos mediante la función \textit{argsort} de NumPy, por lo que la \acrshort{svm} a eliminar se corresponde con la primera entrada del vector (es decir, el que tenga el valor de favorabilidad más bajo).
 
 \section{Escalabilidad y tolerancia a fallos de las cámaras}
-
-\input{contenido/codes/cash.tex}
 
 Cuando se fusionan los resultados procesados por los distintos sensores (nodo integración de sensores en la figura \ref{fig:finalsys}), se requiere que todos ellos se encuentren \textbf{sincronizados} dentro de un intervalo temporal (ejemplo: 100 milisegundos), de forma que las predicciones no se realizan a partir de información desactualizada.
 

@@ -310,10 +310,10 @@ Como se ha demostrado en \cite{Erik}, el proceso de inicialización es \textbf{c
 
 En este proyecto se han probado 2 aproximaciones, una \textbf{supervisada}, es decir, con intervención del operador, y la otra \textbf{no supervisada}, en la que el sistema se inicializa de manera completamente autónoma. En ambos modos, se requieren de mínimo \textbf{5 muestras} del individuo, acorde a las pruebas de \cite{Erik}.
 
-\subsection{Supervisado}
+\subsubsection{Supervisado}
 El operador realiza una selección de los frames más representativos para cada individuo, de los que se obtienen las características (\glspl{embedding}) a partir de los modelos de reconocimiento.
 
-\subsection{No supervisado}
+\subsubsection{No supervisado}
 
 \begin{figure}
     \centering
@@ -322,9 +322,9 @@ El operador realiza una selección de los frames más representativos para cada 
     \label{fig:init}
 \end{figure}
 
-El sistema se encarga de recoger los frames en el instante en el que aparece un mínimo de entidades simultáneas en escena. A partir de los frames de las cámaras, que estarán sincronizadas, se obtienen las \glspl{bbox} por medio de los modelos de detección y se agrupan por individuo mediante el método de tracking. En este modo \textbf{no se requiere de ninguna intervención del operador}. El funcionamiento se muestra en la figura \ref{fig:init}.
+El sistema se encarga de recoger los frames en el instante en el que aparece un mínimo de entidades simultáneas en escena. A partir de los frames de las cámaras, que estarán sincronizadas, se obtienen las \glspl{bbox} por medio de los modelos de detección y se agrupan por individuo mediante el módulo de procesamiento de video. En este modo \textbf{no se requiere de ninguna intervención del operador}. El funcionamiento se muestra en la figura \ref{fig:init}.
 
-Dado un número de cámaras \textbf{sincronizadas}, se busca un instante (o frame) en el que mínimo se detecten \textbf{5 personas} (equivalente al mínimo de puntos necesario para formar una distribución de Weibull consistente \cite{Erik}) de forma simultánea entre todas las cámaras. En dicho instante, se aplica el método de procesamiento de video para organizar las \glspl{bbox} por individuo, si no se obtienen suficientes \glspl{bbox} para definirlo (ejemplo: desaparece de la visión de la cámara demasiado rápido), el sistema \textbf{no se puede inicializar satisfactoriamente}. En caso contrario, se obtienen las características (o \textit{\glspl{embedding}/features}) y se almacenan para emplearse en el entrenamiento de las \acrshort{svm}. Finalmente, se crean los comités que conforman las \textbf{personas registradas}.
+Dado un número de cámaras \textbf{sincronizadas}, se busca un instante (o frame) en el que mínimo se detecten \textbf{5 personas} (equivalente al mínimo de puntos necesario para formar una distribución de Weibull consistente \cite{Erik}) de forma simultánea entre todas las cámaras. En dicho instante, se aplica el método de procesamiento de video para organizar las \glspl{bbox} por individuo, si no se obtienen suficientes \glspl{bbox} para definirlo (ejemplo: desaparece de la visión de la cámara demasiado rápido), el sistema \textbf{repite el proceso de búsqueda} en otro instante. En caso contrario, se obtienen las características (o \textit{\glspl{embedding}/features}) y se almacenan. Para cada usuario, se extraen sus propias muestras (conjunto de positivos) y una selección aleatoria del resto de muestras (conjunto de negativos) para entrenar la \acrshort{svm} inicial del comité, que se añade a la base de datos de \textbf{personas registradas}.
 
 Las \glspl{bbox} se someten a un método de \textbf{filtrado}, que puede descartarlas si no cumplen con las siguientes condiciones:
 
@@ -335,11 +335,11 @@ Las \glspl{bbox} se someten a un método de \textbf{filtrado}, que puede descart
 
 \subsection{Registro compartido}
 
-En el sistema de partida (ver sección \ref{sec:partarch}), el registro inicial de individuos no se modifica (modo \textit{Closed-Set}), por lo tanto no existe la necesidad de mantener una fuente centralizada de los datos y, en su lugar, se realizan copias para cada uno de los nodos.
+En el sistema de partida (ver sección \ref{sec:partarch}), el registro inicial de individuos no se modifica (modo \textit{Closed-Set}), por lo tanto, no existe la necesidad de mantener una fuente centralizada de los datos. En su lugar, cada nodo inicializa su propia copia. Para implementar el modo \textit{Open-Set} y/o \textit{Open-World}, es necesario mantener los datos actualizados en todos los nodos mediante métodos de compartición.
 
 Debido a que el sistema es distribuido (computación en nodos de cálculo distintos) y los nodos están implementados en Python, es necesario explorar otras vías diferentes a la memoria compartida entre procesos. Para este proyecto, se han propuesto 2 alternativas:
 
 \begin{itemize}
-    \item \textbf{Base de datos centralizada:} todos los nodos acceden a una base de datos de baja latencia (ejemplo: base de datos puramente en memoria RAM), de la que reciben el registro de personas actualizado. Dicha base de datos se encontraría junto al nodo integración de sensores, que realizaría las peticiones de escritura. Finalmente, la base de datos propaga las modificaciones a todos los nodos conectados.
-    \item \textbf{Difusión de los cambios:} aprovechando la red creada por \acrshort{ros}, el nodo integración de sensores recibe los mensajes acerca de las entidades reconocidas por los nodos cámara. El nodo integrador difunde un mensaje con los cambios a un tópico en el que todos los nodos estarán suscritos, de forma que mantienen su propia copia actualizada.
+    \item \textbf{Base de datos centralizada:} todos los nodos acceden a una base de datos de baja latencia (ejemplo: base de datos puramente en memoria RAM), de la que reciben el registro de personas actualizado. Dicha base de datos se encontraría en la misma máquina que el nodo integración de sensores, que realizaría las peticiones de escritura. Finalmente, la base de datos propaga las modificaciones a todos los nodos conectados.
+    \item \textbf{Red \acrshort{ros}:} el nodo integración de sensores recibe los mensajes de los nodos cámara y, aprovechando la red creada por \acrshort{ros}, se difunde un mensaje con los nuevos cambios a un tópico en el que todos los nodos cámara estarán suscritos, de forma que mantienen su propia copia actualizada.
 \end{itemize}

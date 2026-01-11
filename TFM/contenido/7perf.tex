@@ -53,7 +53,7 @@ En el caso que ocupa al sistema (pruebas de la sección \ref{sec:syscal}), se di
           \end{itemize}
 \end{itemize}
 
-\section{Pruebas de escalabilidad}
+\section{Realización de las pruebas}
 
 Para la evaluación del rendimiento, se parten de unos tests que reproducen los videos de las dos cámaras (ver sección \ref{sec:hw}) y alimenta a los modelos de redes neuronales con los respectivos frames, de forma que al momento de terminar el procesamiento de un frame, el modelo puede continuar inmediatamente con el siguiente. Las salidas devueltas por las \acrshort{cnn} se contrastan con la información del \textit{\gls{dataset}} (visto en la anterior sección), que devuelve un resultado final de precisión.
 
@@ -63,6 +63,9 @@ En las pruebas de los modelos de detección, se obtienen los frames directamente
 
 En el caso de los modelos de reconocimiento, se recupera para cada frame una lista de recortes \textbf{generados previamente a la ejecución de la prueba}. El test determina un reconocimiento como correcto si la predicción obtenida es la misma que la etiqueta (\textit{\gls{gt}}) recogida en el \gls{dataset}. Por sencillez, siempre se escoge la primera predicción de la lista como la predicción final (\textit{top\_k=1}, ver sección \ref{sec:basearch}).
 
+NOTA IMPORTANTE: estoy midiendo la latencia de la propia inferencia pero también de las copias entre gpu y cpu, por lo que es importante analizar otros aspectos que influyen como la velocidad de transferencia.
+
+
 Afortunadamente, todas las librerías del proyecto cuenta con soporte completo e incluso optimizado para las arquitecturas x86 y ARM64 TODO: seguro que hay diferencias.
 
 \section{Resultados}
@@ -71,6 +74,8 @@ Afortunadamente, todas las librerías del proyecto cuenta con soporte completo e
 TODO: los backends de OpenVINO y TensorRT soportan precisión mixta, es decir, se ejecutan las capas de un modelo en la precisión que menor latencia reporte dentro de una lista de precisiones (ejemplo: FP16 o FP32) \cite{mixed}. Esta funcionalidad puede emplearse siempre que la arquitectura de los dispositivos la implemente. Los modelos del proyecto se han compilado para utilizar la precisión mixta en FP16 o FP32 (TODO: y YuNet?).
 
 En la figura \ref{tab:equips} se muestran los resultados de latencia (en milisegundos) y la métrica \textit{F1\_score} para los modelos de detección y \textit{precision} para los modelos de reconocimiento (ver métricas en la sección \ref{sec:modeleval}). Cada resultado refleja la media y la desviación típica de \textbf{5 ejecuciones}, sin contar una previa de calentamiento.
+
+Los modelos OSNet y ArcFace utilizan una resolución fija de 256x128 y 112x112 respectivamente de los frames de entrada, mientras que YOLO y YuNet permiten un ajuste dinámico de dicha resolución en tiempo de ejecución. Para obtener el mejor balance entre precisión y latencia, se ha optado por establecer una resolución fija de 640x640 y 480x480 respectivamente.
 
 Para la ejecución de inferencias, se han empleado los backends de OpenVINO, TensorRT y OpenCV, este último para el caso concreto de la red YuNet. En el caso del modelo YOLO, los dos dispositivos menos potentes (Jetson Xavier NX y Jetson Orin Nano) no alcanzan o apenas superan los 10 Hz en la versión de OpenVINO, que no utiliza la \acrshort{gpu} para la inferencia. Al trasladar la carga de la inferencia a la \acrshort{gpu} cuando se utiliza TensorRT, el tiempo de inferencia es hasta \textbf{7 veces} menor en el caso de la Jetson AGX Thor y \textbf{5 veces} menor en el caso de la Jetson Xavier NX. En la versión de TensorRT de YOLO, las Jetson NX y Orin Nano logran alcanzar los 35 y 45 Hz respectivamente, lo que hace posible la ejecución en tiempo real (fijada a 10 Hz) en estos dispositivos.
 

@@ -1,4 +1,4 @@
-\begin{lstlisting}[language=Python, float=t, caption=Esqueleto del código de las inferencias con TensorRT]
+\begin{lstlisting}[language=Python, float=t, label=coud:trtskel, caption=Esqueleto del código de las inferencias con TensorRT]
 import numpy as np
 import tensorrt as trt
 import pycuda.driver as cuda
@@ -51,4 +51,3 @@ class CNN_model:
       finally:
         self.ctx.pop()
 \end{lstlisting}
-\label{coud:trtskel}

@@ -52,6 +52,7 @@ La tabla \ref{tab:x86} muestra los equipos con \acrshort{cpu}s Intel empleados e
 \acrfull{ros} es un middleware de \textbf{código abierto} que incorpora las herramientas necesarias para la interacción y desarrollo de software en robots. Cuenta con una amplia biblioteca de distribuciones y librerías.
 
 Cualquier entorno de desarrollo de \acrshort{ros} está compuesto por \textbf{paquetes}, los paquetes son las unidades funcionales del entorno de \acrshort{ros} y estas contienen el código, archivos de configuración y de lanzamiento de los nodos, entre otros componentes.
+\subsubsection{Arquitectura de la red}
 
 \acrshort{ros} crea y mantiene una \textbf{red distribuida} en la que los nodos se ejecutan e intercambian mensajes. Sigue un patrón \textit{publish/subscribe}, en el que existen nodos que publican información por medio de \textbf{tópicos}, disponibles para cualquier nodo que se suscriba a dicho tópico. Según la versión, la arquitectura de la red varía en una de las siguientes:
 
@@ -75,6 +76,9 @@ Cualquier entorno de desarrollo de \acrshort{ros} está compuesto por \textbf{pa
 \end{itemize}
 
 Existe una amplia variedad de distribuciones de este software según la versión del \acrshort{so}. Para este proyecto, se han empleado las distribuciones Noetic, Humble y Rolling, para Ubuntu 20.04, 22.04 y 24.04 respectivamente, el Summit\_XL tiene la distribución Melodic, ya que tiene la versión 18.04 de Ubuntu. Melodic y Noetic corresponden a ROS 1 (descontinuado), mientras que Humble y Rolling pertenecen a ROS 2.
+
+\subsubsection{TODO: lanzamiento de los threads}
+
 \subsubsection{Rosbag}
 
 Existe una herramienta del ecosistema \acrshort{ros} que graba y reproduce los datos capturados de la ejecución de un sistema \acrshort{ros} en un momento concreto en el tiempo. Los \glspl{dataset} creados en \cite{andrew} se construyeron partiendo de un fichero rosbag, que contiene toda la información generada por los diferentes sensores. En este proyecto se emplearán dichos ficheros rosbag para reproducir las pruebas en tiempo real.

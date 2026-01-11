@@ -1,32 +1,26 @@
-\begin{lstlisting}[language=Python, label=coud:training, caption=Entrenamiento de las SVM, basicstyle=\footnotesize]
+%, basicstyle=\footnotesize]
+\begin{lstlisting}[language=Python, float=t, label=coud:training, caption=Entrenamiento de las SVM]     
 def def_svm(samples, idx, d1, unk):
 # samples shape: (IoIs, num_svm, num_samples, feature_dim)
 # idx: index that points to the entity ensemble in the database
 # d1: positive samples 
 # unk: flag to mark if d1 samples belong to an unknown entity
-
     samplesNegative = deepcopy(samples)
     if not unk:
         samplesNegative.pop(idx)
     l = [num_samples for IoIs in samplesNegative for num_svm in IoIs for num_samples in num_svm]
     k = nneg if len(l) > nneg else len(l)
-
     samplesNegative = random_pick(np.array(l), size=k)
-
+    # Build train data
     trainData = np.vstack([samplesNegative, d1], dtype=np.float32)
     labels = -np.ones([samplesNegative.shape[0], 1], dtype=np.int32)
     plabels = np.ones([len(d1), 1], dtype=np.int32)
     labels = np.vstack([labels, plabels])
-
     # SVM creation
     svm = cv2.ml.SVM_create()
     svm.setType(cv2.ml.SVM_C_SVC)
     svm.setKernel(cv2.ml.SVM_LINEAR)
     svm.setClassWeights(np.array([1,100], dtype = np.float32))
     svm.setTermCriteria((cv2.TERM_CRITERIA_COUNT, 1000, 1.e-06))
-
-    if trainData.shape[0] != labels.shape[0]:
-        raise Exception(f"trainData first dim shape {trainData.shape[0]} and labels first dim shape {labels.shape[0]} don't match")
-    svm.train(trainData.astype(np.float32), cv2.ml.ROW_SAMPLE, labels.astype(np.int32))
-    return svm, samplesNegative
-    \end{lstlisting}
+    return svm
+\end{lstlisting}

@@ -1,4 +1,5 @@
 \chapter{Procedimiento de optimización de redes neuronales}
+\label{chap:procedure}
 
 \section{Procedimiento}
 
@@ -14,17 +15,11 @@ Los modelos del proyecto se encuentran en diferentes formatos, existen integraci
 \end{itemize}
 
 \subsection{Conversión a TensorRT engine}
-Los archivos \textit{engine} de TensorRT (extensión .trt o .engine) representan los modelos finales optimizados por dicha herramienta. El proceso de conversión se puede realizar a través de la API de Python o C++ o mediante el ejecutable \textit{trtexec}, TODO: que además devuelve resultados del \gls{profiling} de los modelos. Según la distribución del software,  el ejecutable \textit{trtexec} se encuentra en rutas distintas o ni siquiera se encuentra instalado, por lo que una forma más cómoda y general es usar la API.
+Los archivos \textit{engine} de TensorRT (extensión .trt o .engine) representan los modelos finales optimizados por dicha herramienta. El proceso de conversión se puede realizar a través de la API de Python/C++ o mediante el ejecutable \textit{trtexec}, este último analiza el rendimiento del modelo ejecutando una serie de inferencias y devuelve los resultados de \gls{profiling} del mismo. Según la distribución del software (TODO: comentar sobre las imágenes de Docker), el ejecutable \textit{trtexec} no se encuentra instalado, por lo que una forma más cómoda y general es usar la API.
 
 \input{contenido/codes/trtshapes.tex}
 
 En \ref{coud:trtshapes} se muestran las características de un modelo transformado en un \textit{engine} de TensorRT. La aparición de un -1 en la primera dimensión de los tensores indica que el modelo soporta \textit{\glspl{batch}} de tamaño dinámico.
-
-\subsection{Códigos de inferencia}
-
-El último paso es emplear los modelos obtenidos. La estructura de los códigos parte de los ya creados en \cite{andrew} para los modelos de este proyecto, salvo por el paso de transferir el trabajo a la \acrshort{gpu}. PyCUDA ofrece una API que facilita gran parte de la interacción con CUDA, aun así, se necesita gestionar en el código temas como la creación de contextos y reserva de la memoria.
-
-TODO: comentar el código.
 
 \subsection{Características de los modelos}
 Hablar de los 4 modelos que usamos
