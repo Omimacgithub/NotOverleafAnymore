@@ -39,19 +39,25 @@ Las operaciones de copia de datos y la inferencia se ejecutan de forma \textbf{a
 \section{Procesamiento de video}
 La implementación sigue el flujo expuesto en la sección \ref{sec:tracker}.
 
-Para realizar una asignación óptima del método húngaro, se utilizó la función \textit{linear\_sum\_assignment} otorgada por el módulo \textit{optimize} de la librería SciPy \cite{lsa}. Dicha librería implementa el algoritmo Jonker-Volgenan, que es una variante del método húngaro con complejidad computacional $O(n^3)$ \cite{lsa, o3}. TODO: el coste es muy elevado, estaría bien poner a partir de qué número de personas se vuelve demasiado costoso.
+Para realizar una asignación óptima del método húngaro, se utilizó la función \textit{linear\_sum\_assignment} otorgada por el módulo \textit{optimize} de la librería SciPy \cite{lsa}. Dicha librería implementa el algoritmo Jonker-Volgenan, que es una variante del método húngaro con complejidad computacional $O(n^{3})$ \cite{lsa, o3}. TODO: el coste es muy elevado, estaría bien poner a partir de qué número de personas se vuelve demasiado costoso.
 
-El cálculo del \acrshort{iou} es realmente sencillo y no entraña ninguna complejidad computacional. La distancia euclidiana se calcula como se expone en la sección \ref{subsec:reiden}, para el cálculo de la raiz cuadrada se empleó la función \textit{sqrt} de la librería \textit{math}.
+El cálculo del \acrshort{iou} es sencillo y no entraña apenas complejidad computacional. La distancia euclidiana se calcula como se expone en la sección \ref{subsec:reiden}, para el cálculo de la raíz cuadrada, se empleó la función \textit{sqrt} de la librería \textit{math}.
 
 \section{Módulo de valoración}
 
-La implementación sigue el funcionamiento descrito en la sección \ref{sec:val}. Para calcular los percentiles y la mediana se utilizan las funciones \textit{percentile} y \textit{median} respectivamente de la librería NumPy.
+Como se expuso en la sección \ref{sec:val}, el módulo de valoración devuelve un conjunto de puntuaciones que representan a la secuencia para todos los comités.
+
+La implementación sigue el funcionamiento descrito en la sección \ref{sec:val}. Para calcular los percentiles y la mediana en las funciones FDF y SDF se utilizan las funciones \textit{percentile} y \textit{median} respectivamente de la librería NumPy, como se aplica en \cite{src} (función presentCandidate de tools.py).
 
 \section{Módulo de reconocimiento}
 
-Esta función determina si la entidad detectada se corresponde a un individuo previamente reclutado o a una entidad \textbf{desconocida} (sección \ref{sec:reckon}).
+Como se mencionó en la sección \ref{sec:reckon}, el módulo de reconocimiento determina si la entidad detectada se corresponde a un individuo previamente reclutado o a una entidad \textbf{desconocida}.
 
-El código \ref{coud:weib} (función RDF) muestra la implementación de dicha función. Del conjunto de scores ordenados, se excluye el primer score de la distribución (que corresponde con el más bajo, por lo tanto el mejor) y se compone la distribución de distancias de cada puntuación respecto a la mediana. De los puntos de la distribución, se obtienen los parámetros \textit{shape} y \textit{scale}, que modelan la función de Weibull. Finalmente, se calcula la probabilidad de pertenencia del mejor score a la distribución (función weib) y se toma la decisión en base a un umbral (Tw). Si la probabilidad es inferior al umbral, se reconoce el caso como un extremo y se asigna la identidad correspondiente al sujeto (\textit{drift}), en caso contrario se devuelve como desconocido (\textit{unknown}).
+El código \ref{coud:weib}, basado en \cite{src} (función selfUpdate de tools.py), muestra la implementación de dicha funcionalidad. Se parte de la función RDF (Recognition Decision Function), que recibe el conjunto de puntuaciones ordenado y devuelve la decisión de reconocimiento.
+
+Del conjunto de puntuaciones ordenadas, se excluye la mejor puntuación de todos los comités (es decir, la puntuación más baja) y se compone la distribución de puntuaciones no coincidentes. Se calcula para cada punto la distancia respecto a la mediana (variable v), de forma que los puntos de la distribución se distancian del mejor comité. Se obtienen los parámetros \textit{shape} y \textit{scale} a partir de la distribución, que modelan la función de Weibull. Finalmente, se calcula la probabilidad de pertenencia del mejor comité a la distribución (función weib) y se toma la decisión en base a un umbral (Tw). Si la probabilidad es inferior al umbral, se reconoce el caso como un extremo y se asigna la identidad correspondiente al sujeto (\textit{drift}), en caso contrario se devuelve como desconocido (\textit{unknown}).
+
+Para obtener los parámetros que componen la distribución de Weibull, se utiliza la función \textit{fit} de la clase \textit{weibull\_fit} del módulo \textit{stats} de la librería SciPy.
 
 \section{Módulo de actualización}
 
@@ -95,6 +101,12 @@ Se otorga una ventana de 500 ms para mensajes que llegan con cierto retardo ante
 \section{Migración a ROS 2}
 \label{subsec:ROS2}
 
-Con el motivo del fin de soporte de ROS 1 \cite{ROSEOL}, se ha optado por migrar el sistema para ser ejecutado en ROS 2 con el fin de mantener su continuidad. El proceso de migración se ha llevado a cabo por medio de la guía oficial de \acrshort{ros} \cite{ros2tuto}. Se han migrado los nodos cámara e integrador, la migración del nodo \acrshort{lidar} requeriría actualizar el código a una versión soportada para Ubuntu 22.04 de la librería pcl, entre otros detalles que llevarían a rediseñar casi todo el código. Por último, el sensor \acrshort{lidar} instalado no es compatible con \acrshort{ros} 2, lo que impide la migración a menos que se haga un recambio.
+Con el motivo del fin de soporte de ROS 1 \cite{ROSEOL}, se ha optado por migrar el sistema para ser ejecutado en ROS 2 con el fin de mantener su continuidad.
 
-En ROS 2 se ha introducido la posibilidad de escribir scripts de lanzamiento en Python. El archivo de lanzamiento del sistema se ha convertido del formato \acrshort{xml} a un script de Python para aprovechar la flexibilidad que el propio lenguaje ofrece y para aprovechar las nuevas funcionalidades. %Ref a esto: https://docs.ros.org/en/foxy/How-To-Guides/Launch-file-different-formats.html#launch-file-examples
+El proceso de migración se ha llevado a cabo por medio de la guía oficial de \acrshort{ros} \cite{ros2tuto}. Muchos de los problemas encontrados en este proceso están relacionados con los nuevos archivos de configuración.
+
+Se han migrado los nodos cámara e integrador. El proceso incluye cambiar las firmas de las funciones, sus parámetros y cambiar de paquetes. En esencia, la mayoría de paquetes de \acrshort{ros} 2 preservan las mismas funcionalidades e incluso mantienen las mismas interfaces de las funciones de \acrshort{ros} 1, lo que ha facilitado la correcta migración.
+
+La migración del nodo \acrshort{lidar} no ha sido posible, debido a que el código depende de versiones de librerías no soportadas a partir de la versión 22.04 de Ubuntu y de muchos componentes de \acrshort{ros} 1, eliminados en \acrshort{ros} 2. Sería necesario rediseñar todo el código o optar por un paquete de \acrshort{ros} 2 con las mismas funcionalidades que el paquete \textit{hdl\_people\_tracking}, utilizado en \cite{andrew} para detectar personas en nubes de puntos \acrshort{3d}.
+
+En ROS 2 se ha introducido la posibilidad de escribir scripts de lanzamiento en Python. El archivo de lanzamiento del sistema se ha convertido del formato \acrshort{xml} a un script de Python para aprovechar la flexibilidad que el propio lenguaje ofrece y utilizar las nuevas funcionalidades. %Ref a esto: https://docs.ros.org/en/foxy/How-To-Guides/Launch-file-different-formats.html#launch-file-examples

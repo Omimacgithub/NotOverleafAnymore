@@ -6,7 +6,7 @@
 \section{Modelos de redes neuronales utilizadas}
 \label{sec:models}
 
-A continuación se exponen las \acrshort{cnn} utilizadas en el sistema, que también se emplearon en \cite{andrew}.
+A continuación se exponen las \acrshort{cnn} utilizadas en los nodos cámara, que también se emplearon en \cite{andrew}.
 
 \subsection{YuNet}
 
@@ -24,22 +24,38 @@ ArcFace \cite{deng2019arcface} ha demostrado ser de las mejores redes en el \acr
 
 \textit{Omni-Scale Network} es un modelo de reidentificación de personas que emplea características de diferentes tamaños (\textit{omni-scale features}) para la clasificación. Destaca por ser extremadamente ligero y por su elevada precisión \cite{zhou2019omni}. Se emplea la implementación de \cite{andrew} en el framework Pytorch. (TODO: comentar más, quizá incluso en el capítulo de implementación) Se incorporó preprocesado en la GPU.
 
-TODO: Que los nodos cámara trabajen a 10 Hz implica que a cada \textbf{100 ms se recibe un nuevo frame} (10 * 100 = 1000 ms = 1 segundo), la figura \ref{fig:finalsys} muestra el procesado realizado por dicho nodo en cada frame, que debe de finalizar \textbf{antes de que transcurran 100 ms}. En cada iteración del procesado, se ejecutan \textbf{4 redes neuronales (\acrshort{cnn})}. 2 de ellas, YOLOv8n y YuNet, para la detección de cuerpos y de caras respectivamente. Las otras 2, OSNet\_x1 y ArcFace, para el reconocimiento de cuerpos y caras respectivamente. A pesar de lo que la figura \ref{fig:finalsys} muestra, las redes de detección YOLOv8n y YuNet \textbf{no se ejecutan en paralelo}, lo mismo sucede con las redes ArcFace y OSNet\_x1. Se ha considerado ejecutar en paralelo estas redes. Sin embargo, las limitaciones de memoria principal de la Jetson restringen tomar esta aproximación.
-
 \section{Datasets de las pruebas}
 \label{sec:modset}
 
-A modo de evaluar el rendimiento en términos de precisión de los modelos de visión artificial, se parte de un \gls{dataset} compuesto de la información extraída de un fichero Rosbag, que contiene los datos generados por dos cámaras Kinect \acrshort{rgbd} y un sensor \acrshort{lidar} instalados en el Summit\_XL durante la realización de una prueba. (TODO: redacción) Dicha prueba se ha realizado a partir de los datos grabados de 2 minutos dentro del laboratorio de robótica del \acrshort{citic} con 6 personas.
+A modo de evaluar el rendimiento en términos de precisión de los modelos de visión artificial, se parte de un \gls{dataset} compuesto de la información extraída de un fichero Rosbag, que contiene los datos generados por dos cámaras Kinect \acrshort{rgbd} y un sensor \acrshort{lidar} instalados en el Summit\_XL durante la realización de una prueba.
 
-Para medir el rendimiento de los modelos, se cuenta con un \gls{dataset} específico para cada cámara, que es un fichero \acrshort{json} compuesto de los siguientes objetos \cite{andrew}:
+La prueba del Rosbag se ha grabado en el laboratorio de robótica del \acrshort{citic}, en el que 6 personas caminan alrededor del Summit\_XL y se entrecruzan durante 105 segundos. El robot también se desplaza, generando así imágenes borrosas y cambios impredecibles de la posición de las personas respecto del robot.
+
+Existe un fichero \acrshort{json} con el \gls{dataset} específico para cada cámara. Este se compone de los siguientes objetos \cite{andrew}:
 \begin{itemize}
-    \item Identificador del frame
-    \item Lista de las personas presentes, que contiene lo siguiente:
+    \item \textit{\textbf{frames}}: lista de todos los frames capturados por la cámara. Cada entrada en la lista sigue la siguiente estructura:
           \begin{itemize}
-              \item Coordenadas de la \gls{bbox} corporal del sujeto, así como la confianza de la detección y su tamaño.
-              \item Coordenadas de la \gls{bbox} facial del sujeto, así como la confianza de la detección, su tamaño y la orientación de la cara.
-              \item Etiqueta del individuo registrado.
+              \item \textit{\textbf{id}}: identificador del frame.
+              \item \textit{\textbf{entities}}: lista de las personas presentes, que contiene los siguientes campos:
+                    \begin{itemize}
+                        \item \textbf{bbox}: \gls{bbox} corporal del sujeto, compuesta por los siguientes elementos:
+                              \begin{itemize}
+                                  \item \textit{\textbf{x0, x1, y0 e y1}}: Coordenadas de la \gls{bbox}.
+                                  \item \textit{\textbf{conf}}: confianza de la detección.
+                                  \item \textit{\textbf{height}}: altura de la \gls{bbox}.
+                                  \item \textit{\textbf{width}}: anchura de la \gls{bbox}.
+                                  \item \textit{\textbf{difficulty}}: valoración de la dificultad de detección (easy, medium o hard), las dificultades se asignan de acuerdo con un sistema de puntos desarrollado en \cite{andrew} que tiene en cuenta diversos factores (ejemplo: porcentaje de oclusión o borrosidad). De esta forma, se organizan los resultados a partir de este criterio. Por sencillez, los resultados reflejados son siempre globales (es decir, la media de todas las dificultades).
+                                  \item Coordenadas de la \gls{bbox} facial del sujeto, así como la confianza de la detección, su tamaño y la orientación de la cara.
+                              \end{itemize}
+                        \item \textit{\textbf{face\_bbox}}: \gls{bbox} facial del sujeto, compuesta por los mismos elementos que el campo \textbf{bbox}, agregando un campo más que devuelve la posición de la cara (si está frontal, girada a la izquierda o a la derecha).
+                        \item \textit{\textbf{filename}}: nombre de los archivos con los recortes facial y corporal del individuo.
+                        \item \textit{\textbf{person\_id}}: etiqueta asignada al individuo.
+                    \end{itemize}
           \end{itemize}
+    \item \textit{\textbf{res}}: resolución de la cámara.
+    \item \textit{\textbf{camera}}: identificador de la cámara.
+    \item \textit{\textbf{face\_padding}}: valor de relleno para aumentar el tamaño de la \gls{bbox} facial.
+    \item \textit{\textbf{input}}: ruta al video generado por la cámara.
 \end{itemize}
 
 En el caso que ocupa al sistema (pruebas de la sección \ref{sec:syscal}), se dispone de un \gls{dataset} que representa el \gls{gt} del nodo integración de sensores (ver sección \ref{sec:basearch}), ya que cada entrada del fichero es idéntica a la salida de dicho nodo. Cada entrada está compuesta por los siguientes objetos:
@@ -107,9 +123,11 @@ OSNet con tactics de Blackwell: baja de 3.7 a 1.7 (toquetear el flag builderOpti
 \section{Realización de pruebas del sistema}
 \label{sec:syscal}
 
-Esta sección pretende evaluar el techo del sistema al elevar el número de cámaras implicadas.
+Esta sección pretende evaluar el techo del sistema al elevar el número de cámaras implicadas. Es importante remarcar que todas las pruebas de esta sección se realizan en \textbf{tiempo real}. Según el proyecto, la frecuencia del tiempo real puede variar, en este caso, se espera que el sistema trabaje a \textbf{10 Hz}, que es la frecuencia a la que ambos sensores \acrshort{lidar} y Kinect devuelven datos.
 
-Se inicializa el sistema con el nodo integración de sensores, el nodo \acrshort{lidar} y el número de nodos cámara deseado (ver sección \ref{sec:basearch}). Se reproduce el fichero rosbag una vez inicializado el sistema, que lo nutrirá con la información generada por los sensores en tiempo real. Cada predicción generada por el nodo integrador se almacena en memoria y se vuelca en un fichero \acrshort{json} una vez el sistema se detiene (por ejemplo, con un Ctrl-C). Los datos guardados en el fichero \acrshort{json} se procesan contra el \textit{\gls{dataset}} y se devuelven los resultados finales en forma de las siguientes métricas:
+Se inicializa el sistema con el nodo integración de sensores, el nodo \acrshort{lidar} y el número de nodos cámara deseado (ver sección \ref{sec:basearch}). Se reproduce el fichero rosbag una vez inicializado el sistema, que lo nutrirá con la información generada por los sensores en \textbf{tiempo real}. Cada predicción generada por el nodo integrador se almacena en memoria y se vuelca en un fichero \acrshort{json} una vez el sistema se detiene (por ejemplo, con un Ctrl-C). Los datos guardados en el fichero \acrshort{json} se procesan contra el \textit{\gls{dataset}} y se devuelven los resultados finales en forma de las siguientes métricas:
+
+%En cada iteración del procesado, se ejecutan \textbf{4 redes neuronales (\acrshort{cnn})}. 2 de ellas, YOLOv8n y YuNet, para la detección de cuerpos y de caras respectivamente. Las otras 2, OSNet\_x1 y ArcFace, para el reconocimiento de cuerpos y caras respectivamente. A pesar de lo que la figura \ref{fig:finalsys} muestra, las redes de detección YOLOv8n y YuNet \textbf{no se ejecutan en paralelo}, lo mismo sucede con las redes ArcFace y OSNet\_x1. Se ha considerado ejecutar en paralelo estas redes. Sin embargo, las limitaciones de memoria principal de la Jetson restringen tomar esta aproximación.
 
 \begin{itemize}
     \item \textit{\textbf{Det precision}}: es la proporción de personas detectadas en la posición correcta (campo \textit{position} del \gls{dataset}) respecto al total de personas detectadas.

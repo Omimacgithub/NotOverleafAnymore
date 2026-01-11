@@ -26,7 +26,9 @@ A la hora de diseñar aceleradores hardware para aplicaciones de redes neuronale
 
 Entre las múltiples técnicas y herramientas que existen \cite{MITTAL2019428}, se ha decantado principalmente por usar TensorRT. Este ecosistema de herramientas permite la optimización de redes neuronales \cite{rahmaniar2021real}, logrando así la ejecución de múltiples aplicaciones en tiempo real. NVIDIA dispone dicho software para una gran variedad de sus \acrshort{gpu} y dispositivos Jetson, además de tutoriales para múltiples aplicaciones de \acrshort{ia} \cite{x36}.
 
-TODO: Poner referencias del trabajo de Open-Set/World.
+En este proyecto se explora la inclusión de un algoritmo de aprendizaje incremental, que permita a las \acrshort{cnn} poder integrar nueva información sin necesidad de reentrenar desde 0. Los algoritmos desarrollados en este campo de estudio se reúnen bajo los conceptos de \textbf{\textit{Open-Set}} y \textbf{\textit{Open-World}} \cite{rudd2017extreme, Erik, CESAR}. Mientras que el primero se limita a clasificar nuevas muestras como muestras nunca antes vistas (o desconocidas), el segundo permite incluir dicho conocimiento al modelo, de forma que se logra adaptar a los múltiples factores cambiantes que entraña el mundo real.
+
+A la hora de diseñar un nuevo algoritmo que incluya nuevo conocimiento, es fundamental establecer un balance entre añadir y actualizar las muestras ante los nuevos cambios producidos (\textit{concept-drift}) y evitar \textbf{borrar} el conocimiento previo (\textit{catastrophic forgetting}) \cite{Erik, CESAR}.
 
 \section{Objetivos}
 
