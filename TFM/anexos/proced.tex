@@ -7,7 +7,9 @@ A continuación, se explican los pasos seguidos que permitieron obtener los resu
 
 \subsection{Conversión a ONNX}
 
-Los modelos del proyecto se encuentran en diferentes formatos, existen integraciones para utilizar los modelos directamente de TensorFlow y de PyTorch. Sin embargo, se ha optado por usar exclusivamente el formato \acrshort{onnx}. Su principal desventaja frente a otros formatos son la incompatibilidad de ciertas capas de redes neuronales. En cambio, es la solución que otorga el mayor rendimiento. Según el formato se han aplicado las siguientes herramientas en la exportación:
+Los modelos del proyecto se encuentran en diferentes formatos, existen integraciones para utilizar los modelos directamente de TensorFlow y de PyTorch. Sin embargo, se ha optado por usar exclusivamente el formato \acrfull{onnx}.
+
+La principal desventaja de \acrshort{onnx} frente a otros formatos es la incompatibilidad de ciertas capas de redes neuronales. En cambio, es la solución que otorga el mayor rendimiento. Según el formato se han aplicado las siguientes herramientas en la exportación a \acrshort{onnx}:
 
 \begin{itemize}
     \item \textbf{PyTorch}: la API de Python ya proporciona una herramienta (torch.onnx.export).
@@ -29,3 +31,12 @@ Hablar de los 4 modelos que usamos
 En \cite{andrew} se utiliza una versión del modelo YuNet otorgada por la librería OpenCV, esta versión abstrae al programador de implementar las fases de pre y postprocesado de dicho modelo, que para este caso resultan muy complejas de implementar. Como ya se comentó en la sección \ref{sec:sw}, OpenCV dispone de soporte para CUDA, aunque es necesario compilar el programa desde el fuente. El proceso de compilación seguido es el mismo que en \cite{OpenCVCUDA}.
 
 TODO: algo más.
+
+\section{Exportación de YOLO con ultralytics}
+\label{sec:exports}
+
+La \acrshort{api} de ultralytics permite la exportación de modelos YOLO con una gran variedad de ajustes y conversión a diferentes formatos como \acrshort{onnx} o incluso los utilizados por los \textit{backends} de OpenVINO, TensorRT, entre otros.
+
+\input{contenido/codes/YOLOexport.tex}
+
+El código \ref{coud:yolexport} se muestra un ejemplo de como exportar el modelo YOLO de ultralytics. Se descarga el archivo de pesos (.pt) y se exporta a \acrshort{onnx}, con un tamaño de batch de 1 y precisión de 16 bits de punto flotante (flag half).

@@ -10,19 +10,31 @@ A continuación se exponen las \acrshort{cnn} utilizadas en los nodos cámara, q
 
 \subsection{YuNet}
 
-Es un modelo de detección de rostros diseñado para sistemas con recursos muy limitados \cite{wu2023yunet}. Debido a que el código de pre y postprocesado es demasiado complejo de implementar, se ha optado por utilizar la versión de OpenCV más simplificada.
+Es un modelo de detección facial diseñado para sistemas con recursos muy limitados, con tan sólo 75856 parámetros \cite{wu2023yunet}. Debido a los múltiples \textit{outputs} del modelo, complejos de procesar, se ha optado por utilizar la versión de OpenCV, que simplifica todo el proceso de pre y postprocesado. El modelo en formato \acrshort{onnx} se encuentra en este enlace \footnote{https://github.com/opencv/opencv\_zoo/blob/main/models/face\_detection\_yunet/face\_detection\_yunet\_2023mar.onnx}.
 
 \subsection{ArcFace}
 
-ArcFace \cite{deng2019arcface} ha demostrado ser de las mejores redes en el \acrshort{sota} del reconocimiento facial.
+\textit{Additive Angular Margin Loss} (o ArcFace) es una función de pérdida (\gls{lossfunc}) que mejora el poder discriminativo de los modelos de reconocimiento facial, es decir, maximiza el margen que separa a las clases y minimiza el margen de los datos que pertenecen a una misma clase \cite{deng2019arcface}. Los \glspl{embedding} con los que opera ArcFace pertenecen al modelo ResNet-100. Se emplea el archivo de pesos de una implementación en TensorFlow Lite, accesible mediante el siguiente enlace \footnote{https://www.digidow.eu/f/datasets/arcface-tensorflowlite/model.tflite}.
+
+%ha demostrado ser de las mejores redes en el \acrshort{sota} del reconocimiento facial.
 
 \subsection{YOLO}
 
-\textit{You Only Look Once} (YOLO) es una red de detección de objetos que otorga una velocidad de inferencia asombrosa manteniendo una buena precisión \cite{redmon2016you}. Existen múltiples versiones de YOLO, en \cite{andrew} se probaron las versiones 3, 5 y 8 en el tamaño nano, más ligero y veloz, pero al mismo tiempo más impreciso. En este proyecto a mayores se ha probado la versión 11, la última existente a día de hoy, en su tamaño nano, en los \textit{backends} OpenVINO y TensorRT. Se ha optimizado el postprocesado explotando la librería de NumPy y los resultados son muy notorios.
+\textit{You Only Look Once} (YOLO) es una red de detección de objetos que otorga una velocidad de inferencia asombrosa manteniendo una buena precisión \cite{redmon2016you}. Existen múltiples versiones de YOLO, en \cite{andrew} se probaron las versiones 3, 5 y 8 en el tamaño nano, más ligero y veloz, pero al mismo tiempo más impreciso. En este proyecto a mayores se ha probado la versión 11, la última existente a día de hoy, en su tamaño nano. El modelo se puede obtener mediante la \acrshort{api} de Python de ultralytics, que permite realizar exportaciones con diferentes ajustes (ver sección \ref{sec:exports}).
+
+Se ha optimizado el postprocesado explotando la librería de NumPy y los resultados son muy notorios.
 
 \subsection{OSNet}
 
-\textit{Omni-Scale Network} es un modelo de reidentificación de personas que emplea características de diferentes tamaños (\textit{omni-scale features}) para la clasificación. Destaca por ser extremadamente ligero y por su elevada precisión \cite{zhou2019omni}. Se emplea la implementación de \cite{andrew} en el framework Pytorch. (TODO: comentar más, quizá incluso en el capítulo de implementación) Se incorporó preprocesado en la GPU.
+\textit{Omni-Scale Network} es un modelo de reidentificación de personas que emplea características de diferentes tamaños (\textit{omni-scale features}) para la clasificación. Destaca por ser extremadamente ligero y por su elevada precisión \cite{zhou2019omni}. Se realizó una exportación a partir del modelo implementado en Pytorch (\cite{andrew}).
+
+TODO: mencionar que se incorporó el preprocesado en el modelo de PyTorch, de forma que se ejecuta en la \acrshort{gpu}, añadirlo en el apéndice?
+
+\subsection{Características de los modelos}
+
+En la tabla \ref{} se muestra el tamaño de la entrada, el número de parámetros y la latencia de cada modelo.
+
+Cada valor de la columna \textit{input size} se compone de la resolución de la imagen de entrada (ejemplo: 112x112) multiplicado por el número de canales de entrada (en este caso 3, que se corresponde con los canales \textit{Red, Green} y \textit{Blue} de una imagen \acrshort{rgb}). Los modelos OSNet y ArcFace utilizan una resolución fija de 256x128 y 112x112 respectivamente de los frames de entrada, mientras que YOLO y YuNet permiten un ajuste dinámico de dicha resolución en tiempo de ejecución. Para obtener el mejor balance entre precisión y latencia, se ha optado por establecer una resolución fija de 640x640 y 480x480 respectivamente.
 
 \section{Datasets de las pruebas}
 \label{sec:modset}
@@ -47,7 +59,7 @@ Existe un fichero \acrshort{json} con el \gls{dataset} específico para cada cá
                                   \item \textit{\textbf{difficulty}}: valoración de la dificultad de detección (easy, medium o hard), las dificultades se asignan de acuerdo con un sistema de puntos desarrollado en \cite{andrew} que tiene en cuenta diversos factores (ejemplo: porcentaje de oclusión o borrosidad). De esta forma, se organizan los resultados a partir de este criterio. Por sencillez, los resultados reflejados son siempre globales (es decir, la media de todas las dificultades).
                                   \item Coordenadas de la \gls{bbox} facial del sujeto, así como la confianza de la detección, su tamaño y la orientación de la cara.
                               \end{itemize}
-                        \item \textit{\textbf{face\_bbox}}: \gls{bbox} facial del sujeto, compuesta por los mismos elementos que el campo \textbf{bbox}, agregando un campo más que devuelve la posición de la cara (si está frontal, girada a la izquierda o a la derecha).
+                        \item \textit{\textbf{face\_bbox}}: \gls{bbox} facial del sujeto, compuesta por los mismos elementos que el campo \textbf{bbox}, agregando dos campos más, uno con las coordenadas de los puntos faciales (\textit{landmarks}) y el otro con la posición de la cara (si está frontal, girada a la izquierda o a la derecha), calculada a partir de los \textit{landmarks}.
                         \item \textit{\textbf{filename}}: nombre de los archivos con los recortes facial y corporal del individuo.
                         \item \textit{\textbf{person\_id}}: etiqueta asignada al individuo.
                     \end{itemize}
@@ -58,7 +70,7 @@ Existe un fichero \acrshort{json} con el \gls{dataset} específico para cada cá
     \item \textit{\textbf{input}}: ruta al video generado por la cámara.
 \end{itemize}
 
-En el caso que ocupa al sistema (pruebas de la sección \ref{sec:syscal}), se dispone de un \gls{dataset} que representa el \gls{gt} del nodo integración de sensores (ver sección \ref{sec:basearch}), ya que cada entrada del fichero es idéntica a la salida de dicho nodo. Cada entrada está compuesta por los siguientes objetos:
+En el caso que ocupa al sistema (pruebas de la sección \ref{sec:syscal}), se dispone de un \gls{dataset} que representa el \gls{gt} del nodo integración de sensores (ver sección \ref{sec:basearch}), ya que cada entrada del fichero es idéntica a la salida de dicho nodo. La prueba de la que se ha extraído el \gls{dataset} corresponde con la misma del \gls{dataset} de las cámaras. Cada entrada del fichero \acrshort{json} está compuesta de los siguientes objetos:
 \begin{itemize}
     \item \textbf{\textit{secs}}: \gls{timestamp} del tiempo de UNIX en segudos
     \item \textbf{\textit{nsecs}}: \gls{timestamp} del tiempo en nanosegundos del segundo correspondiente al campo secs.
@@ -69,33 +81,26 @@ En el caso que ocupa al sistema (pruebas de la sección \ref{sec:syscal}), se di
           \end{itemize}
 \end{itemize}
 
-\section{Realización de las pruebas}
+\section{Realización de las pruebas de modelos}
 
-Para la evaluación del rendimiento, se parten de unos tests que reproducen los videos de las dos cámaras (ver sección \ref{sec:hw}) y alimenta a los modelos de redes neuronales con los respectivos frames, de forma que al momento de terminar el procesamiento de un frame, el modelo puede continuar inmediatamente con el siguiente. Las salidas devueltas por las \acrshort{cnn} se contrastan con la información del \textit{\gls{dataset}} (visto en la anterior sección), que devuelve un resultado final de precisión.
+Para la evaluación del rendimiento, se parten de unos tests que reproducen los videos de las dos cámaras (ver sección \ref{sec:hw}) y alimenta a los modelos de redes neuronales con los respectivos frames, de forma que al momento de terminar el procesamiento de un frame, el modelo puede continuar inmediatamente con el siguiente. Las salidas devueltas por las \acrshort{cnn} se contrastan con la información del \textit{\gls{dataset}} de la respectiva cámara (visto en la anterior sección), que devuelve un resultado final de precisión.
 
-Se realiza una medición de la latencia de la inferencia, en el caso de los modelos de detección, y de la inferencia mas el reconocimiento en el caso de los modelos de reconocimiento. En ambos casos se emplea la función \textbf{time} del módulo \textbf{time} de Python para obtener los tiempos en cada frame. Finalmente, todas las latencias se fusionan a partir de la media.
+Se realiza una medición de la latencia de la inferencia, en el caso de los modelos de detección, y de la inferencia más el reconocimiento en el caso de los modelos de reconocimiento. En ambos casos, se emplea la función \textbf{time} del módulo \textbf{time} de Python para obtener los tiempos en cada frame. Finalmente, todas las latencias se fusionan a partir de la media.
 
-En las pruebas de los modelos de detección, se obtienen los frames directamente de los videos, que son procesados por los modelos para devolver las \glspl{bbox}. El test determina una detección como coincidente si los porcentajes de intersección entre la \glspl{bbox} obtenida respecto a la de referencia y vicerversa superan o igualan a un umbral, en este caso fijado en el 50\% \cite{andrew}.
+En las pruebas de los modelos de detección, se obtienen los frames directamente de los videos. El test determina una detección como coincidente si los porcentajes de intersección entre la \gls{bbox} obtenida respecto a la de referencia y viceversa superan o igualan un umbral. En este caso, dicho umbral se ha fijado en el 50\% \cite{andrew}.
 
-En el caso de los modelos de reconocimiento, se recupera para cada frame una lista de recortes \textbf{generados previamente a la ejecución de la prueba}. El test determina un reconocimiento como correcto si la predicción obtenida es la misma que la etiqueta (\textit{\gls{gt}}) recogida en el \gls{dataset}. Por sencillez, siempre se escoge la primera predicción de la lista como la predicción final (\textit{top\_k=1}, ver sección \ref{sec:basearch}).
+En el caso de los modelos de reconocimiento, se recupera para cada frame una lista de recortes generados por los modelos de detección \textbf{previamente a la ejecución de la prueba}. El test determina un reconocimiento como correcto si la predicción obtenida es la misma que la etiqueta (\textit{\gls{gt}}) recogida en el \gls{dataset}. Por sencillez, siempre se escoge la primera predicción de la lista como la predicción final (\textit{top\_k=1}, ver sección \ref{sec:basearch}).
 
 NOTA IMPORTANTE: estoy midiendo la latencia de la propia inferencia pero también de las copias entre gpu y cpu, por lo que es importante analizar otros aspectos que influyen como la velocidad de transferencia.
-
-
-Afortunadamente, todas las librerías del proyecto cuenta con soporte completo e incluso optimizado para las arquitecturas x86 y ARM64 TODO: seguro que hay diferencias.
 
 \section{Resultados}
 \label{sec:modelic}
 
-TODO: los backends de OpenVINO y TensorRT soportan precisión mixta, es decir, se ejecutan las capas de un modelo en la precisión que menor latencia reporte dentro de una lista de precisiones (ejemplo: FP16 o FP32) \cite{mixed}. Esta funcionalidad puede emplearse siempre que la arquitectura de los dispositivos la implemente. Los modelos del proyecto se han compilado para utilizar la precisión mixta en FP16 o FP32 (TODO: y YuNet?).
+En la figura \ref{tab:equips} se muestran los resultados de latencia (en milisegundos) y de la métrica \textit{F1\_score} para los modelos de detección y \textit{precision} para los modelos de reconocimiento (ver métricas en la sección \ref{sec:modeleval}). Cada resultado refleja la media y la desviación típica de \textbf{5 ejecuciones}, se ejecuta un test previo a modo de calentamiento para cada modelo.
 
-En la figura \ref{tab:equips} se muestran los resultados de latencia (en milisegundos) y la métrica \textit{F1\_score} para los modelos de detección y \textit{precision} para los modelos de reconocimiento (ver métricas en la sección \ref{sec:modeleval}). Cada resultado refleja la media y la desviación típica de \textbf{5 ejecuciones}, sin contar una previa de calentamiento.
+Para la ejecución de inferencias, se han empleado los \textit{backends} de OpenVINO, TensorRT y OpenCV, este último para el caso concreto de la red YuNet. Es importante destacar que los \textit{backends} de OpenVINO y TensorRT soportan precisión mixta, es decir, se ejecutan las capas de un modelo en la precisión que menor latencia reporte dentro de una lista de precisiones (ejemplo: FP16 o FP32) \cite{mixed}. Esta funcionalidad puede emplearse siempre que la arquitectura de los dispositivos la implemente. Las últimas versiones de OpenCV también implementan soporte para ambas precisiones FP32 y FP16. Los modelos del proyecto se han compilado para utilizar la precisión mixta en FP16 o FP32.
 
-Los modelos OSNet y ArcFace utilizan una resolución fija de 256x128 y 112x112 respectivamente de los frames de entrada, mientras que YOLO y YuNet permiten un ajuste dinámico de dicha resolución en tiempo de ejecución. Para obtener el mejor balance entre precisión y latencia, se ha optado por establecer una resolución fija de 640x640 y 480x480 respectivamente.
-
-Para la ejecución de inferencias, se han empleado los backends de OpenVINO, TensorRT y OpenCV, este último para el caso concreto de la red YuNet. En el caso del modelo YOLO, los dos dispositivos menos potentes (Jetson Xavier NX y Jetson Orin Nano) no alcanzan o apenas superan los 10 Hz en la versión de OpenVINO, que no utiliza la \acrshort{gpu} para la inferencia. Al trasladar la carga de la inferencia a la \acrshort{gpu} cuando se utiliza TensorRT, el tiempo de inferencia es hasta \textbf{7 veces} menor en el caso de la Jetson AGX Thor y \textbf{5 veces} menor en el caso de la Jetson Xavier NX. En la versión de TensorRT de YOLO, las Jetson NX y Orin Nano logran alcanzar los 35 y 45 Hz respectivamente, lo que hace posible la ejecución en tiempo real (fijada a 10 Hz) en estos dispositivos.
-
-TODO: Si sumamos todos los tiempos de inferencia usando el motor de TensorRT, da un total de \textbf{63.6 milisegundos} para la Jetson Xavier NX y \textbf{49.1 milisegundos} para la Jetson Orin Nano.
+En el caso del modelo YOLO, los dos dispositivos menos potentes (Jetson Xavier NX y Jetson Orin Nano) no alcanzan o apenas superan los 10 Hz en la versión de OpenVINO, que no utiliza la \acrshort{gpu} para la inferencia. Al trasladar la carga de la inferencia a la \acrshort{gpu} cuando se utiliza TensorRT, el tiempo de inferencia es hasta \textbf{7 veces} menor en el caso de la Jetson AGX Thor y \textbf{5 veces} menor en el caso de la Jetson Xavier NX. En la versión de TensorRT de YOLO, las Jetson NX y Orin Nano logran alcanzar los 35 y 45 Hz respectivamente, lo que hace posible la ejecución en tiempo real (fijada a 10 Hz) en estos dispositivos.
 
 TODO: demostrar por que la GPU del lab pc hace que esté ligeramente detrás de la GPU de la laptop en TensorRT
 
@@ -151,7 +156,7 @@ En el caso de la imagen de distancia, en sí no es un objeto pesado, por lo que 
     \label{fig:systesting}
 \end{figure}
 
-\subsection{Resultados}
+\section{Resultados}
 
 \input{contenido/tables/tests/scaleperf.tex}
 
