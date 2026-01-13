@@ -26,6 +26,7 @@ class CNN_model:
         self.d_input = cuda.mem_alloc(self.input_size)
         self.d_output = cuda.mem_alloc(self.output_size)
         self.bindings = [int(self.d_input), int(self.d_output)]
+        self.outputs = np.empty([BATCH_SIZE, osize], dtype=ofp)
 
         if isversion10:
           for binding in range(self.engine.num_io_tensors):
@@ -36,7 +37,7 @@ class CNN_model:
     def infer(self, frame):
       self.ctx.push()
       try:
-        outputs = np.empty([BATCH_SIZE, osize], dtype=ofp)
+        
         preprocesed_frame = PREPROCESING(frame)
         # Transfer input data to device
         cuda.memcpy_htod_async(self.d_input, preprocesed_frame.astype(ifp), self.stream)
@@ -45,9 +46,9 @@ class CNN_model:
         else:
           self.context.execute_async_v2(self.bindings, self.stream.handle, None)
         # Transfer predictions back
-        cuda.memcpy_dtoh_async(outputs, self.d_output, self.stream)
+        cuda.memcpy_dtoh_async(self.outputs, self.d_output, self.stream)
         self.stream.synchronize()
-        return POSTPROCESING(outputs)
+        return POSTPROCESING(self.outputs)
       finally:
         self.ctx.pop()
 \end{lstlisting}
