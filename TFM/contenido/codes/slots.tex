@@ -1,0 +1,11 @@
+\begin{lstlisting}[language=Python, float=t, label=coud:slots, caption=Uso de slots para ahorrar memoria]
+class CameraNode(parent):
+__slots__ = ["face_detector", "face_recognizer", "person_detector", "person_recognizer", "camera", "identity", "publisher", "image_pub"]
+
+    def __init__(self, camera):
+        self.face_detector = importer.load_model(config.FACE_DETECTION_MODEL)
+        self.face_recognizer = importer.load_model(config.FACE_RECOGNITION_MODEL)
+        self.person_detector = importer.load_model(config.PERSON_DETECTION_MODEL)
+        self.person_recognizer = importer.load_model(config.PERSON_RECOGNITION_MODEL)
+        ...
+\end{lstlisting}
