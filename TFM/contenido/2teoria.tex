@@ -22,6 +22,8 @@ Atendiendo a la definición de \cite{rudd2017extreme}, un sistema de reconocimie
 
 \section{Clasificadores}
 
+Nearest neighbourd
+
 Random Forest: Number of trees, maximum depth, minimum samples per leaf
 
 Neural Networks: Learning rate, batch size, network architecture, regularization strength
@@ -31,9 +33,20 @@ Support Vector Machines: Kernel type, regularization parameter, kernel-specific 
 Gradient Boosting: Learning rate, number of boosting rounds, maximum tree depth
 
 
-\subsection{SVM}
+\subsection{Support Vector Machine (SVM)}
 
-Es un algoritmo de \textbf{clasificación} que dibuja un hiperplano entre categorías de datos, buscando siempre el mayor margen (distancia entre el punto que define la frontera de la categoría, denominado \textit{support vector}, y el hiperplano), de modo que agrega cierta tolerancia al posible ruido producido. Es un \textbf{algoritmo de aprendizaje supervisado} (requiere de un conjunto inicial de datos para su entrenamiento) y conforma la unidad más básica de clasificación dentro del sistema de este proyecto \cite{SVM}. Dicho algoritmo pertenece al aprendizaje \textit{Closed-Set}, es decir, no es capaz de discernir entre clases fuera del conjunto de datos de entrenamiento, por lo que un dato desconocido se clasificaría erróneamente como una de las clases del entrenamiento \cite{rudd2017extreme}.
+\begin{figure}[tbp]
+    \centering
+    \includegraphics[width=0.5\linewidth]{imagenes/LINSVM.png}
+    \caption{Clasificación en espacio \acrshort{2d} mediante el uso de las \acrshort{svm}, figura extraída de \cite{svn}.}
+    \label{fig:linsvm}
+\end{figure}
+
+Es un algoritmo de \textbf{clasificación} que dibuja un hiperplano entre categorías de datos, buscando siempre el mayor margen (distancia entre los puntos que definen las fronteras de las categorías, denominados \textit{support vectors}), de modo que agrega cierta tolerancia al posible ruido producido. En la figura \ref{fig:linsvm} se muestra un ejemplo de clasificación en el espacio \acrshort{2d}, los cuadrados grises representan los \textit{support vectors}, que definen el margen máximo de separación entre clases.
+
+Las \acrshort{svm} requieren de un conjunto inicial de datos para su entrenamiento (aprendizaje supervisado) y no son capaces de discernir entre clases fuera del conjunto de datos de entrenamiento (\textit{Closed-Set}), por lo que un dato desconocido se clasificaría erróneamente como una de las clases del entrenamiento \cite{rudd2017extreme}.
+
+Estos clasificadores conforman la unidad más básica de clasificación dentro del sistema de este proyecto.
 
 \subsection{Comités}
 

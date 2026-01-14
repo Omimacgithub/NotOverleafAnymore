@@ -18,13 +18,20 @@ El sistema que se expondrá se ha construido para funcionar en el robot móvil S
 
 \subsubsection{Arquitecturas de GPU}
 
+\begin{figure}[tbp]
+    \centering
+    \includegraphics[width=0.5\linewidth]{imagenes/types.png}
+    \caption{Asignación de bits según el tipo de dato, figura extraída de \cite{tf32}}
+    \label{fig:types}
+\end{figure}
+
 Según la arquitectura de la \acrshort{gpu} de NVIDIA a tratar se agregan nuevas características que maximizan el rendimiento de la inferencia de los modelos (se ahondará en este tema en el capítulo \ref{chap:cnn}). Las arquitecturas que se muestran a continuación están ordenadas de menor a mayor generación:
 \begin{itemize}
-    \item Volta: se introducen los \textbf{tensor cores}, que son cores destinados para acelerar multiplicaciones y sumas de matrices (conocido también como MMA). La \textbf{Jetson Xavier NX} sigue esta arquitectura.
+    \item Volta \cite{volta}: se introducen los \textbf{tensor cores}, que son cores destinados a acelerar multiplicaciones y sumas de matrices (conocido también como MMA). La \textbf{Jetson Xavier NX} sigue esta arquitectura.
     \item Turing: . La \textbf{GeForce GTX 1650} (gráfica del PC lab) sigue esta arquitectura.
-    \item Ampere: incluye las siguientes mejoras:
+    \item Ampere \cite{ampere}: incluye las siguientes mejoras:
           \begin{itemize}
-              \item Incorpora los tensor cores de tercera generación, que incluyen el tipo de dato \textbf{TF32}, que funciona como FP32 pero optimizado en \acrshort{gpu} sin realizar ningún cambio en el código \cite{ampere}
+              \item Incorpora los tensor cores de tercera generación, que incluye los formatos de precisión \textbf{TF32} (Tensor Float 32). TF32 es un tipo optimizado para los \textbf{tensor cores}, híbrido entre FP32 y FP16, ya que de rango o exponente tiene los mismos bits que FP32 y de mantisa o precisión tiene los mismos bits que FP16 (como se muestra en la figura \ref{fig:types}). Debido a que TF32 acepta una entrada de tipo FP32 y una salida también de tipo FP32, dicho formato puede aplicarse sin realizar ningún cambio en el código.
               \item Introduce la funcionalidad \acrfull{mig}, que permite la partición \textbf{física} de \acrshort{gpu}s para correr aplicaciones de CUDA. A la hora de asignar particiones, es necesario comprender los siguientes conceptos \cite{migconcepts}:
                     \begin{itemize}
                         \item \textbf{\acrshort{gpu} Engine}: es la parte de la \acrshort{gpu} que ejecuta el trabajo. Un ejemplo es el copy engine, que se encarga de realizar las operaciones relacionadas con la memoria (direct memory access, memcpy...).
@@ -37,21 +44,17 @@ Según la arquitectura de la \acrshort{gpu} de NVIDIA a tratar se agregan nuevas
               \item Añade aceleración en las operaciones con matrices \textbf{dispersas} (\textit{sparsity}), que son matrices con una gran proporción de ceros entre sus valores.
           \end{itemize}
           La \textbf{Jetson Orin Nano}, \textbf{Jetson AGX Orin} y la \textbf{GeForce RTX 3050} (gráfica del portátil) siguen esta arquitectura.
-    \item Blackwell: se introducen las siguientes mejoras:
+    \item Blackwell \cite{blackwell}: se introducen las siguientes mejoras:
           \begin{itemize}
-              \item Incorpora los tensor cores de quinta generación, que permiten operar en precisión \textbf{FP4} y \textbf{FP6} (punto flotante de 4 y 6 bits respectivamente) sin apenas pérdida en la precisión, gracias a la incorporación de \textit{micro-tensor scaling}, que aplica diferentes factores de escalado a los elementos de un \gls{tensor} \cite{blackwell}.
+              \item Incorpora los tensor cores de quinta generación, que permiten operar en las precisiones \textbf{FP4} y \textbf{FP6} (punto flotante de 4 y 6 bits respectivamente).
+              \item Segunda generación del \textbf{Transformer Engine} \cite{transformer}: introducido en las arquitecturas Ada Lovelace y Hopper (posteriores a Ampere), es una librería que permite manejar modelos en precisiones muy bajas (a partir de FP8 para abajo) a través de múltiples técnicas que computan los \textbf{factores de escalado}, que permiten ajustar los valores de los \glspl{tensor} a un rango más compacto y representable por precisiones más pequeñas.
+
+                    En esta nueva versión para la Blackwell, se incorpora el \textit{micro-tensor scaling}, que aplica diferentes factores de escalado al nivel de los elementos de un \gls{tensor}. Esta nueva técnica hace posible la ejecución en \textbf{FP4} y \textbf{FP6} sin apenas pérdida en la precisión.
           \end{itemize}
           La \textbf{Jetson AGX Thor} sigue esta arquitectura.
 \end{itemize}
 
-\begin{figure}[tbp]
-    \centering
-    \includegraphics[width=0.5\linewidth]{imagenes/mastel.png}
-    \caption{Asignación de bits según el tipo de dato, figura extraída de \cite{tf32}}
-    \label{fig:types}
-\end{figure}
-
-La figura \ref{fig:types} muestra algunas de las precisiones vistas y que se aplicarán para las inferencias de los modelos de este proyecto (a excepción del formato BF16). TODO:
+Otro aspecto importante es que todas las arquitecturas anteriores permiten el entrenamiento e inferencia de modelos en \textbf{precisión mixta}, es decir, escoger la precisión apropiada entre una lista de precisiones (ejemplo: FP32+FP16) para cada capa del modelo.
 
 \subsubsection{Familia Jetson}
 
@@ -122,32 +125,32 @@ Cualquier entorno de desarrollo de \acrshort{ros} está compuesto por \textbf{pa
     \item Data Distribution Service (\acrshort{ros} 2): es un \textit{middleware} que permite la comunicación de los nodos mediante una topología tipo bus (figura ). Los nodos notifican su presencia en la red y esperan mensajes de respuesta con información sobre el resto de nodos existentes \cite{dds}. De esta forma, todos los nodos conocen el estado de la red sin depender de un maestro que gestione todas las comunicaciones.
 \end{itemize}
 
-Existe una amplia variedad de distribuciones de este software según la versión del \acrshort{so}. Para este proyecto, se han empleado las distribuciones Noetic, Humble y Rolling, para Ubuntu 20.04, 22.04 y 24.04 respectivamente, el Summit\_XL tiene la distribución Melodic, ya que tiene la versión 18.04 de Ubuntu. Melodic y Noetic corresponden a ROS 1 (descontinuado), mientras que Humble y Rolling pertenecen a ROS 2.
-
-\subsubsection{TODO: lanzamiento de los threads}
+Existe una amplia variedad de distribuciones de este software según la versión del \acrshort{so}. Para este proyecto, se han empleado las distribuciones Noetic, Humble y Rolling, para Ubuntu 20.04, 22.04 y 24.04 respectivamente, el Summit\_XL tiene la distribución Melodic, ya que tiene la versión 18.04 de Ubuntu. Melodic y Noetic corresponden a \acrshort{ros} 1 (descontinuado), mientras que Humble y Rolling pertenecen a \acrshort{ros} 2.
 
 \subsubsection{Rosbag}
 
 Existe una herramienta del ecosistema \acrshort{ros} que graba y reproduce los datos capturados de la ejecución de un sistema \acrshort{ros} en un momento concreto en el tiempo. Los \glspl{dataset} creados en \cite{andrew} se construyeron partiendo de un fichero rosbag, que contiene toda la información generada por los diferentes sensores. En este proyecto se emplearán dichos ficheros rosbag para reproducir las pruebas en tiempo real.
 
+\subsection{Librerías de Python}
+Se procede a comentar las librerías de Python más importantes a la hora de desarrollar el código del proyecto (todas las librerías descritas son de \textbf{código abierto}):
+\begin{itemize}
+    \item \textbf{PyCUDA} \cite{pycuda}: es un \gls{wrapper} que interacciona con el driver de CUDA. Se ha utilizado principalmente para generar los contextos y reservar la memoria en la \acrshort{gpu}, con el propósito de realizar las inferencias de los modelos.
+    \item \textbf{NumPy}: se ha empleado en este proyecto para representar las imágenes y la información generada por los modelos en forma de vectores y matrices multidimensionales. Estos elementos pueden manipularse por medio de una amplia cantidad de funciones matemáticas que dicha librería ofrece.
+    \item \textbf{Scipy}: implementa numerosos algoritmos relacionados con la computación científica. En este proyecto se ha usado para aplicar el método húngaro, hallar los parámetros que modelan una distribución de Weibull, calcular distancias coseno, entre otras aplicaciones relacionadas con cálculos científicos.
+    \item \textbf{OpenCV}: es la librería por excelencia para visión por computadora de código abierto. Se ha utilizado para la obtención y procesado de las imágenes. La librería contiene un módulo de redes neuronales profundas (dnn), el cual se ha utilizado para realizar operaciones de procesamiento de las entradas y salidas de las redes neuronales (ejemplo: aplicar \gls{nms} a las \glspl{bbox} de salida de un modelo de detección de objetos).
+\end{itemize}
+
+
 \subsection{Optimizadores y \textit{backends} de inferencias}
 
-\textbf{TensorRT}
-Es un software de \textbf{código abierto} desarrollado por NVIDIA para la optimización de inferencias de modelos de IA en aceleradoras de NVIDIA \cite{x36}. Permite ejecutar modelos entrenados en \textit{frameworks} como Pytorch o TensorFlow, aunque se aconseja exportarlos al formato \acrfull{onnx} previamente, para aprovechar al completo las funcionalidades de este software. Se ha empleado TensorRT para optimizar la mayoría de modelos \acrshort{cnn} tanto en equipos \acrshort{arm} como x86. TensorRT versión 10 está disponible para las aceleradoras de NVIDIA con un \textit{compute capability} igual o superior a 7.5. En el caso de querer usar el software con una \textit{compute capability} inferior, es necesario instalar versiones anteriores descontinuadas (ejemplo: versión 8). El código generado en la versión 8 de la API \textbf{no es compatible} con la versión 10.
+Es el software encargado de optimizar la implementación de los modelos y ejecutar sus inferencias. En este proyecto se han utilizado los siguientes (todos son de \textbf{código abierto}):
+\begin{itemize}
+    \item \textbf{TensorRT} \cite{x36}: es un ecosistema de herramientas (con \acrshort{api} de Python incluida) para la optimización de inferencias de modelos de inteligencia artificial en aceleradoras de NVIDIA. Permite ejecutar modelos entrenados en \textit{frameworks} como Pytorch o TensorFlow, aunque se aconseja exportarlos al formato \acrfull{onnx} previamente, para aprovechar al completo las funcionalidades de este software. Se ha empleado en este proyecto para optimizar y ejecutar inferencias de la mayoría de modelos \acrshort{cnn} tanto en equipos \acrshort{arm} como x86.
 
-\textbf{OpenVINO}
-Es un software de \textbf{código abierto} desarrollado por Intel para la optimización de inferencias en \acrshort{cpu} (ARM,x86) y en aceleradoras de Intel (\acrshort{gpu},\acrshort{npu}) \cite{OpenVINO}. Permite la conversión directa de modelos entrenados en frameworks como Tensorflow y Pytorch a ficheros XML, que son versiones optimizadas de las \acrshort{cnn} y que se utilizan para realizar las inferencias. Se ha empleado para reducir la latencia de modelos a la hora de ejecutarlos en \acrshort{cpu}.
-\subsection{Librerías de Python}
-\textbf{PyCUDA}
-Librería de Python de \textbf{código abierto} \cite{pycuda} que interacciona con el driver de CUDA por medio de un \gls{wrapper}. Se ha utilizado para programar los códigos de inferencia de los modelos que utilizan TensorRT.
-\textbf{NumPy}
-Librería de Python de \textbf{código abierto} usada en este proyecto para representar imágenes y la información generada por los modelos en forma de vectores y matrices multidimensionales. Estos elementos pueden manipularse por medio de una amplia cantidad de funciones matemáticas que dicha librería ofrece.
-
-\textbf{Scipy}
-Librería de Python de \textbf{código abierto} que implementa numerosos algoritmos relacionados con la computación científica. En este proyecto se ha usado para aplicar el método húngaro, hallar los parámetros que modelan una distribución de Weibull, calcular distancias coseno, entre muchas otras funcionalidades que dicho software ofrece.
-
-\textbf{OpenCV}
-La librería de \textbf{código abierto} por excelencia para visión por computadora de código abierto. Otorga herramientas para la obtención y procesado de las imágenes, además de un módulo de visión artificial (dnn), que incluye modelos ya entrenados de visión artificial. Dicha librería tiene implementación en CUDA (si se compila el código fuente \cite{OpenCVCUDA}.), lo que permite ejecutar operaciones y kernels de modelos en aceleradoras de NVIDIA (ejemplo: NVIDIA Jetson).
+          La versión 10 de TensorRT está disponible para las aceleradoras de NVIDIA con un \textit{compute capability} igual o superior a 7.5. En el caso de querer usar el software con una \textit{compute capability} inferior, es necesario instalar la versión 8 u otra anterior. El código de la \acrshort{api} generado en la versión 8 \textbf{no es compatible} con la versión 10.
+    \item \textbf{OpenVINO} \cite{OpenVINO}: desarrollado por Intel para la optimización de inferencias en \acrshort{cpu}s (ARM,x86) y en aceleradoras de Intel (\acrshort{gpu},\acrshort{npu}). Permite la conversión directa de modelos entrenados en frameworks como Tensorflow y Pytorch a ficheros XML, que son versiones optimizadas de las \acrshort{cnn} y que se utilizan para realizar las inferencias. Se ha empleado para optimizar y ejecutar las inferencias de los modelos a la hora de ejecutarlos en \acrshort{cpu}.
+    \item \textbf{OpenCV} \cite{OpenCVCUDA}: el módulo de redes neuronales profundas (dnn) incluye modelos ya entrenados y un \textit{backend} para realizar inferencias. Dicho módulo puede ejecutarse en \textbf{CUDA}, sólo si se compila el código fuente. En este proyecto se ha utilizado un modelo de detección de caras ofrecido por dicha librería.
+\end{itemize}
 
 \subsection{Docker}
 Es un software de virtualización de \textbf{código abierto}. Permite realizar despliegues automatizados mediante ficheros de configuración, el software se ejecuta en un entorno aislado del sistema operativo llamado \textbf{contenedor}, dichos contenedores proporcionan seguridad y portabilidad. Esta herramienta ha sido de gran utilidad para desplegar el software del proyecto en los diferentes dispositivos.
