@@ -26,13 +26,13 @@ Se ha optimizado el postprocesado explotando la librería de NumPy y los resulta
 
 \subsection{OSNet}
 
-\textit{Omni-Scale Network} es un modelo de reidentificación de personas que emplea características de diferentes tamaños (\textit{omni-scale features}) para la clasificación. Destaca por ser extremadamente ligero y por su elevada precisión \cite{zhou2019omni}. Se realizó una exportación a partir del modelo implementado en Pytorch (\cite{andrew}).
+\textit{Omni-Scale Network} (OSNet) es un modelo de reidentificación de personas que emplea características de diferentes tamaños (\textit{omni-scale features}) para la clasificación. Destaca por ser extremadamente ligero y por su elevada precisión \cite{zhou2019omni}. Se realizó una exportación a partir del modelo implementado en Pytorch (\cite{andrew}).
 
 TODO: mencionar que se incorporó el preprocesado en el modelo de PyTorch, de forma que se ejecuta en la \acrshort{gpu}, añadirlo en el apéndice?
 
 \subsection{Características de los modelos}
 
-En la tabla \ref{} se muestra el tamaño de la entrada, el número de parámetros y la latencia de cada modelo.
+En la tabla \ref{tab:modelspecs} se muestra el tamaño de la entrada, el número de parámetros y la latencia de cada modelo.
 
 Cada valor de la columna \textit{input size} se compone de la resolución de la imagen de entrada (ejemplo: 112x112) multiplicado por el número de canales de entrada (en este caso 3, que se corresponde con los canales \textit{Red, Green} y \textit{Blue} de una imagen \acrshort{rgb}). Los modelos OSNet y ArcFace utilizan una resolución fija de 256x128 y 112x112 respectivamente de los frames de entrada, mientras que YOLO y YuNet permiten un ajuste dinámico de dicha resolución en tiempo de ejecución. Para obtener el mejor balance entre precisión y latencia, se ha optado por establecer una resolución fija de 640x640 y 480x480 respectivamente.
 
@@ -96,9 +96,7 @@ NOTA IMPORTANTE: estoy midiendo la latencia de la propia inferencia pero tambié
 \section{Resultados}
 \label{sec:modelic}
 
-\input{contenido/tables/tests/tabequips}
-
-En la figura \ref{tab:equips} se muestran los resultados de latencia (en milisegundos) y de la métrica \textit{F1\_score} para los modelos de detección y \textit{precision} para los modelos de reconocimiento (ver métricas en la sección \ref{sec:modeleval}). Cada resultado refleja la media y la desviación típica de \textbf{5 ejecuciones}, se ejecuta un test previo a modo de calentamiento para cada modelo.
+En la tabla \ref{tab:equips} se muestran los resultados de latencia (en milisegundos) y de la métrica \textit{F1\_score} para los modelos de detección y \textit{precision} para los modelos de reconocimiento (ver métricas en la sección \ref{sec:modeleval}). Cada resultado refleja la media y la desviación típica de \textbf{5 ejecuciones}, se ejecuta un test previo a modo de calentamiento para cada modelo.
 
 Para la ejecución de inferencias, se han empleado los \textit{backends} de OpenVINO, TensorRT y OpenCV, este último para el caso concreto de la red YuNet. Es importante destacar que los \textit{backends} de OpenVINO y TensorRT soportan precisión mixta, es decir, se ejecutan las capas de un modelo en la precisión que menor latencia reporte dentro de una lista de precisiones (ejemplo: FP16 o FP32) \cite{mixed}. Esta funcionalidad puede emplearse siempre que la arquitectura de los dispositivos la implemente. Las últimas versiones de OpenCV también implementan soporte para ambas precisiones FP32 y FP16. Los modelos del proyecto se han compilado para utilizar la precisión mixta en FP16 o FP32.
 
@@ -114,6 +112,8 @@ TODO: Siendo la AGX Thor ligeramente peor en OpenVINO, consigue el mejor resulta
 A excepción de YOLO11n, el resto de modelos de redes son muy ligeras para los equipos de sobremesa en CPU, por lo que la mejora aplicando TensorRT es muy reducida aunque notoria. En el caso de YuNet, el uso de CUDA como \textit{backend} supone un salto menor respecto a TensorRT, ya que OpenCV integrado con CUDA no aprovecha todos los componentes de la arquitectura de la \acrshort{gpu}, como los tensor cores, a diferencia de TensorRT, que aplica dicho conocimiento para seleccionar las mejores tácticas.
 
 Hardware Abstraction Layer, KleidiCV para acelerar operaciones de OpenCV (a partir de 4.10.0) en arquitecturas Armv8 y v9. Putada: es una API sólo en C (usar ctypes en Python?).
+
+\input{contenido/tables/tests/tabequips}
 
 \section{Discusión}
 Los resultados de la tabla \ref{tab:equips} arrojan los resultados de las ejecuciones de 4 modelos de visión artificial en las arquitecturas Volta, Turing, Ampere y Blackwell de \acrshort{gpu}s de NVIDIA. El mayor salto generacional se experimenta con la arquitectura Blackwell\dots El salto entre la arquitectura Turing y la Ampere se muestra menos notable, ya que los resultados entre los equipos de sobremesa son idénticos o ligeramente mejores a favor del portátil al utilizar TensorRT.

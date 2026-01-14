@@ -23,17 +23,17 @@ Las pruebas que analizan los métodos de inicialización y las capacidades del r
 \section{Ajuste de parámetros del aprendizaje y reconocimiento}
 \label{seq:paramtunning}
 
-En esta sección se realiza un estudio acerca de la configuración óptima de parámetros en términos de rendimiento del sistema. A continuación se exponen los parámetros utilizados y su función, junto con el rango de valores para la prueba.
+En esta sección se realiza un estudio acerca de la configuración óptima de parámetros en términos de rendimiento del sistema. A continuación, se exponen los parámetros utilizados y su función, junto con el rango de valores para la prueba.
 
 TODO: En la fase de inicialización de los modelos (o fase de entrenamiento), el sistema guarda la información estadística que representa a cierto modelo. Durante el funcionamiento del sistema, puede ocurrir que los datos que recibe de un individuo registrado varíen respecto a la información de entrenamiento, lo que se conoce como \textbf{concept drift}. Se debe de corregir el concept drift para evitar una pérdida en la precisión de reconocimiento.
 
 TODO: actualización del modelo, añadir nuevas entidades puede corromper la información de las entidades iniciales (catastrophic forgetting).
 
 \begin{itemize}
-    \item \textbf{Umbral de Weibull (\textit{Tw})}: valor que determina si una entidad es desconocida o no. El rango probado es (0.05 0.1 0.25)
+    \item \textbf{Umbral de Weibull (\textit{Tw})}: valor que determina si una entidad es desconocida o no. El rango probado es (0.05 0.1 0.25), no se ha decidido explorar valores más altos debido a las implicaciones que tienen en el modo \textit{Open-World} que se verán más adelante.
     \item \textbf{Percentil (\textit{percent})}: valor del percentil aplicado en la combinación de las puntuaciones generadas por las \acrshort{svm}. El rango probado es (0.25 0.5 0.75)
-    \item \textbf{Número de \acrshort{svm} (\textit{max\_svm})}: valor que representa al tamaño máximo de un comité. El rango probado es (1 3 7 10)
-    \item \textbf{Número de negativos (\textit{nneg})}: tamaño del conjunto de muestras negativas. El rango probado es (10 50)
+    \item \textbf{Número de \acrshort{svm} (\textit{max\_svm})}: valor que representa al tamaño máximo de un comité. El rango probado es (1 3 7 10),  valores más altos implicarían un mayor coste computacional en cada iteración.
+    \item \textbf{Número de negativos (\textit{nneg})}: tamaño del conjunto de muestras negativas. El rango probado es (10 50), debido a que 50 era el \dots
     \item \textbf{Tamaño de la plantilla}: establece el número de frames positivos que define a un comité. Se va a partir siempre de un tamaño de 5 frames, el mínimo necesario acorde a \cite{Erik} para definir un nuevo individuo.
     \item \textbf{Tamaño de secuencia}: número de frames que forman una secuencia de video. Se ha fijado el valor en 15 frames, que equivalen a 1,5 segundos de video con cámaras funcionando a 10 Hz.
     \item \textbf{Solapamiento}: establece el salto en el número de frames entre secuencias. Se ha fijado el valor en 5, dando lugar a más secuencias para analizar al coincidir frames entre las mismas.
@@ -48,11 +48,13 @@ A continuación se exponen los resultados obtenidos para cada combinación en \t
 
 La tabla \ref{tab:osparams} muestra los 5 mejores resultados de las pruebas del análisis de parámetros acorde a la métrica \textit{F1\_score}.
 
-El parámetro \textit{percent} muestra una tendencia clara al valor 0.25. Al fusionar los scores de todas las SVM en todos los frames, se obtiene un único score acordado por la mayoría mediante la mediana, siendo esta equivalente al percentil 50. Al variar el percentil, el número de SVM participantes también varía, un percentil de 100 implica obtener el mayor score, que se corresponde con la peor coincidencia (por ende, el valor de recall es paupérrimo, puesto que se necesita del consenso de todas las SVM del comité para devolver un match). Por otro lado, un percentil de 0 implica recuperar el score más bajo de entre todas las SVM en todos los frames. En este caso también podría darse un bajo recall ya que si por ejemplo se añade una SVM de otra entidad, dicha SVM devolvería un score negativo, por lo que Weibull etiquetaría el reconocimiento como desconocido al haber más de un comité activado. Según los resultados, el sistema se decanta por una participación minoritaria pero fiable, como los datos de precisión abalan. TODO: Se desconoce si el comité siempre utiliza las mismas \acrshort{svm} para los reconocimientos.
+El parámetro \textbf{\textit{percent}} muestra una tendencia clara al valor \textbf{0.25}. Un percentil de 25 implica escogen las 2/3 primeras \acrshort{svm} que han dado los valores más bajos y que compondrán la puntuación final del comité.
+
+Los valores extremos en el percentil implican en un bajo \textit{recall}, un percentil de 100 implica obtener el mayor valor (que se corresponde con la peor coincidencia), este valor puede proceder de una \acrshort{svm} "intrusa" (de otro individuo), que hace que el comité no se active ante sus muestras. Lo mismo sucede con un percentil de 0, si por ejemplo se añade una \acrshort{svm} "intrusa", el comité se activaría ante las muestras que pertenecen a otro comité, en cuyas condiciones normales también se activaría, lo que resultaría en un \textbf{desconocido} cuando realmente no lo es.
 
 Para el parámetro \textit{nneg} se considera más efectivo un tamaño de 50 del conjunto de negativos frente al valor de 10 según el sistema. Ya que con 50 muestras se puede albergar un mayor número de individuos, mayor capacidad obtiene la \acrshort{svm} de definir mejor sus fronteras.
 
-En cuanto al valor del parámetro \textit{tw} no existe una tendencia clara. Atendiendo a los valores de \textit{precision} y \textit{recall}, se puede apreciar como al aumentar el umbral de Weibull, el \textit{recall} aumenta en consecuencia a costa del \textit{precision}, esto se debe a que al aumentar el umbral se está agregando cierta tolerancia de la mejor puntuación a pertenecer a la distribución, por lo tanto menos desconocidos se detectan (aumenta el \textit{recall}) a costa de aceptar predicciones erróneas (baja la precisión), un valor bajo demuestra exactamente lo contrario. Un valor de 0.1 en el umbral es la opción más balanceada entre estas dos métricas, aunque los otros dos valores no reflejan resultados notablemente extremos.
+En cuanto al valor del parámetro \textit{Tw} no existe una tendencia clara. Atendiendo a los valores de \textit{precision} y \textit{recall}, se puede apreciar como al aumentar el umbral de Weibull, el \textit{recall} aumenta en consecuencia a costa de la precisión, debido a que se está agregando cierta tolerancia de la mejor puntuación a pertenecer a la distribución, por lo tanto, menos desconocidos se detectan (aumenta el \textit{recall}) a costa de aceptar predicciones erróneas (baja la precisión), un valor bajo demuestra justo lo contrario. Un valor de 0.1 en el umbral es la opción más balanceada entre estas dos métricas.
 
 En el caso del parámetro \textit{max\_svm}, tampoco es seguro qué único valor escoger. Puede afirmarse que un valor alto devuelve resultados más robustos, esto se debe a que se implica un mayor número de \acrshort{svm} en cada reconocimiento, lo que da lugar a más diversidad y por lo tanto a unos comités que se activan en una mayor cantidad de situaciones de la entidad.
 
@@ -64,7 +66,11 @@ En el modo \textit{Open-World}, el sistema crea un nuevo comité cuando se recon
 
 Como en la sección \ref{sec:osparams}, en la tabla \ref{tab:owparams} se muestran los cinco mejores resultados fruto del análisis de parámetros.
 
-Los parámetros \textit{nneg} y \textit{percent} permanecen constantes acorde a las pruebas de la sección \ref{sec:osparams}. A la hora de escoger un valor de umbral de Weibull (\textit{tw}) es necesario tener en cuenta una métrica adicional que es el número de comités que se han generado (se cuentan también los 10 comités iniciales). Un valor alto del umbral implica una reducción en la creación de comités, debido al elevado \textit{recall} y por ende a un menor número de desconocidos y recíprocamente. Al reducir el valor de \textit{tw} se elevan notablemente los comités creados, pasando de 8 a 24 comités sin contar los 10 iniciales, lo que implica un gran salto con apenas una reducción en el valor de \textit{recall}. Este crecimiento puede deberse a la indecisión del sistema de predecir un individuo, ya que al crear nuevos comités de la misma persona, aumenta el riesgo de que más de un comité se active (devuelva un score bajo), por lo que dejan de darse casos extremos, aumentando así el número de desconocidos y por ende de comités creados. En cuanto al parámetro \textit{max\_svm}, los resultados conducen a la misma conclusión que en las pruebas de la sección \ref{sec:osparams}, salvo por el valor de 3 en uno de los resultados, que representa una situación excepcional.
+Los parámetros \textit{nneg} y \textit{percent} permanecen constantes, acorde a las pruebas de la anterior sección.
+
+A la hora de escoger un valor de umbral de Weibull (\textit{tw}), es necesario tener en cuenta una métrica adicional, que es el número de comités que se han generado (\textit{Number of ensembles} en la tabla \ref{tab:owparams}), contando los 10 comités iniciales. Un valor alto del umbral implica una reducción en la creación de comités, debido al elevado \textit{recall} y por ende a un menor número de desconocidos. Al reducir el valor de \textit{Tw}, se elevan notablemente los comités creados, pasando de 18 a 34 comités, lo que es problemático para este sistema, ya que no posee la capacidad de asociar los nuevos comités a los ya existentes (en esta prueba, todas las entidades son conocidas), por lo que aumenta el riesgo de que más de un comité se active, dando el reconocimiento como desconocido.
+
+En cuanto al parámetro \textit{max\_svm}, los resultados conducen a la misma conclusión que en las pruebas de la sección \ref{sec:osparams}, salvo por el valor de 3 en uno de los resultados, que implica que el sistema prefiere un valor de \textit{Tw} de 0.25, aunque solo opere con 3 \acrshort{svm}s por comité (realmente 1 \acrshort{svm}, por el percentil 25).
 
 TODO: %\subsection{Umbral de actualización?}
 
@@ -72,11 +78,9 @@ TODO:\textbf{Umbral de actualización}: valor que se compara frente a la fusión
 
 TODO: Uno de los objetivos del sistema es obtener la mayor diversidad intra-comité y la mayor especificidad inter-comité. Un \textbf{percentil alto} encajaría si las SVM son \textbf{específicas} entre sí (la mayoría de las SVM devuelven match). En cambio, un \textbf{bajo percentil} funcionaría con unas SVM \textbf{más diversas} (se espera que la minoría de las SVM den un resultado coincidente).
 
-TODO: En relación con el anterior punto, el número de SVM influye en la decisión de que percentil tomar. Si se utilizan 3 SVM por comité y la mediana, al menos 2 SVM deben de devolver un score bajo para dar un resultado coincidente. Por otro lado, si se utilizan 10 SVM y un percentil de 30, sólo 3 de las 10 SVM necesitan estar de acuerdo para devolver un match. En los resultados se muestra como un comité de 3 SVM y TW=0.05 destaca respecto a un comité de 1 SVM y TW=0.5. Los resultados utilizando 10 SVM por comité no llegan a mejorar notablemente el valor de 3 SVM, esto es de gran relevancia, puesto que se reduce el número de iteraciones de cada reconocimiento de 10*n a 3*n, siendo n el número de comités que existen y asumiendo que todos los comités han llegado al límite de SVM. Con estos resultados se ha demostrado que implementar varias SVM por comité mejora el recall manteniendo la precisión. 1 sóla SVM por comité es efectiva si dicha SVM es representativa del individuo, en caso contrario puede devolver respuestas coincidentes acerca de una entidad distinta del comité, generando ruido que perjudica a las predicciones de Weibull. Un mayor número de SVM combinado con el percentil devuelve un resultado conforme dicta un grupo que omite los scores de SVM intrusas (de entidades distintas) y permite expulsarlas mediante los criterios ya comentados en la sección \ref{seq:limmod}.
+%TODO: En relación con el anterior punto, el número de SVM influye en la decisión de que percentil tomar. Si se utilizan 3 SVM por comité y la mediana, al menos 2 SVM deben de devolver un score bajo para dar un resultado coincidente. Por otro lado, si se utilizan 10 SVM y un percentil de 30, sólo 3 de las 10 SVM necesitan estar de acuerdo para devolver un match. En los resultados se muestra como un comité de 3 SVM y TW=0.05 destaca respecto a un comité de 1 SVM y TW=0.5. Los resultados utilizando 10 SVM por comité no llegan a mejorar notablemente el valor de 3 SVM, esto es de gran relevancia, puesto que se reduce el número de iteraciones de cada reconocimiento de 10*n a 3*n, siendo n el número de comités que existen y asumiendo que todos los comités han llegado al límite de SVM. Con estos resultados se ha demostrado que implementar varias SVM por comité mejora el recall manteniendo la precisión. 1 sóla SVM por comité es efectiva si dicha SVM es representativa del individuo, en caso contrario puede devolver respuestas coincidentes acerca de una entidad distinta del comité, generando ruido que perjudica a las predicciones de Weibull. Un mayor número de SVM combinado con el percentil devuelve un resultado conforme dicta un grupo que omite los scores de SVM intrusas (de entidades distintas) y permite expulsarlas mediante los criterios ya comentados en la sección \ref{seq:limmod}.
 
 TODO: comentar como el solapamiento puede influir en la creación de nuevas SVM.
-
-(TODO: podría comentarse) Criterio de selección de frames para nuevas SVM: también es muy importante la selección de las muestras que conforman las SVM, en la tabla (TODO) se muestran 2 criterios para la selección, uno consiste en seleccionar los frames con los scores más cercanos al cero, mientras que el otro es una selección aleatoria. El primer criterio demuestra un aumento en el F1 score, dado que los frames cercanos al cero son los más complicados de reconocer, de esta forma la SVM amplía sus fronteras respecto a lo que ya reconoce. A la hora de crear una SVM de un nuevo comité en el modo open-world, no queda otra alternativa que realizar una selección aleatoria.
 
 \section{Influencia del número de usuarios en el rendimiento}
 El número de usuarios registrados es un factor crítico, ya que el sistema implementado se nutre de los datos de los individuos. Por un lado, tener más individuos se traduce en más comités, por lo tanto se dispone de más puntos para definir la distribución de Weibull, lo que refuerza las predicciones. Por otra parte, se dispone de un mayor número de muestras negativas, lo que permite definir mejor las fronteras de las \acrshort{svm} y así mejorar la capacidad de predicción.
@@ -102,13 +106,35 @@ La situación ideal sería encontrar un instante en el que todas las personas de
 
 \input{contenido/tables/tests/osinittab.tex}
 
-En la tabla \ref{tab:osinittab} se muestran los resultados según la inicialización. Se puede apreciar como claramente el modo supervisado es el que mejor funciona, ya que los recortes de caras pudieron ser seleccionados minuciosamente, por lo que es lógico que devuelva el mejor resultado. El modo semisupervisado . Por último, el modo no supervisado refleja el peor rendimiento, en comparación con el modo semisupervisado los comités deberían de ser los mismos, ya que no existen muchos instantes en el video de prueba que reúnan las condiciones requeridas, por lo que el problema podría residir en como el método de tracking realiza el agrupamiento. Por otra parte, la caída en la precisión y la excesiva desviación en las métricas se debe al individuo que se incluye durante la operación del sistema, a diferencia de los anteriores modos, el comité de la persona en cuestión se define en base a unas muestras no seleccionadas de antemano, por lo que los resultados varían dependiendo de la calidad de las muestras que el sistema escoja. También se depende de que el desconocido detectado sea realmente el individuo en cuestión, en caso contrario se crea un comité que se adueña de la identidad del sujeto, agregando así ruido a los reconocimientos. TODO: el umbral de Weibull.
+En la tabla \ref{tab:osinittab} se muestran los resultados para los 3 tipos de inicialización. El modo semisupervisado se sitúa en el primer caso para las entidades de las que no se han encontrado muestras en el video, mientras que el resto de entidades se recogen igual que en el modo no supervisado (caso de la izquierda).
+
+Se puede apreciar como claramente el modo supervisado es el que mejor funciona, lo que es lógico, ya que los recortes de caras pudieron ser seleccionados minuciosamente.
+
+TODO: semisupervisado
+
+Por último, el modo no supervisado refleja el peor rendimiento. La caída en la precisión y la excesiva desviación en las métricas se debe al individuo que se incluye durante la operación del sistema, a diferencia de los anteriores modos. También se depende de que el desconocido detectado sea realmente el individuo en cuestión, en caso contrario se crea un comité que se adueña de la identidad del sujeto, agregando así ruido a los reconocimientos. TODO: comentar diferencias respecto al umbral de Weibull.
+
+\begin{figure}[tbp]
+    \centering
+    \begin{subfigure}[t]{0.2\textwidth}
+        \includegraphics[width=\textwidth]{imagenes/supervised.jpg}
+    \end{subfigure}
+    \subcaption{modo supervisado/\\semisupervisado}
+    \begin{subfigure}[t]{0.2\textwidth}
+        \includegraphics[width=\textwidth]{imagenes/nosupervised.jpg}
+    \end{subfigure}
+    \subcaption{modo no supervisado/\\semisupervisado}
+    \caption{Conjuntos de muestras según la inicialización}
+    \label{fig:inits}
+\end{figure}
+
+La figura \ref{fig:inits} expone un ejemplo de las muestras recogidas por los distintos métodos. En la izquierda, puede verse que las muestras apenas poseen borrosidad, contienen la suficiente luminosidad, son todas caras frontales y son de una mayor resolución, a diferencia de las de la derecha. Debido a que el método no supervisado utiliza el procesamiento de video, es esperable que las muestras no varíen entre sí, puesto que así ocurre en frames consecutivos.
 
 \subsection{Modo \textit{Open-World}}
 
 \input{contenido/tables/tests/owinittab.tex}
 
-En la tabla \ref{tab:owinittab} se muestran los resultados esta vez para \textit{Open-World}. Salvo en el modo no supervisado, se obtienen mejores resultados con un \textit{Tw} de 0.25 respecto a 0.1, esto puede deberse a que el sistema es menos propenso a crear comités que se puedan adueñar de las entidades existentes, por lo tanto se genera una menor confusión y equivocación. TODO: analizar porque el \textit{Tw} da mejor en 0.1. El número de comités aumenta en el modo no supervisado, ya que al contar con muestras de peor calidad (generalmente) la confusión inter-comité aumenta.
+En la tabla \ref{tab:owinittab} se muestran los resultados esta vez para \textit{Open-World}. Salvo en el modo no supervisado, se obtienen mejores resultados con un \textit{Tw} de 0.25 respecto a 0.1, esto puede deberse a que el sistema es menos propenso a crear comités que puedan adueñarse de las entidades existentes, por lo tanto, se genera una menor confusión y equivocación. TODO: analizar porque el \textit{Tw} da mejor en 0.1. El número de comités aumenta en el modo no supervisado, ya que al contar con muestras de peor calidad (generalmente) la confusión inter-comité aumenta.
 
 \section{Evolución del sistema en el tiempo}
 \subsection{Modo \textit{Open-Set}}
