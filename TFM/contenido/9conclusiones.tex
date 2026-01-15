@@ -1,9 +1,9 @@
 \chapter{Conclusiones y trabajo futuro}
 \label{chap:conclusiones}
 
-\section{Conclusiones}
+\lettrine{Ú}{l}timo capítulo en el que exponen las conclusiones de los resultados y los hitos alcanzados, así como los errores cometidos y las lecciones aprendidas. También se comentan algunas vías en las que reforzar o investigar para extender el trabajo de este proyecto.
 
-\dots
+\section{Conclusiones}
 
 La ejecución de los modelos de redes neuronales y del sistema en múltiples arquitecturas era uno de los objetivos principales, que se ha cumplido con hasta 6 arquitecturas distintas. Los resultados arrojados muestran las similitudes y diferencias entre las arquitecturas de dichos dispositivos. Adicionalmente, se ha probado el sistema ante cargas de trabajo crecientes, cuyo objetivo es acotar el número máximo de cámaras que el sistema puede soportar, todo operado en tiempo real.
 
@@ -15,12 +15,26 @@ Por motivos relacionados con el fin de soporte de \acrshort{ros} 1 y de poder ap
 
 Por otra parte, se ha incorporado una nueva funcionalidad, que permite al sistema actualizar su conocimiento ante nuevos individuos detectados. Fue necesario cambiar el funcionamiento del sistema base, de forma que pueda procesar secuencias de frames en vez de un solo frame. Debido al contexto de las pruebas, que implican a múltiples individuos que se entrecruzan, se han tenido que desarrollar algoritmos que mantengan el rastro de dichos individuos, con capacidad de reidentificación ante la pérdida de visión los mismos. Todos los componentes se han sometido a análisis, que exponen el comportamiento del sistema desde múltiples puntos de vista. TODO: resultados
 
+\subsection{Seguimiento del proyecto}
+
+Las principales causas de los retrasos en el proyecto fueron las pruebas de rendimiento de los modelos y del sistema.
+
+Aunque el motor de Docker despliegue el mismo software con el mismo \acrshort{so} y las mismas versiones de las librerías, las arquitecturas de los dispositivos hacen que los resultados de latencia y precisión cambien completamente.
+
+También se producen fallos en las fases menos esperadas, por ejemplo, al momento de exportar el modelo YOLO11n a \acrshort{onnx}. En todos los dispositivos, el modelo se exporta sin problema utilizando PyTorch en \acrshort{cpu}, a excepción de la Jetson AGX Orin, cuya exportación se realizó a partir de la versión de PyTorch para \acrshort{gpu}.
+
+Por otro lado, aunque el sistema de partida permitía operar con más de 2 cámaras, este era muy sensible a los retardos de cualquiera de las cámaras, además de que no estaba pensado para funcionar asumiendo cierto solape entre las cámaras. Por estos motivos, se tuvo que rediseñar parte de la lógica del sistema para lograr la escalabilidad.
 
 \section{Trabajo Futuro}
-El sistema \textit{Open-World} no se ha comportado según lo previsto. Se ha observado que dicho sistema es \textbf{muy sensible} a la hora de ajustar el parámetro del umbral de Weibull. Ajustando el umbral a un valor bajo, el número de comités nuevos por entidad se dispara, ya que añade incertidumbre al sistema rápidamente (puesto que no se generan casos extremos si se activa más de un comité). Un valor alto del umbral mitiga este problema, a costa de comprometer la precisión. Se podría estudiar la implementación de un nuevo criterio para agrupar los comités y así solventar esta problemática.
+
+Los nuevos componentes de la arquitectura extendida (sección \ref{sec:finalsys}) se han probado de forma aislada bajo un modelo de reconocimiento facial, debido a no disponer del tiempo suficiente. La integración de dichos componentes en el sistema implicaría muchos cambios en el código, aunque no debería de afectar significativamente a la lógica del sistema base ni a la interacción con \acrshort{ros}.
+
+El método de reconocimiento adaptativo se ha probado únicamente con recortes faciales, como en \cite{Erik, CESAR}. Se cree que dicho método puede funcionar para recortes de cuerpos.
+
+El modo \textit{Open-World} no se ha comportado según lo previsto. Se ha observado que dicho sistema es \textbf{muy sensible} a la hora de ajustar el parámetro del umbral de Weibull. Ajustando el umbral a un valor bajo, el número de comités nuevos por entidad se dispara, ya que añade incertidumbre al sistema rápidamente (puesto que no se generan casos extremos si se activa más de un comité). Un valor alto del umbral mitiga este problema, a costa de comprometer la precisión. Se podría estudiar la implementación de un nuevo criterio para agrupar los comités y así solventar esta problemática.
+
+%Se ha comprobado que el rendimiento del reconocimiento adaptativo es similar entre 1 y 10 \acrshort{svm}s por comité. Este fenómeno puede justificarse por la alta especificidad .
 
 El método de reidentificación de entidades mediante la distancia Euclidiana reporta problemas cuando las cámaras cambian de posición (ejemplo: el robot se desplaza), ya que se guardan las coordenadas \acrshort{2d} de una persona que pasan a ocupar el lugar de otro individuo. La imagen de distancia de las cámaras Kinect puede otorgar una posición en el espacio \acrshort{3d} de forma que la posición de la persona desaparecida se mantiene.
-
-Implementar el modo secuencia y la adaptación en el sistema final.
 
 En el anexo \ref{chap:coherence} se comenta la implementación de un módulo para la resolución de conflictos cuando dos cámaras \textbf{sin solape} predicen al mismo individuo. Debido a la nula mejora en el rendimiento por los motivos comentados, sería necesario solventar los problemas del método de clasificación implementado, o incluso eliminarlo y replantear un método nuevo.

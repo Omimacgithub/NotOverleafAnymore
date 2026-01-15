@@ -1,0 +1,55 @@
+\chapter{Métricas de evaluación de modelos de clasificación}
+\label{sec:modeleval}
+
+Las pruebas empleadas para evaluar los modelos de detección y reconocimiento son las mismas que en \cite{andrew}. Teniendo en cuenta que ahora se considera el desconocido como entidad posible, en las pruebas de reconocimiento se añaden las métricas de \textit{recall} y \textit{F1\_score} al tener falsos negativos (FN) y positivos (FP).
+
+\subsection{Modelos de detección}
+\label{subsec:det}
+
+Se aplican las siguientes métricas:
+\begin{itemize}
+    \item \textbf{\textit{Precision}}: \textbf{cuando el modelo detecta un objeto}, cuantas veces la detección corresponde con una persona presente.
+          \begin{equation}
+              Precision = \frac{TP}{TP + FP}
+          \end{equation}
+    \item \textbf{\textit{Recall}}: \textbf{cuando realmente hay una persona}, cuantas veces el modelo detecta a esa persona.
+          \begin{equation}
+              Recall = \frac{TP}{TP + FN}
+          \end{equation}
+    \item \textbf{\textit{F1\_score}}: dicha métrica se calcula como una media armónica entre el \textit{recall} (proporción de objetos detectados) y el \textit{precision} (proporción de detecciones correctas) \cite{andrew}.
+          \begin{equation}
+              F1\_score = 2* \frac{Precision * Recall}{Precision + Recall}
+          \end{equation}
+
+\end{itemize}
+
+\subsection{Modelos de reconocimiento}
+\label{subsec:recon}
+
+Las métricas de evaluación son las mismas que en los modelos de detección, salvo las diferencias en el significado que se exponen a continuación:
+\begin{itemize}
+    \item \textbf{\textit{Precision}}: refleja la proporción de aciertos cuando el modelo TODO: no asigna a una persona como desconocida.
+          \begin{equation}
+              Precision = \frac{TP + TN}{TP + TN + FP}
+          \end{equation}
+    \item \textbf{\textit{Recall}}: refleja la proporción de veces que el sistema TODO: decide no asignar la entidad desconocida.
+          \begin{equation}
+              Recall = \frac{TP + TN}{TP + TN + FN}
+          \end{equation}
+    \item \textbf{\textit{F1\_score}}: lo mismo que en los modelos de detección.
+\end{itemize}
+
+Cuando el sistema tiene dudas acerca de la entidad de una persona, es preferible que se asigne dicha entidad como \textbf{desconocida} antes que otorgar una predicción \textbf{incorrecta}. Por este motivo, no se tiene en cuenta los falsos negativos a la hora de calcular la precisión, ni los falsos positivos cuando se calcula el \textit{recall}.
+
+\subsection{Matriz de confusión}
+\label{sec:metriks}
+
+Para evaluar la clasificación de los modelos de visión artificial del proyecto, se empleó la famosa matriz de confusión, que es una tabla compuesta por los siguientes items:
+\begin{itemize}
+    \item \textit{\textbf{True Positive (TP)}}: predicción positiva correcta. Para los modelos de detección, sería detectar correctamente a una persona. Para los modelos de reconocimiento, asignar la etiqueta correcta a la persona detectada.
+    \item \textit{\textbf{True Negative (TN)}}: predicción negativa correcta. Para los modelos de detección, sería no detectar correctamente a una persona, lo que carece de sentido a la hora de evaluar un buen detector. TODO (es mejor quitar esta métrica, no la uso en el sistema): Para los modelos de reconocimiento, sería predecir que la persona no pertenece a ninguna de las registradas, de aquí surge el concepto de \textbf{desconocido}.
+    \item \textit{\textbf{False Positive (FP)}}: predicción positiva errónea. Para los modelos de detección, sería detectar una persona donde no la hay. Para los modelos de reconocimiento, sería otorgar una etiqueta incorrecta a la persona detectada.
+    \item \textit{\textbf{False Negative (FN)}}: predicción negativa errónea. Para los modelos de detección, sería no detectar a la persona presente. Para los modelos de reconocimiento, sería asignar la entidad de desconocido a una persona ya registrada en el sistema.
+\end{itemize}
+
+Estos componentes se aplicarán a los \glspl{dataset} de prueba formados a partir de los videos grabados. En un entorno real de operación no sería posible aplicar dichas métricas por falta de un \textit{\gls{gt}}. %\textit{ground truth}.
