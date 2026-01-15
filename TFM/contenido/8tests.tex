@@ -72,9 +72,7 @@ A la hora de escoger un valor de umbral de Weibull (\textit{tw}), es necesario t
 
 En cuanto al parámetro \textit{max\_svm}, los resultados conducen a la misma conclusión que en las pruebas de la sección \ref{sec:osparams}, salvo por el valor de 3 en uno de los resultados, que implica que el sistema prefiere un valor de \textit{Tw} de 0.25, aunque solo opere con 3 \acrshort{svm}s por comité (realmente 1 \acrshort{svm}, por el percentil 25).
 
-TODO: %\subsection{Umbral de actualización?}
-
-TODO:\textbf{Umbral de actualización}: valor que se compara frente a la fusión de scores de una secuencia. El rango probado es (0.1 0.3)
+%TODO:\textbf{Umbral de actualización}: valor que se compara frente a la fusión de scores de una secuencia. El rango probado es (0.1 0.3)
 
 TODO: Uno de los objetivos del sistema es obtener la mayor diversidad intra-comité y la mayor especificidad inter-comité. Un \textbf{percentil alto} encajaría si las SVM son \textbf{específicas} entre sí (la mayoría de las SVM devuelven match). En cambio, un \textbf{bajo percentil} funcionaría con unas SVM \textbf{más diversas} (se espera que la minoría de las SVM den un resultado coincidente).
 
@@ -82,7 +80,7 @@ TODO: Uno de los objetivos del sistema es obtener la mayor diversidad intra-comi
 
 TODO: comentar como el solapamiento puede influir en la creación de nuevas SVM.
 
-\section{Influencia del número de usuarios en el rendimiento}
+\section{TODO: Influencia del número de usuarios en el rendimiento}
 El número de usuarios registrados es un factor crítico, ya que el sistema implementado se nutre de los datos de los individuos. Por un lado, tener más individuos se traduce en más comités, por lo tanto se dispone de más puntos para definir la distribución de Weibull, lo que refuerza las predicciones. Por otra parte, se dispone de un mayor número de muestras negativas, lo que permite definir mejor las fronteras de las \acrshort{svm} y así mejorar la capacidad de predicción.
 
 La calidad de la función de reconocimiento viene determinada por el número de puntos que componen la función de Weibull, cuantos más puntos, mayor definición y por tanto reconocimientos más precisos \cite{Erik}. Con un universo de 20 individuos, sólo 5 puntos componen la función de Weibull (de las 20 entidades sólo 10 se registran en el sistema, a modo de probar el open-set, y de esos 10, la mitad definen la función), lo que lleva a un comportamiento más impreciso que con un universo mayor. El sistema inicial cuenta con un universo de \textbf{6 individuos}, lo que claramente \textbf{es insuficiente} para realizar una diferenciación precisa de los IoI respecto a lo desconocido.

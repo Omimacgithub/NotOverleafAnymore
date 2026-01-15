@@ -69,7 +69,7 @@
 {
     name=tensor,
     plural={tensores},
-    description={Vector de n dimensiones que se utiliza para almacenar objetos generados y/o consumidos por los modelos de deep learning (ejemplo: datos de entrada) y que se puede ejecutar en una \acrshort{gpu}.}
+    description={Vector de múltiples dimensiones que se utiliza para almacenar objetos generados y/o consumidos por los modelos de deep learning (ejemplo: datos de entrada) y que se puede ejecutar en una \acrshort{gpu}.}
 }
 \newglossaryentry{thread}
 {
@@ -90,4 +90,10 @@
 {
     name=Non Maximum Suppression,
     description={Técnica utilizada principalmente en la detección de objetos, que selecciona la mejor \gls{bbox} dentro de un conjunto de \glspl{bbox} que se solapan. Esta técnica es vital, ya que evita procesar duplicados del mismo objeto.}
+}
+
+\newglossaryentry{quant}
+{
+    name=Cuantización,
+    description={En el área del aprendizaje máquina, es el proceso de reducir la precisión de un \gls{tensor}, generalmente de un formato de mayor precisión a uno de menor precisión. Esta técnica es de gran importancia, sobretodo en sistemas embebidos, debido a los elevados requerimientos computacionales y de memoria de los modelos de inteligencia artificial cuando se ejecutan en precisiones altas (ejemplo: \acrshort{fp}32).}
 }

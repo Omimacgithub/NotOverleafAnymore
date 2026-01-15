@@ -1,7 +1,7 @@
 \chapter{Conclusiones y trabajo futuro}
 \label{chap:conclusiones}
 
-\lettrine{Ú}{l}timo capítulo en el que exponen las conclusiones de los resultados y los hitos alcanzados, así como los errores cometidos y las lecciones aprendidas. También se comentan algunas vías en las que reforzar o investigar para extender el trabajo de este proyecto.
+\lettrine{Ú}{l}timo capítulo en el que exponen las conclusiones de los resultados y los hitos alcanzados, así como los errores cometidos y las lecciones aprendidas. También se comentan algunas vías en las que se puede extender, con desarrollo e investigación, el trabajo de este proyecto.
 
 \section{Conclusiones}
 
@@ -32,6 +32,8 @@ Los nuevos componentes de la arquitectura extendida (sección \ref{sec:finalsys}
 El método de reconocimiento adaptativo se ha probado únicamente con recortes faciales, como en \cite{Erik, CESAR}. Se cree que dicho método puede funcionar para recortes de cuerpos.
 
 El modo \textit{Open-World} no se ha comportado según lo previsto. Se ha observado que dicho sistema es \textbf{muy sensible} a la hora de ajustar el parámetro del umbral de Weibull. Ajustando el umbral a un valor bajo, el número de comités nuevos por entidad se dispara, ya que añade incertidumbre al sistema rápidamente (puesto que no se generan casos extremos si se activa más de un comité). Un valor alto del umbral mitiga este problema, a costa de comprometer la precisión. Se podría estudiar la implementación de un nuevo criterio para agrupar los comités y así solventar esta problemática.
+
+Como ya se ha visto, el reconocimiento adaptativo mejora conforme se añaden nuevos usuarios al sistema. Para lograr alcanzar el techo de rendimiento del sistema, sería necesario crear un \gls{dataset} más grande, con decenas de personas, en vez de las 6 del \gls{dataset} probado.
 
 %Se ha comprobado que el rendimiento del reconocimiento adaptativo es similar entre 1 y 10 \acrshort{svm}s por comité. Este fenómeno puede justificarse por la alta especificidad .
 
