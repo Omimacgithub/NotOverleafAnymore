@@ -16,7 +16,16 @@ En esta sección se introducen las pruebas escogidas para medir las capacidades 
 
 Todas las pruebas mencionadas se ejecutan en las modalidades \textit{Open-Set}, que detecta desconocidos y actualiza las entidades existentes y \textit{Open-World}, que realiza las mismas funciones que \textit{Open-Set}, pero con la capacidad de registrar a los desconocidos en el sistema.
 
-\section{Dataset de las pruebas}
+\section{Realización de las pruebas}
+
+Las pruebas que analizan los métodos de inicialización y las capacidades del reconocimiento adaptativo se realizaron por separado del sistema bajo el modelo de reconocimiento facial \textbf{ArcFace}. Por lo tanto, las pruebas siguen el mismo procedimiento que el expuesto en la sección \ref{sec:probes} para los modelos de reconocimiento, salvo por los siguientes cambios:
+
+\begin{itemize}
+    \item Los frames se procesan \textbf{por bloques}, de forma que se agrupan los recortes según el individuo mediante la técnica de procesamiento de video (sección \ref{sec:video}), se obtienen los \glspl{embedding} por medio de ArcFace y se aplica el reconocimiento adaptativo para reconocer a las personas de la secuencia.
+    \item Se devuelven las métricas de \textit{precision}, \textit{recall} y \textit{F1\_score}, en vez de únicamente la métrica \textit{precision} para evaluar los reconocimientos.
+\end{itemize}
+
+\subsection{Dataset utilizado}
 
 Las pruebas que analizan los métodos de inicialización y las capacidades del reconocimiento adaptativo se realizaron por separado del sistema bajo el modelo de reconocimiento facial \textbf{ArcFace}. Por lo tanto, para dichas pruebas se ha empleado el \gls{dataset} expuesto en la sección \ref{sec:modset}.
 

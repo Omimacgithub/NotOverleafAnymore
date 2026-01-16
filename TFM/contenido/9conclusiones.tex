@@ -23,8 +23,6 @@ Aunque el motor de Docker despliegue el mismo software con el mismo \acrshort{so
 
 También se producen fallos en las fases menos esperadas, por ejemplo, al momento de exportar el modelo YOLO11n a \acrshort{onnx}. En todos los dispositivos, el modelo se exporta sin problema utilizando PyTorch en \acrshort{cpu}, a excepción de la Jetson AGX Orin, cuya exportación se realizó a partir de la versión de PyTorch para \acrshort{gpu}.
 
-Por otro lado, aunque el sistema de partida permitía operar con más de 2 cámaras, este era muy sensible a los retardos de cualquiera de las cámaras, además de que no estaba pensado para funcionar asumiendo cierto solape entre las cámaras. Por estos motivos, se tuvo que rediseñar parte de la lógica del sistema para lograr la escalabilidad.
-
 \section{Trabajo Futuro}
 
 Los nuevos componentes de la arquitectura extendida (sección \ref{sec:finalsys}) se han probado de forma aislada bajo un modelo de reconocimiento facial, debido a no disponer del tiempo suficiente. La integración de dichos componentes en el sistema implicaría muchos cambios en el código, aunque no debería de afectar significativamente a la lógica del sistema base ni a la interacción con \acrshort{ros}.

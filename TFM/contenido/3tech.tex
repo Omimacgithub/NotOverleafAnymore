@@ -1,22 +1,26 @@
 \chapter{Fundamentos tecnológicos}
 \lettrine{E}{n} este capítulo se detallan las herramientas hardware y software empleadas para el desarrollo y la gestión del proyecto.
 
-\section{Hardware}
-\label{sec:hw}
+\section{Dispositivos de altas prestaciones}
 
-\subsection{Cámaras RGBD}
-Para nutrir al sistema de imágenes se cuenta con las cámaras Kinect de Microsoft. Dichas cámaras otorgan una imagen \acrfull{rgb} más una imagen de profundidad (depth).
+\subsection{Arquitecturas de GPU}
 
-Para este proyecto, se cuenta con dos de estas cámaras, cada una con una cobertura de visión de 57º, lo que otorga un rango total de 117º, asumiendo que no existen solapes entre las cámaras.
+Según la arquitectura de la \acrshort{gpu} de NVIDIA, se agregan nuevas características que maximizan el rendimiento de la inferencia de los modelos (se ahondará en este tema en el capítulo \ref{chap:cnn}). Las arquitecturas que se muestran a continuación están ordenadas de menor a mayor generación.
 
-\subsection{Summit\_XL}
-\label{sec:summit}
+Un aspecto a tener en cuenta es que todas las arquitecturas que se exponen permiten el entrenamiento e inferencia de modelos en \textbf{precisión mixta}, es decir, escoger la precisión apropiada entre una lista de precisiones (ejemplo: \acrshort{fp}32+\acrshort{fp}16) para cada capa del modelo.
 
-El sistema que se expondrá se ha construido para funcionar en el robot móvil Summit\_XL. Dicho robot es de tipo diferencial (permite el movimiento en todas las direcciones excepto en los laterales) y cuenta con 4 ruedas de goma, de gran utilidad para moverse en entornos de exteriores. Entre sus componentes, tiene instalado un sensor Velodyne \acrshort{lidar} que otorga nubes de puntos \acrshort{3d} del entorno y dos cámaras Kinect instaladas en los laterales.
+\subsubsection{Volta y Turing}
+En la arquitectura Volta \cite{volta} (2017), se introducen los \textbf{tensor cores}, que son cores destinados a acelerar multiplicaciones y sumas de matrices (conocido también como MMA).
 
-\subsection{Dispositivos de altas prestaciones}
+Volta tiene el código 7.0 como compute capability y es empleada por la \textbf{Jetson Xavier NX}.
 
-\subsubsection{Arquitecturas de GPU}
+\subsubsection{Turing}
+
+En la arquitectura Turing (2018)... La \textbf{GeForce GTX 1650} (gráfica del PC lab) sigue esta arquitectura.
+
+Turing tiene el código 7.0 como compute capability y es empleada por la \textbf{Jetson Xavier NX}.
+
+\subsubsection{Ampere}
 
 \begin{figure}[tbp]
     \centering
@@ -25,36 +29,31 @@ El sistema que se expondrá se ha construido para funcionar en el robot móvil S
     \label{fig:types}
 \end{figure}
 
-Según la arquitectura de la \acrshort{gpu} de NVIDIA a tratar se agregan nuevas características que maximizan el rendimiento de la inferencia de los modelos (se ahondará en este tema en el capítulo \ref{chap:cnn}). Las arquitecturas que se muestran a continuación están ordenadas de menor a mayor generación:
-\begin{itemize}
-    \item Volta \cite{volta}: se introducen los \textbf{tensor cores}, que son cores destinados a acelerar multiplicaciones y sumas de matrices (conocido también como MMA). La \textbf{Jetson Xavier NX} sigue esta arquitectura.
-    \item Turing: . La \textbf{GeForce GTX 1650} (gráfica del PC lab) sigue esta arquitectura.
-    \item Ampere \cite{ampere}: incluye las siguientes mejoras:
-          \begin{itemize}
-              \item Incorpora los tensor cores de tercera generación, que incluye los formatos de precisión \textbf{TF32} (Tensor Float 32). TF32 es un tipo optimizado para los \textbf{tensor cores}, híbrido entre FP32 y FP16, ya que de rango o exponente tiene los mismos bits que FP32 y de mantisa o precisión tiene los mismos bits que FP16 (como se muestra en la figura \ref{fig:types}). Debido a que TF32 acepta una entrada de tipo FP32 y una salida también de tipo FP32, dicho formato puede aplicarse sin realizar ningún cambio en el código.
-              \item Introduce la funcionalidad \acrfull{mig}, que permite la partición \textbf{física} de \acrshort{gpu}s para correr aplicaciones de CUDA. A la hora de asignar particiones, es necesario comprender los siguientes conceptos \cite{migconcepts}:
-                    \begin{itemize}
-                        \item \textbf{\acrshort{gpu} Engine}: es la parte de la \acrshort{gpu} que ejecuta el trabajo. Un ejemplo es el copy engine, que se encarga de realizar las operaciones relacionadas con la memoria (direct memory access, memcpy...).
-                        \item \textbf{\acrshort{gpu} Memory Slice}: porción de los controladores de memoria y caché de la \acrshort{gpu}.
-                        \item \textbf{\acrshort{gpu} SM Slice}: porción de los \glspl{sm} de la \acrshort{gpu}.
-                        \item \textbf{\acrshort{gpu} Slice}: porción de la \acrshort{gpu} que combina un único \textbf{\acrshort{gpu} Memory Slice} y un único \textbf{\acrshort{gpu} SM Slice}.
-                        \item \textbf{\acrshort{gpu} Instance}: conjunto de \textbf{\acrshort{gpu} slices} y \textbf{\acrshort{gpu} engines}.
-                        \item \textbf{Compute Instance}: una o múltiples instancias que pertenecen a una \textbf{\acrshort{gpu} Instance}. Entre ellas se comparten las \textbf{\acrshort{gpu} Memory Slices} y los \textbf{\acrshort{gpu} Engines}, mientras que los \textbf{\acrshort{gpu} SM Slices} se \textbf{particionan}.
-                    \end{itemize}
-              \item Añade aceleración en las operaciones con matrices \textbf{dispersas} (\textit{sparsity}), que son matrices con una gran proporción de ceros entre sus valores.
-          \end{itemize}
-          La \textbf{Jetson Orin Nano}, \textbf{Jetson AGX Orin} y la \textbf{GeForce RTX 3050} (gráfica del portátil) siguen esta arquitectura.
-    \item Blackwell \cite{blackwell}: se introducen las siguientes mejoras:
-          \begin{itemize}
-              \item Incorpora los tensor cores de quinta generación, que permiten operar en las precisiones \textbf{FP4} y \textbf{FP6} (punto flotante de 4 y 6 bits respectivamente).
-              \item Segunda generación del \textbf{Transformer Engine} \cite{transformer}: introducido en las arquitecturas Ada Lovelace y Hopper (posteriores a Ampere), es una librería que permite manejar modelos en precisiones muy bajas (a partir de FP8 para abajo) a través de múltiples técnicas que computan los \textbf{factores de escalado}, que permiten ajustar los valores de los \glspl{tensor} a un rango más compacto y representable por precisiones más pequeñas.
+Con la arquitectura Ampere \cite{ampere} (2020) se incorporan los tensor cores de tercera generación, que incluye los formatos de precisión \textbf{TF32} (Tensor Float 32). TF32 es un tipo optimizado para los \textbf{tensor cores}, híbrido entre \acrshort{fp}32 y \acrshort{fp}16, ya que de rango o exponente tiene los mismos bits que \acrshort{fp}32 y de mantisa o precisión tiene los mismos bits que \acrshort{fp}16 (como se muestra en la figura \ref{fig:types}). Debido a que TF32 acepta una entrada de tipo \acrshort{fp}32 y una salida también de tipo \acrshort{fp}32, dicho formato puede aplicarse sin realizar ningún cambio en el código.
 
-                    En esta nueva versión para la Blackwell, se incorpora el \textit{micro-tensor scaling}, que aplica diferentes factores de escalado al nivel de los elementos de un \gls{tensor}. Esta nueva técnica hace posible la ejecución en \textbf{FP4} y \textbf{FP6} sin apenas pérdida en la precisión.
-          \end{itemize}
-          La \textbf{Jetson AGX Thor} sigue esta arquitectura.
+Se introduce la funcionalidad \acrfull{mig}, que permite la partición \textbf{física} de \acrshort{gpu}s para correr aplicaciones de CUDA. A la hora de asignar particiones, es necesario comprender los siguientes conceptos \cite{migconcepts}:
+\begin{itemize}
+    \item \textbf{\acrshort{gpu} Engine}: es la parte de la \acrshort{gpu} que ejecuta el trabajo. Un ejemplo es el copy engine, que se encarga de realizar las operaciones relacionadas con la memoria (direct memory access, memcpy...).
+    \item \textbf{\acrshort{gpu} Memory Slice}: porción de los controladores de memoria y caché de la \acrshort{gpu}.
+    \item \textbf{\acrshort{gpu} SM Slice}: porción de los \glspl{sm} de la \acrshort{gpu}.
+    \item \textbf{\acrshort{gpu} Slice}: porción de la \acrshort{gpu} que combina un único \textbf{\acrshort{gpu} Memory Slice} y un único \textbf{\acrshort{gpu} SM Slice}.
+    \item \textbf{\acrshort{gpu} Instance}: conjunto de \textbf{\acrshort{gpu} slices} y \textbf{\acrshort{gpu} engines}.
+    \item \textbf{Compute Instance}: una o múltiples instancias que pertenecen a una \textbf{\acrshort{gpu} Instance}. Entre ellas se comparten las \textbf{\acrshort{gpu} Memory Slices} y los \textbf{\acrshort{gpu} Engines}, mientras que los \textbf{\acrshort{gpu} SM Slices} se \textbf{particionan}.
 \end{itemize}
 
-Otro aspecto importante es que todas las arquitecturas anteriores permiten el entrenamiento e inferencia de modelos en \textbf{precisión mixta}, es decir, escoger la precisión apropiada entre una lista de precisiones (ejemplo: FP32+FP16) para cada capa del modelo.
+Se añade aceleración en las operaciones con matrices \textbf{dispersas} (\textit{sparsity}), que son matrices con una gran proporción de ceros entre sus valores.
+
+La \textbf{Jetson Orin Nano}, \textbf{Jetson AGX Orin} y la \textbf{GeForce RTX 3050} (gráfica del portátil) siguen esta arquitectura.
+
+\subsection{Blackwell}
+
+Blackwell \cite{blackwell} (2024) es la última arquitectura diseñada para \acrshort{gpu}s de NVIDIA, en ella se incorporan los tensor cores de quinta generación, que permiten operar en las precisiones \textbf{\acrshort{fp}4} y \textbf{\acrshort{fp}6} (punto flotante de 4 y 6 bits respectivamente).
+
+Se lanza la segunda generación del \textbf{Transformer Engine} \cite{transformer}: introducido en las arquitecturas Ada Lovelace y Hopper (posteriores a Ampere), es una librería que permite manejar modelos en precisiones muy bajas (a partir de \acrshort{fp}8 para abajo) a través de múltiples técnicas que computan los \textbf{factores de escalado}, que permiten ajustar los valores de los \glspl{tensor} a un rango más compacto y representable por precisiones más pequeñas.
+
+En esta nueva versión para la Blackwell, se incorpora el \textit{micro-tensor scaling}, que aplica diferentes factores de escalado al nivel de los elementos de un \gls{tensor}. Esta nueva técnica hace posible la ejecución en \textbf{\acrshort{fp}4} y \textbf{\acrshort{fp}6} sin apenas pérdida en la precisión.
+
+La \textbf{Jetson AGX Thor} sigue esta arquitectura.
 
 \subsubsection{Familia Jetson}
 
@@ -92,6 +91,19 @@ Desafortunadamente, el software que controla el \acrshort{mig} en la Jetson no f
 
 La tabla \ref{tab:x86} muestra los equipos con \acrshort{cpu}s Intel empleados en el proyecto. La columna \textit{Reference} muestra el equipo de pruebas utilizado en \cite{andrew} para realizar comparaciones de resultados.
 
+
+\section{Hardware}
+\label{sec:hw}
+
+\subsection{Cámaras RGBD}
+Para nutrir al sistema de imágenes se cuenta con las cámaras Kinect de Microsoft. Dichas cámaras otorgan una imagen \acrfull{rgb} más una imagen de profundidad (depth).
+
+Para este proyecto, se cuenta con dos de estas cámaras, cada una con una cobertura de visión de 57º, lo que otorga un rango total de 117º, asumiendo que no existen solapes entre las cámaras.
+
+\subsection{Summit\_XL}
+\label{sec:summit}
+
+El sistema que se expondrá se ha construido para funcionar en el robot móvil Summit\_XL. Dicho robot es de tipo diferencial (permite el movimiento en todas las direcciones excepto en los laterales) y cuenta con 4 ruedas de goma, de gran utilidad para moverse en entornos de exteriores. Entre sus componentes, tiene instalado un sensor Velodyne \acrshort{lidar} que otorga nubes de puntos \acrshort{3d} del entorno y dos cámaras Kinect instaladas en los laterales.
 
 \section{Software específico}
 \label{sec:sw}

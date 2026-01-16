@@ -31,6 +31,7 @@ A continuación se definen los actores (o roles) implicados y sus papeles:
 \end{itemize}
 
 \section{Metodología de desarrollo}
+\label{sec:method}
 
 Para el presente proyecto se ha empleado una metodología basada en Kanban (TODO: referencia). Kanban es una herramienta de gestión \textbf{visual}, cuyo objetivo es dividir el trabajo de un proyecto en pequeñas tareas concretas, agilizando así el desarrollo. El proyecto en sí representa un tablero y cada tarea representa una tarjeta, de esta forma, el equipo de desarrollo tiene una visión global de todas las tareas del proyecto. Las tareas en Kanban pasan por múltiples fases que pueden variar según las necesidades del proyecto. Se definen las siguientes fases aplicadas de esta aproximación de Kanban:
 \begin{itemize}
@@ -39,15 +40,6 @@ Para el presente proyecto se ha empleado una metodología basada en Kanban (TODO
     \item \textbf{\textit{DOING}}: son las tareas de la fase \textit{to-do} cuyo desarrollo ha comenzado.
     \item \textbf{\textit{DONE}}: las tareas cuyo desarrollo ha finalizado.
 \end{itemize}
-
-En la figura \ref{fig:khan} se muestra una instantánea del tablero Kanban utilizado para este proyecto. El enfoque Kanban ha permitido priorizar en todo momento las tareas importantes del proyecto gracias a su representación visual.
-
-\begin{figure}[tb]
-    \centering
-    \includegraphics[width=0.75\linewidth]{imagenes/Trallao.png}
-    \caption{Instantánea del tablero Kanban del proyecto}
-    \label{fig:khan}
-\end{figure}
 
 \section{Planificación}
 
@@ -81,7 +73,7 @@ Esta tarea pretende lograr un recorte en la latencia de los componentes más pes
 
 \textbf{Tareas:}
 \begin{itemize}
-    \item Instalación de TensorRT y PyCUDA en los dispositivos.
+    \item Instalación de TensorRT, PyCUDA, entre otras librerías en los dispositivos.
     \item Exportación de los modelos existentes al formato \acrshort{onnx}.
     \item Conversión de los modelos ONNX a engines de TensorRT mediante trtexec o por medio de la API de Python de TensorRT.
     \item Creación de códigos de inferencia que reciban como entrada el flujo de datos del sistema.
@@ -197,19 +189,45 @@ En la figura \ref{fig:Gantt} se muestra el diagrama de Gantt del proyecto con to
 
 \input{contenido/tables/risk.tex}
 
-La tabla \ref{tab:risks} muestra el plan de gestión de riesgos elaborado para mitigar el impacto de dichos riesgos y evitar que retrasen en grave medida la consecución del proyecto.
+La tabla \ref{tab:risks} muestra el plan de gestión de riesgos elaborado para el proyecto. Para cada riesgo, se indica su probabilidad, el impacto en semanas de retraso, así como la respuesta prevista para mitigarlo.
+
+Todos los riesgos expuestos han terminado sucediendo, junto a otros riesgos no previstos que surgieron durante el proyecto (ejemplo: los archivos de las pruebas no pueden almacenarse de forma local en el dispositivo por problemas de espacio).
 
 \section{Seguimiento}
 %TODO: Cada una de las tareas del proyecto se añaden a la fase \textit{backlog}, que posteriormente se dividen en varias tareas que se incorporan a la fase \textit{to-do}.
 
 %TODO: El desarrollo del proyecto en líneas generales se ha mantenido según lo previsto. Los imprevistos que surgieron se pudieron suplir en cierta medida con la realización de otras tareas, pero han provocado retardos en el proyecto. Los siguientes imprevistos:
+El seguimiento del proyecto siguió el flujo explicado en la sección \ref{sec:method}. Las fases del proyecto se añadieron al \textit{backlog} del tablero del proyecto, para dividirse en pequeñas tareas realizables, que pasarían a la fase \textit{TO-DO}. Las tareas de la fase \textit{TO-DO} pasan a la fase \textit{DOING}, para indicar que están en proceso de desarrollo. Finalmente, las tareas realizadas pasan a la fase \textit{DONE}.
+
+En la figura \ref{fig:khan} se muestra una instantánea del tablero Kanban de este proyecto. El enfoque Kanban ha permitido priorizar en todo momento las tareas importantes del proyecto gracias a su representación visual. En este caso, la proporción de tareas en la fase \textit{DOING} es mayor que la fase \textit{TO-DO}, lo que indica que conviene enfocarse en terminar algunas de las tareas en proceso antes de empezar con otras nuevas.
+
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=0.75\linewidth]{imagenes/Trallao.png}
+    \caption{Instantánea del tablero Kanban del proyecto}
+    \label{fig:khan}
+\end{figure}
+
+En líneas generales, el seguimiento sufrió retrasos de varias semanas en algunas de las fases, que se pudieron compensar con la realización de otras tareas. Por lo que finalmente, se pudieron cumplir los objetivos en el plazo previsto. Algunos de los principales retrasos fueron:
 
 \begin{itemize}
-    \item \textbf{Instalación y ejecución del sistema de partida}: la instalación del sistema en la Jetson Xavier NX se retrasó debido a que no llegaba una tarjeta microSD, necesaria para flashear el \acrshort{so}. Mientras tanto, se trabajó en preparar un Dockerfile de despliegue con todo el software y a experimentar con el sistema en el portátil personal.
-    \item TODO: SEGUIR
+    \item \textbf{Instalación y ejecución del sistema de partida}: la instalación del sistema en la Jetson Xavier NX se retrasó una semana debido a la espera de una tarjeta microSD, necesaria para flashear el \acrshort{so} y que no venía con el dispositivo. Posteriormente fue necesario flashear varias veces el dispositivo, debido a problemas para redimensionar particiones. Para mitigar el tiempo perdido en las reinstalaciones, se trabajó en preparar un Dockerfile de despliegue con todo el software y a experimentar con el sistema en el portátil personal. Dicho sistema no funcionaba de primeras, por lo que fue necesario realizar modificaciones.
+    \item \textbf{Pruebas de los modelos y del sistema}: fue la tarea que más retrasó el proyecto. Los modelos en un principio reportaban bajas precisiones al implementarlos en \acrshort{gpu}. La mala exportación de los modelos o el pipeline de procesado de las imágenes eran las principales causas.
+
+          Se intentó convertir el modelo YuNet para utilizarse en el \textit{backend} de TensorRT pero, debido al complejo procedimiento del procesado de las entradas y salidas, se mantuvo el modelo en su versión de OpenCV, ya que de la otra forma no se lograron resultados equiparables.
+
+          Debido a la falta de espacio en el almacenamiento local de los dispositivos para almacenar los archivos de las pruebas, se tuvo que montar una red con acceso al equipo donde residían dichos archivos y ejecutarlos remotamente. Debido a las limitaciones de la red (GigabitEthernet), se ideó un mecanismo para transmitir los datos comprimidos a través de la red y descomprimirlos en el destino.
+
+          Por otro lado, aunque el sistema de partida permitía operar con más de 2 cámaras, este era muy sensible a los retardos de cualquiera de estas, además de que no estaba pensado para funcionar asumiendo cierto solape entre las cámaras. Por estos motivos, se tuvo que rediseñar parte de la lógica del sistema para lograr la escalabilidad. Después se realizaron las pruebas de escalabilidad con la nueva versión del sistema.
+    \item \textbf{Migración a ROS 2}: la migración se pudo realizar de manera intuitiva, salvo por los problemas generados por un paquete, cuyo coste de migración era demasiado elevado para terminarlo. Finalmente, se migró el sistema prescindiendo de dicho paquete.
+    \item \textbf{Diseño e implementación del sistema adaptativo}: en un principio fue complicado comprender todas las bases de la arquitectura de referencia \cite{Erik}. Tras empezar la dedicación a tiempo completo al proyecto en Octubre, se pudo cumplir con el objetivo el mes siguiente.
+    \item \textbf{Pruebas del sistema extendido}: esta tarea fue según el tiempo previsto, ya que el rendimiento del sistema evolucionaba rápidamente conforme se iban añadiendo mejoras. Aunque fue necesario contar con más personas, con un total de 10 fueron suficientes (4 más que en el \gls{dataset} de las pruebas) para realizar unas pruebas razonables del sistema.
+    \item \textbf{Análisis de nuevos dispositivos}: esta tarea también llevo más tiempo de lo previsto, ya que tuvieron que rehacerse las pruebas de modelos en \textbf{todos los dipositivos}, debido a modificaciones en los modelos que reducían la latencia y el cambio de versión del modelo YOLO8n a YOLO11n.
 \end{itemize}
 
-\subsection{Análisis de desviaciones temporales}
+Gracias a la dedicación a tiempo completo desde octubre y que se contaba con un mes de holgura en la planificación, se pudieron completar todas las tareas antes de la deposición en febrero de este proyecto.
+
+Las pruebas de los modelos y del sistema fueron las principales causantes de los retrasos. Tuvieron que realizarse múltiples modificaciones que no se esperaban, que implicaron rehacer casi todas las pruebas en 6 dispositivos diferentes.
 
 \section{Recursos y costes del proyecto}
 
