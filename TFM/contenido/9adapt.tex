@@ -34,16 +34,12 @@ Las pruebas que analizan los métodos de inicialización y las capacidades del r
 
 En esta sección se realiza un estudio acerca de la configuración óptima de parámetros en términos de rendimiento del sistema. A continuación, se exponen los parámetros utilizados y su función, junto con el rango de valores para la prueba.
 
-TODO: En la fase de inicialización de los modelos (o fase de entrenamiento), el sistema guarda la información estadística que representa a cierto modelo. Durante el funcionamiento del sistema, puede ocurrir que los datos que recibe de un individuo registrado varíen respecto a la información de entrenamiento, lo que se conoce como \textbf{concept drift}. Se debe de corregir el concept drift para evitar una pérdida en la precisión de reconocimiento.
-
-TODO: actualización del modelo, añadir nuevas entidades puede corromper la información de las entidades iniciales (catastrophic forgetting).
-
 \begin{itemize}
-    \item \textbf{Umbral de Weibull (\textit{Tw})}: valor que determina si una entidad es desconocida o no. El rango probado es (0.05 0.1 0.25), no se ha decidido explorar valores más altos debido a las implicaciones que tienen en el modo \textit{Open-World} que se verán más adelante.
-    \item \textbf{Percentil (\textit{percent})}: valor del percentil aplicado en la combinación de las puntuaciones generadas por las \acrshort{svm}. El rango probado es (0.25 0.5 0.75)
+    \item \textbf{Umbral de Weibull (\textit{Tw})}: valor que determina si una entidad es desconocida o no. El rango probado es (0.05 0.1 0.25), no se ha decidido explorar valores más altos debido a las implicaciones que tienen en la precisión como se verán más adelante.
+    \item \textbf{Percentil (\textit{percent})}: valor del percentil aplicado en la combinación de las puntuaciones generadas por las \acrshort{svm}. El rango probado es (0.25 0.5 0.75).
     \item \textbf{Número de \acrshort{svm} (\textit{max\_svm})}: valor que representa al tamaño máximo de un comité. El rango probado es (1 3 7 10),  valores más altos implicarían un mayor coste computacional en cada iteración.
-    \item \textbf{Número de negativos (\textit{nneg})}: tamaño del conjunto de muestras negativas. El rango probado es (10 50), debido a que 50 era el \dots
-    \item \textbf{Tamaño de la plantilla}: establece el número de frames positivos que define a un comité. Se va a partir siempre de un tamaño de 5 frames, el mínimo necesario acorde a \cite{Erik} para definir un nuevo individuo.
+    \item \textbf{Número de negativos (\textit{nneg})}: tamaño del conjunto de muestras negativas. El rango probado es (10 50). No se han podido probar valores más altos, debido a la escasez de muestras disponibles.
+    \item \textbf{Tamaño de la plantilla}: establece el número de frames positivos que define a un comité. El tamaño se ha fijado en 5 frames, ya que se ha demostrado que otorga buen rendimiento, al mismo tiempo que supone una cantidad muy escasa de muestras \cite{5samples}.
     \item \textbf{Tamaño de secuencia}: número de frames que forman una secuencia de video. Se ha fijado el valor en 15 frames, que equivalen a 1,5 segundos de video con cámaras funcionando a 10 Hz.
     \item \textbf{Solapamiento}: establece el salto en el número de frames entre secuencias. Se ha fijado el valor en 5, dando lugar a más secuencias para analizar al coincidir frames entre las mismas.
 \end{itemize}

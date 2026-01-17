@@ -13,8 +13,8 @@
 
 TODO: explicar en algún momento que implementamos el reconocimiento adaptativo como módulo por separado del sistema, y que realmente a excepción de la escalabilidad y el ROS 2, el sistema sigue igual.
 
-\section{Códigos de inferencia para el \textit{backend} de TensorRT}
-En la figura \ref{fig:finalsys} se muestran los 4 modelos utilizados en el nodo cámara y que se detallarán en la sección \ref{sec:models}. Dichos modelos cuentan con su implementación optimizada para OpenVINO creada en \cite{andrew}, excepto para el modelo de detección de caras (YuNet), que se ejecuta en el \textit{backend} de OpenCV. En este proyecto se han implementado nuevas versiones de las inferencias adaptadas para su uso en \acrshort{gpu} por medio de TensorRT y PyCUDA. PyCUDA ofrece una API que facilita gran parte de la interacción con CUDA, aun así, se necesita gestionar en el código temas como la creación de contextos y reserva de la memoria.
+\section{Códigos de inferencia para el \gls{rt} de TensorRT}
+En la figura \ref{fig:finalsys} se muestran los 4 modelos utilizados en el nodo cámara y que se detallarán en la sección \ref{sec:models}. Dichos modelos cuentan con su implementación optimizada para OpenVINO creada en \cite{andrew}, excepto para el modelo de detección de caras (YuNet), que se ejecuta en el \gls{rt} de OpenCV. En este proyecto se han implementado nuevas versiones de las inferencias adaptadas para su uso en \acrshort{gpu} por medio de TensorRT y PyCUDA. PyCUDA ofrece una API que facilita gran parte de la interacción con CUDA, aun así, se necesita gestionar en el código temas como la creación de contextos y reserva de la memoria.
 
 TensorRT trabaja con su propio formato de los modelos, por lo que es necesario realizar una conversión de los mismos a dicho formato mediante las herramientas expuestas en el apéndice \ref{chap:procedure}. En el proceso de conversión se aplica un proceso de selección de optimizaciones según la arquitectura de la \acrshort{gpu}, que prueba distintas tácticas para la distribución del trabajo y diferentes precisiones para quedarse con la combinación más rápida, sin comprometer la precisión del modelo.
 
@@ -94,7 +94,7 @@ En \cite{andrew} se utiliza una clase del paquete \textit{message\_filters} de \
 
 Se ha decidido sustituir dicha clase por \textit{MessageFiltersCache} de la misma librería \cite{MFC}. En esta nueva implementación, cada nodo posee una caché en la que se almacenan sus mensajes, que pueden recuperarse especificando un timestamp.
 
-La función \ref{coud:cash} recoge los datos de las cachés a una frecuencia fija (ejemplo: 10 Hz), de modo que se recuperan los últimos mensajes de los sensores que emitieron dentro del intervalo, sin esperar por sensores que hayan sufrido latencias o fallos.
+El código \ref{coud:cash} implementa una función (\textit{process}) que recoge los datos de las cachés a una frecuencia fija (ejemplo: 10 Hz), de modo que se recuperan los últimos mensajes de los sensores que emitieron dentro del intervalo, sin esperar por sensores que hayan sufrido latencias o fallos.
 
 Se otorga una ventana de 500 ms para mensajes que llegan con cierto retardo antes de su descarte. Si un nodo no procesa y envía su mensaje antes de acabar el intervalo (ejemplo: 100ms), \textbf{se sigue aplicando el último mensaje recibido de este}, siempre y cuando no se exceda la ventana de tiempo ya comentada.
 

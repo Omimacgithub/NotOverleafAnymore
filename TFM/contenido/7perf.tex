@@ -1,7 +1,7 @@
 \chapter{Análisis de rendimiento}
 \label{chap:cnn}
 
-\lettrine{E}{n} este capítulo se expone una discusión detallada acerca de las pruebas y de los resultados de rendimiento de los modelos de \acrshort{cnn} utilizados en los diferentes dispositivos del proyecto.
+\lettrine{E}{n} este capítulo, se comentan los modelos de redes neuronales utilizadas y se expone una discusión detallada acerca de las pruebas y de los resultados de rendimiento de los modelos en los diferentes dispositivos del proyecto.
 
 \section{Modelos de redes neuronales utilizadas}
 \label{sec:models}
@@ -31,6 +31,8 @@ Se ha optimizado el postprocesado explotando la librería de NumPy y los resulta
 TODO: mencionar que se incorporó el preprocesado en el modelo de PyTorch, de forma que se ejecuta en la \acrshort{gpu}, añadirlo en el apéndice?
 
 \subsection{Características de los modelos}
+
+\input{contenido/tables/modelspecs.tex}
 
 En la tabla \ref{tab:modelspecs} se muestra el tamaño de la entrada, el número de parámetros y la latencia de cada modelo.
 
@@ -81,7 +83,7 @@ En el caso que ocupa al sistema (pruebas de la sección \ref{sec:syscal}), se di
           \end{itemize}
 \end{itemize}
 
-\section{Realización de las pruebas de modelos}
+\section{Realización de las pruebas}
 \label{sec:probes}
 
 Para la evaluación del rendimiento, se parten de unos tests que reproducen los videos de las dos cámaras (ver sección \ref{sec:hw}) y alimenta a los modelos de redes neuronales con los respectivos frames, de forma que al momento de terminar el procesamiento de un frame, el modelo puede continuar inmediatamente con el siguiente. Las salidas devueltas por las \acrshort{cnn} se contrastan con la información del \textit{\gls{dataset}} de la respectiva cámara (visto en la anterior sección), que devuelve un resultado final de precisión.
@@ -92,17 +94,20 @@ En las pruebas de los modelos de detección, se obtienen los frames directamente
 
 En el caso de los modelos de reconocimiento, se recupera para cada frame una lista de recortes generados por los modelos de detección \textbf{previamente a la ejecución de la prueba}. El test determina un reconocimiento como correcto si la predicción obtenida es la misma que la etiqueta (\textit{\gls{gt}}) recogida en el \gls{dataset}. Por sencillez, siempre se escoge la primera predicción de la lista como la predicción final (\textit{top\_k=1}, ver sección \ref{sec:basearch}).
 
-NOTA IMPORTANTE: estoy midiendo la latencia de la propia inferencia pero también de las copias entre gpu y cpu, por lo que es importante analizar otros aspectos que influyen como la velocidad de transferencia.
+Para la ejecución de inferencias, se han empleado los \glspl{rt} de OpenVINO, TensorRT y OpenCV, este último para el caso concreto de la red YuNet. OpenVINO ejecuta las inferencias \textbf{puramente en \acrshort{cpu}}, mientras que TensorRT realiza las inferencias en \textbf{\acrshort{gpu}}. OpenCV permite la ejecución en el propio \gls{rt} que ofrece, que opera \textbf{puramente en \acrshort{cpu}} o permite realizar la inferencia por medio de CUDA, que aplica la \acrshort{gpu}.
 
-\subsection{Resultados}
+Es importante destacar que los \glspl{rt} de OpenVINO y TensorRT soportan precisión mixta, es decir, se ejecutan las capas de un modelo en la precisión que menor latencia reporte dentro de una lista de precisiones (ejemplo: \acrshort{fp}16 o \acrshort{fp}32) \cite{mixed}. Esta funcionalidad puede emplearse siempre que la arquitectura de los dispositivos la implemente. Las últimas versiones de OpenCV también implementan soporte para ambas precisiones \acrshort{fp}32 y \acrshort{fp}16. Los modelos del proyecto se han compilado para utilizar la precisión mixta en \acrshort{fp}16 o \acrshort{fp}32.
+
+TODO: estoy midiendo la latencia de la propia inferencia pero también de las copias entre gpu y cpu, por lo que es importante analizar otros aspectos que influyen como la velocidad de transferencia.
+
+\section{Resultados}
 \label{sec:modelic}
+
+\input{contenido/tables/tests/tabequips}
 
 En la tabla \ref{tab:equips} se muestran los resultados de latencia (en milisegundos) y de la métrica \textit{F1\_score} para los modelos de detección y \textit{precision} para los modelos de reconocimiento (ver métricas en la sección \ref{sec:modeleval}). Cada resultado refleja la media y la desviación típica de \textbf{5 ejecuciones}, se ejecuta un test previo a modo de calentamiento para cada modelo.
 
-Para la ejecución de inferencias, se han empleado los \textit{backends} de OpenVINO, TensorRT y OpenCV, este último para el caso concreto de la red YuNet. Es importante destacar que los \textit{backends} de OpenVINO y TensorRT soportan precisión mixta, es decir, se ejecutan las capas de un modelo en la precisión que menor latencia reporte dentro de una lista de precisiones (ejemplo: \acrshort{fp}16 o \acrshort{fp}32) \cite{mixed}. Esta funcionalidad puede emplearse siempre que la arquitectura de los dispositivos la implemente. Las últimas versiones de OpenCV también implementan soporte para ambas precisiones \acrshort{fp}32 y \acrshort{fp}16. Los modelos del proyecto se han compilado para utilizar la precisión mixta en \acrshort{fp}16 o \acrshort{fp}32.
-
 En el caso del modelo YOLO, los dos dispositivos menos potentes (Jetson Xavier NX y Jetson Orin Nano) no alcanzan o apenas superan los 10 Hz en la versión de OpenVINO, que no utiliza la \acrshort{gpu} para la inferencia. Al trasladar la carga de la inferencia a la \acrshort{gpu} cuando se utiliza TensorRT, el tiempo de inferencia es hasta \textbf{7 veces} menor en el caso de la Jetson AGX Thor y \textbf{5 veces} menor en el caso de la Jetson Xavier NX. En la versión de TensorRT de YOLO, las Jetson NX y Orin Nano logran alcanzar los 35 y 45 Hz respectivamente, lo que hace posible la ejecución en tiempo real (fijada a 10 Hz) en estos dispositivos.
-
 
 %TODO: En la tabla \ref{tab:equips} se muestran los resultados obtenidos en 2 equipos x86, comparándolos con la Jetson Orin Nano, el sistema embebido con el que se ha obtenido el mejor rendimiento. En equipos x86, la latencia experimentada  es hasta \textbf{5.3 veces menor} (YOLOv8n) para los modelos ejecutados en CPU y hasta \textbf{4.9 veces menor} (YuNet) para los modelos ejecutados en GPU que la obtenida por la Jetson Orin Nano. Debido a que OpenVINO está pensado para hardware de Intel, las optimizaciones en la Jetson no suponen ninguna mejora, al contrario que en los equipos x86 con una CPU \textbf{Intel i7}. Por otro lado, es sorprendente que también existan diferencias significativas respecto a la Jetson \textbf{cuando se realizan las inferencias en GPU}. La diferencia más notoria es con YuNet en el PC del laboratorio, que posee una \textbf{GeForce GTX 1650}, que está \textbf{una generación por detrás} de la GPU de la Jetson Orin (las arquitecturas son Turing y Ampere respectivamente) \cite{archs}. Esto implica que, para la carga de trabajo de este proyecto, \textbf{la GPU no es el factor predominante} (TODO: no lo creo, no tiene mucho sentido si digo que se reduce la latencia hasta 7 veces usando la GPU, y que la AGX Thor es la que mejor ejecuta YOLO cuando se utiliza la GPU).
 
@@ -110,13 +115,11 @@ TODO: demostrar por que la GPU del lab pc hace que esté ligeramente detrás de 
 
 TODO: Siendo la AGX Thor ligeramente peor en OpenVINO, consigue el mejor resultado en TensorRT para YOLO, estudiarlo.
 
-A excepción de YOLO11n, el resto de modelos de redes son muy ligeras para los equipos de sobremesa en CPU, por lo que la mejora aplicando TensorRT es muy reducida aunque notoria. En el caso de YuNet, el uso de CUDA como \textit{backend} supone un salto menor respecto a TensorRT, ya que OpenCV integrado con CUDA no aprovecha todos los componentes de la arquitectura de la \acrshort{gpu}, como los tensor cores, a diferencia de TensorRT, que aplica dicho conocimiento para seleccionar las mejores tácticas.
+A excepción de YOLO11n, el resto de modelos de redes son muy ligeras para los equipos de sobremesa en CPU, por lo que la mejora aplicando TensorRT es muy reducida aunque notoria. En el caso de YuNet, el uso de CUDA como \glspl{rt} supone un salto menor respecto a TensorRT, ya que OpenCV integrado con CUDA no aprovecha todos los componentes de la arquitectura de la \acrshort{gpu}, como los tensor cores, a diferencia de TensorRT, que aplica dicho conocimiento para seleccionar las mejores tácticas.
 
 Hardware Abstraction Layer, KleidiCV para acelerar operaciones de OpenCV (a partir de 4.10.0) en arquitecturas Armv8 y v9. Putada: es una API sólo en C (usar ctypes en Python?).
 
-\input{contenido/tables/tests/tabequips}
-
-\subsection{Discusión}
+\section{Discusión}
 Los resultados de la tabla \ref{tab:equips} arrojan los resultados de las ejecuciones de 4 modelos de visión artificial en las arquitecturas Volta, Turing, Ampere y Blackwell de \acrshort{gpu}s de NVIDIA. El mayor salto generacional se experimenta con la arquitectura Blackwell\dots El salto entre la arquitectura Turing y la Ampere se muestra menos notable, ya que los resultados entre los equipos de sobremesa son idénticos o ligeramente mejores a favor del portátil al utilizar TensorRT.
 
 La Jetson AGX Orin, a pesar de doblar los recursos computacionales de la Orin Nano, apenas consigue una mejora en cuanto a reducción de latencia, al mismo tiempo que se queda atrás de los resultados logrados en la AGX Thor.
@@ -126,86 +129,3 @@ Las arquitecturas anteriores a Blackwell demuestran ser más conservadoras a la 
 TensorRT exprime todas las bondades que ofrece cada arquitectura de \acrshort{gpu}s de NVIDIA, demostrando resultados que superan en rendimiento a equipos con \acrshort{cpu}s de Intel respecto a \acrshort{arm}, como es el caso de la Jetson AGX Thor, aunque en el caso de OSNet, dichas optimizaciones pueden afectar significativamente en la precisión al ser demasiado agresivas.
 
 OSNet con tactics de Blackwell: baja de 3.7 a 1.7 (toquetear el flag builderOptimizationLevel de trtexec)
-
-\section{Realización de pruebas del sistema}
-\label{sec:syscal}
-
-Esta sección pretende evaluar el techo del sistema al elevar el número de cámaras implicadas. Es importante remarcar que todas las pruebas de esta sección se realizan en \textbf{tiempo real}. Según el proyecto, la frecuencia del tiempo real puede variar, en este caso, se espera que el sistema trabaje a \textbf{10 Hz}, que es la frecuencia a la que ambos sensores \acrshort{lidar} y Kinect devuelven datos.
-
-Se inicializa el sistema con el nodo integración de sensores, el nodo \acrshort{lidar} y el número de nodos cámara deseado (ver sección \ref{sec:basearch}). Se reproduce el fichero rosbag una vez inicializado el sistema, que lo nutrirá con la información generada por los sensores en \textbf{tiempo real}. Cada predicción generada por el nodo integrador se almacena en memoria y se vuelca en un fichero \acrshort{json} una vez el sistema se detiene (por ejemplo, con un Ctrl-C). Los datos guardados en el fichero \acrshort{json} se procesan contra el \textit{\gls{dataset}} y se devuelven los resultados finales en forma de las siguientes métricas:
-
-%En cada iteración del procesado, se ejecutan \textbf{4 redes neuronales (\acrshort{cnn})}. 2 de ellas, YOLOv8n y YuNet, para la detección de cuerpos y de caras respectivamente. Las otras 2, OSNet\_x1 y ArcFace, para el reconocimiento de cuerpos y caras respectivamente. A pesar de lo que la figura \ref{fig:finalsys} muestra, las redes de detección YOLOv8n y YuNet \textbf{no se ejecutan en paralelo}, lo mismo sucede con las redes ArcFace y OSNet\_x1. Se ha considerado ejecutar en paralelo estas redes. Sin embargo, las limitaciones de memoria principal de la Jetson restringen tomar esta aproximación.
-
-\begin{itemize}
-    \item \textit{\textbf{Det precision}}: es la proporción de personas detectadas en la posición correcta (campo \textit{position} del \gls{dataset}) respecto al total de personas detectadas.
-    \item \textit{\textbf{Det recall}}: representa la proporción de personas detectadas en la posición correcta respecto al total de personas en el \gls{dataset}.
-    \item \textit{\textbf{Ident F1 score}}: corresponde con el \textit{F1\_score} global de los modelos de reconocimiento.
-    \item \textit{\textbf{Ident precision}}: corresponde con la precisión global de los modelos de reconocimiento.
-\end{itemize}
-
-\subsection{Entorno de las pruebas}
-
-La figura \ref{fig:systesting} ilustra el proceso comentado al inicio de la sección. Debido a que el rosbag utilizado es un archivo pesado (41 \acrshort{gb}), en ciertas situaciones ha sido necesario reproducir dicho fichero desde una \textbf{fuente externa} al no disponer de almacenamiento local suficiente.
-
-La comunicación con la fuente externa se realiza a través de una red \acrshort{lan} \textbf{Gigabit Ethernet}, que posee un ancho de banda limitado para la transmisión de imágenes \acrshort{rgbd}. La fuente externa debe de enviar $(|imagen\_RGB| + |imagen\_profundidad)*nºcams + |nube\_de\_puntos\_LiDAR|$ megabytes de datos cada 100 ms (que es la frecuencia a la que trabaja el sistema), siendo $|imagen\_RGB| = 40 MB/s$, $|imagen\_profundidad| = 20 MB/s$ y $|nube de puntos LiDAR| = 5 MB/s$, lo que supera el ancho de banda máximo (125 \acrshort{mb}/s) utilizando únicamente dos cámaras.
-
-Para reducir el ancho de banda necesario para la transmisión, se ha optado por desplegar nodos encargados de comprimir la imagen \acrshort{rgb} desde el equipo en el que se reproduce el rosbag (\textit{remote side} en la figura \ref{fig:systesting}). La compresión se realiza por medio del paquete \textit{image\_transport} de \acrshort{ros}, que logra reducir hasta 10 veces el tamaño de la imagen (resultando en 4 \acrshort{mb}/s). Los nodos cámara (\textit{host side} en la figura \ref{fig:systesting}) se suscriben al tópico con la imagen comprimida y se descomprime en el destino.
-
-En el caso de la imagen de distancia, en sí no es un objeto pesado, por lo que no necesita compresión. Sin embargo, la frecuencia elevada de transmisión (30 Hz), hace que se requiera de un mayor ancho de banda. Como el resto de los sensores funcionan a 10 Hz, la tasa de la imagen de profundidad puede reducirse a dicha frecuencia, de forma que el sistema no percibe el cambio y se logra reducir el ancho de banda. Con reducir la tasa de envío del nodo de \acrshort{ros} encargado de publicar la imagen sería suficientemente, pero debido a que el rosbag se grabó dicho nodo a 30 Hz, se ha optado por ejecutar el paquete \textit{topic\_tools} de \acrshort{ros}, que permite publicar una réplica de un tópico a una menor frecuencia.
-
-Debido a que el rosbag sólo contiene los datos de 2 cámaras, para realizar la prueba de escalabilidad con un mayor número de cámaras, ha sido necesario \textbf{replicar} los tópicos de las imgágenes mediante el paquete de \acrshort{ros} \textit{topic\_tools} (figura \ref{fig:systesting}), de forma que los nuevos nodos se pueden suscribir a dichos tópicos.
-
-\begin{figure}
-    \centering
-    \includegraphics[width=1\linewidth]{imagenes/SYSTESTING.jpg}
-    \caption{Reproducción y transmisión del rosbag por la red}
-    \label{fig:systesting}
-\end{figure}
-
-\subsection{Resultados}
-
-\input{contenido/tables/tests/scaleperf.tex}
-
-La tabla \ref{tab:scaleperf} muestra los resultados de los dispositivos en función del número de cámaras. La columna \textit{Reference} muestra los resultados del sistema obtenidos en \cite{andrew}, en el que solo se registraron datos del sistema funcionando con 2 cámaras.
-
-Atendiendo a los datos de precisión en detección y reconocimiento, se muestra una ligera caída en contra de los dispositivos del proyecto, que puede deberse a su vez por la subida en el \textit{recall} (TODO: puede ser), ya que se han generado más detecciones. La subida en el \textit{recall} demuestra que el sistema tiene una mayor capacidad de procesamiento, en cierta medida influida por la potencia de los procesadores Intel Core i7 respecto a Core i5.
-
-La precisión en la detección empeora al aumentar el número de cámaras. Ya que el nodo integrador debe de fusionar los datos procedentes de todos los sensores, al aumentar su número también se aumenta la cantidad de procesamiento. Por lo tanto, más tiempo se demorará en devolver una predicción, que se emparejará con el frame del \gls{dataset} con el mismo \gls{timestamp}, que corresponde a un instante real \textbf{anterior}.
-
-El recall también empeora al aumentar la cantidad de cámaras, debido a la alta demanda de cómputo del sistema (para 10 cámaras, se deben de procesar un total de 40 redes neuronales en 100 milisegundos) lo que hace que se pierdan los frames que no tengan espacio en la cola. Sin embargo, la caída de rendimiento en ambos dispositivos \textbf{no es crítica} y permite atender a la mayoría de las peticiones, aunque los resultados reflejan una clara congestión en los nodos.
-
-La precisión de los reconocimientos no baja del \textbf{80\%} en todos los casos, lo que demuestra que los modelos de reconocimiento funcionan de manera eficaz ante un enorme estrés del sistema. El \textit{F1\_score} del reconocimiento depende del \textit{recall} de detección, por lo que es de esperar un valor bajo, compensado en cierta medida por la precisión en el reconocimiento.
-
-\input{contenido/tables/tests/scaleresources.tex}
-
-La tabla \ref{tab:scaleresources} muestra el uso de recursos durante la prueba para los equipos de sobremesa. Se puede apreciar que, hasta las 10 cámaras, el sistema se desempeña de forma fluida, con una media de poco más de la mitad de recursos utilizados.
-
-Los recursos de la \acrshort{gpu} se llevan al límite con 10 cámaras. La gráfica del portátil (Ampere) frente a la del PC del laboratorio (Turing) es capaz de gestionar mejor la memoria (debido a \dots). Por otro lado, la \acrshort{gpu} Ampere es capaz de lidiar mejor con la carga, debido a TODO: el número de SM seguramente.
-
-El uso elevado de recursos explica, junto a otros factores, la bajada en el recall cuando se ejecutan 10 nodos cámara simultáneamente, más el nodo \acrshort{lidar} y el integrador.
-
-\input{contenido/tables/tests/scaleros2.tex}
-
-En la tabla \ref{tab:scaleros2} se muestra el rendimiento del sistema en \textbf{\acrshort{ros} 2} para el resto de equipos Jetson. Los resultados marcados con guion indican ausencia del dato cuando se realizó la prueba o imposibilidad de realizar dicha prueba (Jetson Orin Nano con 10 cámaras).
-
-En estos dispositivos no es posible instalar \acrshort{ros} Noetic, al menos para poder contar con las últimas versiones del software de los mismos. Por los motivos comentados en la sección \ref{subsec:ROS2}, el sistema en \acrshort{ros} 2 no puede ejecutar el nodo \acrshort{lidar}, por lo que los resultados mostrados sólo tienen en cuenta los nodos cámara.
-
-El recall de las detecciones se muestra claramente inferior respecto a los anteriores resultados, ya que el \acrshort{lidar} otorgaba cobertura completa a la reducida visión de las cámaras de aproximadamente 117º. Las 3 Jetson logran superar el valor de referencia en esta métrica, lo que demuestra el excelente rendimiento de las \acrshort{gpu}, capaces de compensar las limitaciones de una \acrshort{cpu} de \acrshort{arm} respecto a un Intel Core i5 (procesador del equipo de referencia).
-
-La precisión en la detección empeora en los dispositivos Jetson respecto a los de sobremesa cuando se ejecutan 5 cámaras simultáneamente. Debido a la menor capacidad de procesamiento de la Jetson Orin Nano, es de esperar que muchos de los mensajes procesados por los nodos cámara llegan tarde al nodo integrador, que devuelve una posición desactualizada respecto al frame de referencia, por lo tanto, se asume la detección como \textbf{errónea}. TODO: y en la Jetson AGX Thor?, a pesar de la notable caída en la precisión, que es de la misma magnitud que en los dispositivos de sobremesa, el recall se mantiene constante e incluso mejora con 5 cámaras (TODO: querrá decir que va sobrada).
-
-TODO: se ha conseguido optimizar YOLO en GPU, que suponía el cuello de botella del sistema para funcionar en tiempo real.
-
-\input{contenido/tables/tests/scaleresourcesros2.tex}
-
-En la tabla \ref{tab:scaleresourcesros2} se muestra la proporción de recursos utilizados en las pruebas del sistema en \acrshort{ros} 2. TODO: Como en la tabla \ref{tab:scaleresources}, se expone la mediana de todas las lecturas de recursos en una ejecución completa del sistema, para ignorar los picos de uso de los recursos.
-
-Ambos dispositivos pueden ejecutar holgadamente el sistema usando 2 cámaras, en el caso de las 5 cámaras es cuando se empiezan a dislumbrar las limitaciones de la Jetson Orin Nano, principalmente en términos de memoria, lo que explica la caída en la precisión de las detecciones, que no permite a los modelos reservar memoria para varias de las inferencias.
-
-Los 8 GB de RAM rápidamente se quedan escasos, debido a todos los recursos necesarios a reservar, como contextos de CUDA, el modelo deserializado, streams de CUDA, entre otros, que pesan en torno a cientos de \acrshort{mb}, que se multiplican por 4 modelos y a su vez por 5 cámaras. Debido al excesivo uso de memoria, se han aplicado ciertas optimizaciones de los códigos de Python, que han permitido ahorrar hasta \textbf{400 \acrshort{mb}} en la inicialización del sistema, y que se citan en el apéndice \ref{chap:optimus}.
-
-\subsection{Discusión}
-
-En varios equipos, se ha logrado escalar el sistema hasta un número de cámaras elevado (10), al menos para ser procesado por un solo dispositivo. La Jetson Orin Nano ha conseguido mantener resultados aceptables hasta las 5 cámaras, lo que demuestra la potencia de este pequeño dispositivo.
-
-Es importante destacar que las pruebas se realizaron con \textbf{6 personas registradas en la base de datos}. Aumentar este número tendría consecuencias en los modelos de reconocimiento, ya que iteran toda la base de datos para calcular las distancias del vector con cada individuo, para devolver la mejor coincidencia. Según el dispositivo, esta operación tarda menos o alrededor de 1 milisegundo, lo que podría aumentar en varios milisegundos si se añaden 100 personas.

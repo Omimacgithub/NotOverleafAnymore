@@ -22,16 +22,18 @@ Atendiendo a la definición de \cite{rudd2017extreme}, un sistema de reconocimie
 
 \section{Clasificadores}
 
-Nearest neighbourd
+Se suelen mencionar los siguientes algoritmos en el campo de la detección de objetos y en otros problemas de clasificación \cite{DREISEITL2002352}:
 
-Random Forest: Number of trees, maximum depth, minimum samples per leaf
+\begin{itemize}
+    \item \textbf{\textit{k-Nearest neighbors}}
+    \item \textbf{\textit{Decision tree}}: es un método de clasificación que sigue una estructura de árbol, en el que un nodo representa una característica y una rama un conjunto de características. La clasificación empieza desde el nodo raíz y termina en uno de los nodos hoja \cite{ali2012random}.
+    \item \textbf{\textit{Neural Networks}}: Learning rate, batch size, network architecture, regularization strength
+    \item \textbf{\textit{Support Vector Machines}}:
+\end{itemize}
 
-Neural Networks: Learning rate, batch size, network architecture, regularization strength
+En este proyecto, se ha optado por el entrenamiento discriminativo, que consiste en resaltar las diferencias entre las muestras de la clase que se representa (positivos) respecto al resto del mundo (negativos). Debido a que las muestras negativas se pueden compartir entre diferentes clasificadores, se obtiene una gran capacidad de generalización partiendo de un conjunto reducido de datos.
 
-Support Vector Machines: Kernel type, regularization parameter, kernel-specific parameters
-
-Gradient Boosting: Learning rate, number of boosting rounds, maximum tree depth
-
+Los clasificadores como KNN o las redes neuronales no poseen la capacidad de aprender de los datos negativos y, en cambio, necesitan grandes \glspl{dataset} para converger correctamente \cite{malisiewicz2011ensemble}. Las \acrshort{svm} sí que cuentan con dicho poder discriminatorio y, por este motivo, son relevantes para el presente proyecto.
 
 \subsection{Support Vector Machine (SVM)}
 
@@ -46,9 +48,16 @@ Es un algoritmo de \textbf{clasificación} que dibuja un hiperplano entre catego
 
 Las \acrshort{svm} requieren de un conjunto inicial de datos para su entrenamiento (aprendizaje supervisado) y no son capaces de discernir entre clases fuera del conjunto de datos de entrenamiento (\textit{Closed-Set}), por lo que un dato desconocido se clasificaría erróneamente como una de las clases del entrenamiento \cite{rudd2017extreme}.
 
-Estos clasificadores conforman la unidad más básica de clasificación dentro del sistema de este proyecto.
-
 \subsection{Comités}
 
+Los métodos basados en comités (o \textit{ensembles}) se han explorado como alternativa para reducir los errores en la generalización de los clasificadores \cite{zhang2002neural}. También se han estudiado como solución para evitar el borrado del conocimiento previo de los modelos (\textit{catastrophic forgetting}) \cite{Erik, ensembles0, ensembles3}, dentro del campo del aprendizaje incremental.
 
-TODO: SVM lineales: que representan la distancia del punto respecto al plano lineal que distingue entre la clase del propio individuo y el resto del universo.
+Dichos métodos se basan en un sistema de votación en el que un conjunto de clasificadores participan, lo que permite tolerar los fallos de un clasificador en particular \cite{zhang2002neural}. En el caso de este proyecto, el comité estaría formado por un conjunto de \acrshort{svm}s. Se ha demostrado que múltiples \acrshort{svm} simples (ejemplo: lineales) como conjunto \textbf{generalizan mejor} que una única \acrshort{svm} compleja (ejemplo: sigmoide) \cite{malisiewicz2011ensemble}.
+
+A continuación se exponen algunos de los tipos más conocidos:
+
+\begin{itemize}
+    \item \textbf{\textit{Gradient Boosting}}: Learning rate, number of boosting rounds, maximum tree depth
+    \item \textbf{\textit{Random Forest}}: es un conjunto de árboles de clasificación creados a partir de muestras escogidas aleatoriamente del conjunto de entrenamiento. Las predicciones se realizan mediante la votación por mayoría \cite{ali2012random}.
+    \item \textbf{\textit{Median Fusion}}:
+\end{itemize}

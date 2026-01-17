@@ -14,8 +14,6 @@ En la arquitectura Volta \cite{volta} (2017), se introducen los \textbf{tensor c
 
 Volta tiene el código 7.0 como compute capability y es empleada por la \textbf{Jetson Xavier NX}.
 
-\subsubsection{Turing}
-
 En la arquitectura Turing (2018)... La \textbf{GeForce GTX 1650} (gráfica del PC lab) sigue esta arquitectura.
 
 Turing tiene el código 7.0 como compute capability y es empleada por la \textbf{Jetson Xavier NX}.
@@ -45,7 +43,7 @@ Se añade aceleración en las operaciones con matrices \textbf{dispersas} (\text
 
 La \textbf{Jetson Orin Nano}, \textbf{Jetson AGX Orin} y la \textbf{GeForce RTX 3050} (gráfica del portátil) siguen esta arquitectura.
 
-\subsection{Blackwell}
+\subsubsection{Blackwell}
 
 Blackwell \cite{blackwell} (2024) es la última arquitectura diseñada para \acrshort{gpu}s de NVIDIA, en ella se incorporan los tensor cores de quinta generación, que permiten operar en las precisiones \textbf{\acrshort{fp}4} y \textbf{\acrshort{fp}6} (punto flotante de 4 y 6 bits respectivamente).
 
@@ -55,11 +53,11 @@ En esta nueva versión para la Blackwell, se incorpora el \textit{micro-tensor s
 
 La \textbf{Jetson AGX Thor} sigue esta arquitectura.
 
-\subsubsection{Familia Jetson}
+\subsection{Familia Jetson}
 
 %A continuación se expone el listado de dispositivos sujetos de las pruebas de este proyecto.
 
-Es una familia de \textbf{\glspl{embsystem}} pensados para aplicaciones de \acrshort{ia}. Dichos dispositivos incluyen un kit de desarrollo llamado \textbf{JetPack}, diseñado para exprimir la potencia de la NVIDIA Jetson en aplicaciones como la robótica, \acrshort{ia} generativa y visión artificial \cite{jason}.
+Es una familia de \textbf{\glspl{embsystem}} pensados para aplicaciones de inteligencia artificial. Dichos dispositivos incluyen un kit de desarrollo llamado \textbf{JetPack}, diseñado para exprimir la potencia de la NVIDIA Jetson en aplicaciones como la robótica, inteligencia artificial generativa y visión artificial \cite{jason}.
 
 \input{contenido/tables/jetsons.tex}
 
@@ -85,7 +83,7 @@ La Jetson AGX Thor soporta \acrshort{mig}, que como ya se ha comentado, divide l
 
 Desafortunadamente, el software que controla el \acrshort{mig} en la Jetson no funciona adecuadamente, ya que no permite la reserva de las \textbf{Compute Instances}. Este error está relacionado con Jetpack 7.0 \cite{notworking}, por lo que instalar Jetpack 7.1 \textbf{podría} habilitar el \acrshort{mig} en la Jetson AGX Thor.
 
-\subsubsection{Familia Intel}
+\subsection{Familia Intel}
 
 \input{contenido/tables/x86.tex}
 
@@ -114,9 +112,8 @@ El sistema que se expondrá se ha construido para funcionar en el robot móvil S
 \acrfull{ros} es un middleware de \textbf{código abierto} que incorpora las herramientas necesarias para la interacción y desarrollo de software en robots. Cuenta con una amplia biblioteca de distribuciones y librerías.
 
 Cualquier entorno de desarrollo de \acrshort{ros} está compuesto por \textbf{paquetes}, los paquetes son las unidades funcionales del entorno de \acrshort{ros} y estas contienen el código, archivos de configuración y de lanzamiento de los nodos, entre otros componentes.
-\subsubsection{Arquitectura de la red}
 
-\acrshort{ros} crea y mantiene una \textbf{red distribuida} en la que los nodos se ejecutan e intercambian mensajes. Sigue un patrón \textit{publish/subscribe}, en el que existen nodos que publican información por medio de \textbf{tópicos}, disponibles para cualquier nodo que se suscriba a dicho tópico. Según la versión, la arquitectura de la red varía en una de las siguientes:
+\acrshort{ros} crea y mantiene una \textbf{red distribuida} en la que los nodos se ejecutan e intercambian mensajes. Sigue un patrón \textbf{\textit{publish/subscribe}} (publicador/subscriptor), en el que existen nodos que publican información por medio de \textbf{tópicos}, disponibles para cualquier nodo que se suscriba a dicho tópico.
 
 \begin{figure}[tbp]
     \centering
@@ -125,17 +122,7 @@ Cualquier entorno de desarrollo de \acrshort{ros} está compuesto por \textbf{pa
     \label{fig:mastel}
 \end{figure}
 
-\begin{figure}[tbp]
-    \centering
-    \includegraphics[width=0.5\linewidth]{imagenes/dds.jpg}
-    \caption{Topología bus de Data Distribution Service (DDS), figura extraída de \cite{bus}}
-    \label{fig:mastel}
-\end{figure}
-
-\begin{itemize}
-    \item Maestro-esclavo (\acrshort{ros} 1): el maestro (denominado \acrshort{ros}\_MASTER) registra a todos los publicadores/subscriptores de la red, de forma que si un nodo quiere suscribirse/publicar un tópico, este se comunica con el maestro para registrar/conocer la manera de conectarse a dicho tópico \cite{mastel}. El principal inconveniente es que el nodo central es un \textbf{punto único de fallo} (si el maestro falla, todo el sistema se cae). La figura \ref{fig:mastel} describe el comportamiento descrito.
-    \item Data Distribution Service (\acrshort{ros} 2): es un \textit{middleware} que permite la comunicación de los nodos mediante una topología tipo bus (figura ). Los nodos notifican su presencia en la red y esperan mensajes de respuesta con información sobre el resto de nodos existentes \cite{dds}. De esta forma, todos los nodos conocen el estado de la red sin depender de un maestro que gestione todas las comunicaciones.
-\end{itemize}
+En \acrshort{ros} 1, se sigue una arquitectura \textbf{maestro-esclavo}. El maestro (denominado \acrshort{ros}\_MASTER) registra a todos los publicadores/subscriptores de la red, de forma que si un nodo quiere suscribirse/publicar un tópico, este se comunica con el maestro para registrar/conocer la manera de conectarse a dicho tópico \cite{mastel}. El principal inconveniente es que el nodo central es un \textbf{punto único de fallo} (si el maestro deja de estar disponible, todo el sistema falla). \acrshort{ros} 2 presciende de un nodo maestro, por lo que no sufre de dicha limitación. La figura \ref{fig:mastel} describe el comportamiento descrito.
 
 Existe una amplia variedad de distribuciones de este software según la versión del \acrshort{so}. Para este proyecto, se han empleado las distribuciones Noetic, Humble y Rolling, para Ubuntu 20.04, 22.04 y 24.04 respectivamente, el Summit\_XL tiene la distribución Melodic, ya que tiene la versión 18.04 de Ubuntu. Melodic y Noetic corresponden a \acrshort{ros} 1 (descontinuado), mientras que Humble y Rolling pertenecen a \acrshort{ros} 2.
 
@@ -153,7 +140,7 @@ Se procede a comentar las librerías de Python más importantes a la hora de des
 \end{itemize}
 
 
-\subsection{Optimizadores y \textit{backends} de inferencias}
+\subsection{Optimizadores y runtimes de inferencias}
 
 Es el software encargado de optimizar la implementación de los modelos y ejecutar sus inferencias. En este proyecto se han utilizado los siguientes (todos son de \textbf{código abierto}):
 \begin{itemize}
@@ -161,7 +148,7 @@ Es el software encargado de optimizar la implementación de los modelos y ejecut
 
           La versión 10 de TensorRT está disponible para las aceleradoras de NVIDIA con un \textit{compute capability} igual o superior a 7.5. En el caso de querer usar el software con una \textit{compute capability} inferior, es necesario instalar la versión 8 u otra anterior. El código de la \acrshort{api} generado en la versión 8 \textbf{no es compatible} con la versión 10.
     \item \textbf{OpenVINO} \cite{OpenVINO}: desarrollado por Intel para la optimización de inferencias en \acrshort{cpu}s (ARM,x86) y en aceleradoras de Intel (\acrshort{gpu},\acrshort{npu}). Permite la conversión directa de modelos entrenados en frameworks como Tensorflow y Pytorch a ficheros XML, que son versiones optimizadas de las \acrshort{cnn} y que se utilizan para realizar las inferencias. Se ha empleado para optimizar y ejecutar las inferencias de los modelos a la hora de ejecutarlos en \acrshort{cpu}.
-    \item \textbf{OpenCV} \cite{OpenCVCUDA}: el módulo de redes neuronales profundas (dnn) incluye modelos ya entrenados y un \textit{backend} para realizar inferencias. Dicho módulo puede ejecutarse en \textbf{CUDA}, sólo si se compila el código fuente. En este proyecto se ha utilizado un modelo de detección de caras ofrecido por dicha librería.
+    \item \textbf{OpenCV} \cite{OpenCVCUDA}: el módulo de redes neuronales profundas (dnn) incluye modelos ya entrenados y un \gls{rt} para realizar inferencias. Dicho módulo puede ejecutarse en \textbf{CUDA}, sólo si se compila el código fuente. En este proyecto se ha utilizado un modelo de detección de caras ofrecido por dicha librería.
 \end{itemize}
 
 \subsection{Docker}

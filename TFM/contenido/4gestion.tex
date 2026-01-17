@@ -51,7 +51,7 @@ Esta tarea representa el preludio del proyecto.
 \textbf{Tareas:}
 \begin{itemize}
     \item Estudio de trabajos que hayan utilizado dispositivos Jetson para ejecutar modelos de inteligencia artificial de forma eficiente.
-    \item Revisar la memoria del trabajo fin de grado del sistema que se pretende optimizar \cite{andrew}.
+    \item Revisar la memoria del trabajo fin de grado del sistema que se pretende extender y optimizar \cite{andrew}.
 \end{itemize}
 
 \textbf{Duración estimada:} 3 semanas
@@ -68,122 +68,133 @@ Esta tarea pretende obtener una versión inicial del software funcionando en los
 
 \textbf{Duración estimada:} 2 semanas
 
-\subsection{T2. Optimización de inferencias de las redes neuronales convolucionales}
-Esta tarea pretende lograr un recorte en la latencia de los componentes más pesados del sistema, las \acrshort{cnn}, a partir de la potencia de cómputo de las \acrshort{gpu} disponibles.
+\subsection{T2. Optimización de inferencias de los modelos}
+Esta tarea pretende lograr un recorte en la latencia de los componentes más pesados del sistema, las \acrfull{cnn}, a partir de la potencia de cómputo de las \acrshort{gpu}s disponibles.
 
 \textbf{Tareas:}
 \begin{itemize}
-    \item Instalación de TensorRT, PyCUDA, entre otras librerías en los dispositivos.
     \item Exportación de los modelos existentes al formato \acrshort{onnx}.
-    \item Conversión de los modelos ONNX a engines de TensorRT mediante trtexec o por medio de la API de Python de TensorRT.
+    \item Conversión de los modelos \acrshort{onnx} al formato de los modelos de TensorRT mediante \textit{trtexec} o por medio de la \acrshort{api} de Python de TensorRT.
     \item Creación de códigos de inferencia que reciban como entrada el flujo de datos del sistema.
 \end{itemize}
 
 \textbf{Duración estimada:} 2 meses
 
 \subsection{T3. Pruebas de los modelos y del sistema}
-Esta tarea consiste en poner a prueba los componentes desarrollados y analizar su influencia en el rendimiento del sistema.
+Esta tarea consiste en poner a prueba los componentes desarrollados:
 
 \textbf{Tareas:}
 \begin{itemize}
     \item Preparación y ejecución de las pruebas de modelos.
-    \item Registro de los resultados y comparación con la línea base.
+    \item Corrección en la precisión si decrece significativamente respecto a la línea base.
+    \item Registro de los resultados.
     \item Preparación y ejecución de las pruebas del sistema.
-    \item Registro de los resultados y comparación con la línea base.
-    \item TODO: más cosas fijo
+    \item Corrección del sistema si los resultados de precisión decaen respecto a la línea base.
+    \item Realizar pruebas variando el número de cámaras en ejecución y midiendo los recursos utilizados.
+    \item Registro y discusión de los resultados.
 \end{itemize}
 
 \textbf{Duración estimada:} 1 mes
 
 \subsection{T4. Migración a ROS 2}
-Esta tarea se encarga de realizar el proceso de migración de ROS 1 Noetic a ROS 2 Humble con el fin de seguir recibiendo soporte y permitir la ejecución del sistema en nuevas distribuciones de Ubuntu.
+Esta tarea se encarga de realizar el proceso de migración de \acrshort{ros} 1 a \acrshort{ros} 2 con el fin de seguir recibiendo soporte y permitir la ejecución del sistema en nuevas distribuciones de Ubuntu.
 
 \textbf{Tareas:}
 \begin{itemize}
-    \item Preparar un nuevo Dockerfile para instalar ROS 2 Humble junto al sistema.
-    \item Revisar la guía de migración oficial de ROS 2.
-    \item Realizar los ajustes necesarios para que el proyecto pueda compilar en ROS 2.
-    \item Migrar los nodos del sistema a ROS 2.
-    \item Comprobar que el sistema funciona correctamente en ROS 2.
+    \item Preparar un nuevo Dockerfile para instalar \acrshort{ros} 2 junto al sistema.
+    \item Revisar la guía de migración oficial de \acrshort{ros} 2.
+    \item Realizar los ajustes necesarios para que el proyecto pueda compilar en \acrshort{ros} 2.
+    \item Migrar los nodos del sistema a \acrshort{ros} 2.
+    \item Comprobar que el sistema funciona correctamente en \acrshort{ros} 2.
 \end{itemize}
 
 \textbf{Duración estimada:} 3 semanas
 
-\subsection{T5. Extensión del sistema al procesamiento de vídeo}
-Debido a las características del método de aprendizaje máquina a implementar. Es necesario extender el sistema para procesar vídeos (secuencias de caras). Debido a que en los videos de prueba pueden aparecer múltiples individuos de forma simultánea, es necesario implementar un método de seguimiento (\textit{tracking}) de las caras.
+\subsection{T5. Procesamiento de vídeo}
+Debido a las características del método de aprendizaje máquina a implementar. Es necesario extender el sistema para procesar vídeos (secuencias de caras). En esta tarea, se implementa dicha funcionalidad y se comprueba que funcione según lo esperado.
 
 \textbf{Tareas:}
 \begin{itemize}
     \item Agrupar las caras que aparecen en la secuencia por las etiquetas de las entidades otorgadas por el \textit{\gls{dataset}}.
     \item Obtener una nueva versión del modelo de reconocimiento facial que sea capaz de procesar múltiples imágenes por inferencia (modo \textit{\gls{batch}}).
-    \item Modificar el código para devolver un reconocimiento por cada secuencia de caras de entrada.
-    \item Diseñar e implementar el método de \textit{tracking} para agrupar las caras.
-    \item Preparar videos donde se vea el \textit{tracking} funcionando e implementar mejoras si es necesario.
+    \item Modificar el código para devolver un reconocimiento por cada secuencia de caras de entrada y comprobar si la precisión no decae.
+    \item Una vez que el código funcione correctamente, se procede a diseñar e implementar el método de seguimiento para agrupar las caras.
+    \item Tras implementar el seguimiento, se diseña e implementa el método de reidentificación.
+    \item Se comprueba que el seguimiento y reidentificación es capaz de mantener o de mejorar la precisión del sistema original.
 \end{itemize}
 
 \textbf{Duración estimada:} 1 mes
 
-\subsection{T6. Desarrollo del sistema adaptativo}
-Esta enorme tarea abarca todos los pasos desde la comprensión de los conceptos hasta la obtención del nuevo código.
+\subsection{T6. Diseño e implementación del sistema extendido}
+Esta enorme tarea abarca todos los pasos desde la comprensión de los conceptos hasta la obtención del código de los nuevos componentes del sistema.
 
 \textbf{Tareas:}
 \begin{itemize}
     \item Entender los conceptos que sustentan la adaptación que se quiere implementar \cite{Erik}.
-    \item Implementar los componentes necesarios para reconocer entidades desconocidas (\textit{Open-Set}).
-    \item Implementar los componentes necesarios para incorporar entidades desconocidas (\textit{Open-World}).
+    \item Diseñar los componentes necesarios para permitir el reconocimiento de entidades desconocidas (\textit{Open-Set}).
+    \item Implementar dichos componentes, acoplados con el procesamiento de video.
+    \item Diseñar los componentes necesarios para permitir agregar nuevo conocimiento acerca de entidades existentes o desconocidas (\textit{Open-World}).
+    \item Implementar dichos componentes, acoplados con el reconocimiento de desconocidos (\textit{Open-Set}).
 \end{itemize}
 
 \textbf{Duración estimada:} 2 meses
 
-\subsection{T7. Pruebas del sistema adaptativo}
-Esta tarea trata de realizar un estudio acerca de la influencia de los valores entre parámetros en el rendimiento del sistema.
+\subsection{T7. Pruebas del reconocimiento adaptativo}
+Esta tarea trata de realizar múltiples pruebas con el fin de estudiar el comportamiento del reconocimiento implementado.
 
 \textbf{Tareas:}
 \begin{itemize}
-    \item Generar un script que pruebe múltiples combinaciones de parámetros.
-    \item Extraer resultados y obtener las conclusiones
-    \item Revisar el código del sistema si este no se comporta según lo esperado.
+    \item Generar las pruebas que se van a realizar.
+    \item Ejecutar las pruebas y extraer los resultados.
+    \item Modificar el código del sistema si este no se comporta según lo esperado.
+    \item Otorgar una discusión acerca de los resultados obtenidos.
 \end{itemize}
 
 \textbf{Duración estimada:} 1 mes
 
 \subsection{T8. Análisis de rendimiento}
-En esta tarea se evalúan los dispositivos que pasaron a estar disponibles durante el transcurso del proyecto con el objetivo de establecer comparaciones de rendimiento.
+En esta tarea, se evalúa el rendimiento de los dispositivos que pasaron a estar disponibles durante el transcurso del proyecto, con el objetivo de establecer comparaciones y así sacar conclusiones.
 
 \textbf{Tareas:}
 \begin{itemize}
     \item Instalar el sistema mediante un Dockerfile modificado según el dispositivo.
     \item Ejecutar las pruebas y obtener los resultados.
     \item Generar una tabla comparativa entre dispositivos.
+    \item Discutir los resultados obtenidos.
 \end{itemize}
 
 \textbf{Duración estimada:} 2 semanas
 
-\subsection{T9. Finalización de la documentación}
-Esta tarea representa la fase final del proyecto en la que se cubren los últimos detalles de la memoria, concretamente los siguientes puntos:
+\subsection{T9. Documentación del proyecto}
+Esta tarea representa el tiempo de vida del proyecto. Desde la concepción del mismo, se documentan todos los avances logrados. En la etapa final, se centran los esfuerzos en cubrir los últimos detalles de la memoria, concretamente los siguientes puntos:
 
 \begin{itemize}
     \item Añadir últimos resultados y repetir pruebas en caso de que fuese necesario.
+    \item Añadir discusiones acerca de las pruebas.
     \item Ajustar el contenido a los cambios surgidos en el proyecto.
+    \item Añadir los capítulos de fundamentos teóricos y prácticos.
     \item Añadir la sección de seguimiento, gestión de riesgos, recursos y costes del proyecto.
-    \item Añadir conclusiones y trabajo futuro.
+    \item Añadir las conclusiones y el trabajo futuro.
     \item Confirmar la estructura de la memoria.
     \item Agregar apéndices si fuera necesario.
     \item Repaso del contenido de la memoria para correcciones y para cubrir secciones incompletas.
     \item Revisar bibliografía.
 \end{itemize}
 
-\textbf{Duración estimada:} 2 meses
+\textbf{Duración estimada:} 12 meses
+
+\subsection{Diagrama de Gantt}
 
 \begin{figure}[tb]
     \centering
-    \includegraphics[width=1\linewidth]{imagenes/Gantt.jpg}
+    \includegraphics[width=1.1\linewidth]{imagenes/Gantt.jpg}
     \caption{Diagrama de Gantt del proyecto}
     \label{fig:Gantt}
 \end{figure}
 
+En la figura \ref{fig:Gantt} se muestra el diagrama de Gantt del proyecto con todas las dependencias entre tareas y su duración. Los recuadros en azul son las tareas situadas en el instante temporal predicho en la planificación, mientras que los recuadros en rojo muestran los instantes de realización reales de las tareas.
 
-En la figura \ref{fig:Gantt} se muestra el diagrama de Gantt del proyecto con todas las dependencias entre tareas y su duración. La duración de las tareas se planificó con cierta holgura, de forma que puedan reducir el impacto en tiempo ante posibles imprevistos. Teniendo como objetivo la deposición de este trabajo en febrero, se programó el desarrollo para finalizar en enero, de forma que se dispone de un mes adicional si los objetivos no se logran en el tiempo previsto.
+La duración de las tareas se planificó con cierta holgura, de forma que puedan reducir el impacto en tiempo ante posibles imprevistos. Teniendo como objetivo la deposición de este trabajo en febrero, se programó el desarrollo para finalizar en enero, de forma que se dispone de un mes adicional si los objetivos no se logran en el tiempo previsto.
 
 \section{Gestión de riesgos}
 
@@ -191,7 +202,7 @@ En la figura \ref{fig:Gantt} se muestra el diagrama de Gantt del proyecto con to
 
 La tabla \ref{tab:risks} muestra el plan de gestión de riesgos elaborado para el proyecto. Para cada riesgo, se indica su probabilidad, el impacto en semanas de retraso, así como la respuesta prevista para mitigarlo.
 
-Todos los riesgos expuestos han terminado sucediendo, junto a otros riesgos no previstos que surgieron durante el proyecto (ejemplo: los archivos de las pruebas no pueden almacenarse de forma local en el dispositivo por problemas de espacio).
+Todos los riesgos expuestos han terminado sucediendo, excepto el del método de seguimiento, que ha logrado funcionar mejor de lo esperado en los videos probados. También surgieron riesgos no previstos inicialmente, como que el sistema inicial no funcionase correctamente al aplicar más de 2 cámaras.
 
 \section{Seguimiento}
 %TODO: Cada una de las tareas del proyecto se añaden a la fase \textit{backlog}, que posteriormente se dividen en varias tareas que se incorporan a la fase \textit{to-do}.
@@ -214,15 +225,17 @@ En líneas generales, el seguimiento sufrió retrasos de varias semanas en algun
     \item \textbf{Instalación y ejecución del sistema de partida}: la instalación del sistema en la Jetson Xavier NX se retrasó una semana debido a la espera de una tarjeta microSD, necesaria para flashear el \acrshort{so} y que no venía con el dispositivo. Posteriormente fue necesario flashear varias veces el dispositivo, debido a problemas para redimensionar particiones. Para mitigar el tiempo perdido en las reinstalaciones, se trabajó en preparar un Dockerfile de despliegue con todo el software y a experimentar con el sistema en el portátil personal. Dicho sistema no funcionaba de primeras, por lo que fue necesario realizar modificaciones.
     \item \textbf{Pruebas de los modelos y del sistema}: fue la tarea que más retrasó el proyecto. Los modelos en un principio reportaban bajas precisiones al implementarlos en \acrshort{gpu}. La mala exportación de los modelos o el pipeline de procesado de las imágenes eran las principales causas.
 
-          Se intentó convertir el modelo YuNet para utilizarse en el \textit{backend} de TensorRT pero, debido al complejo procedimiento del procesado de las entradas y salidas, se mantuvo el modelo en su versión de OpenCV, ya que de la otra forma no se lograron resultados equiparables.
+          Se intentó convertir el modelo YuNet para utilizarse en el \gls{rt} de TensorRT pero, debido al complejo procedimiento del procesado de las entradas y salidas, se mantuvo el modelo en su versión de OpenCV, ya que de la otra forma no se lograron resultados equiparables.
 
           Debido a la falta de espacio en el almacenamiento local de los dispositivos para almacenar los archivos de las pruebas, se tuvo que montar una red con acceso al equipo donde residían dichos archivos y ejecutarlos remotamente. Debido a las limitaciones de la red (GigabitEthernet), se ideó un mecanismo para transmitir los datos comprimidos a través de la red y descomprimirlos en el destino.
 
-          Por otro lado, aunque el sistema de partida permitía operar con más de 2 cámaras, este era muy sensible a los retardos de cualquiera de estas, además de que no estaba pensado para funcionar asumiendo cierto solape entre las cámaras. Por estos motivos, se tuvo que rediseñar parte de la lógica del sistema para lograr la escalabilidad. Después se realizaron las pruebas de escalabilidad con la nueva versión del sistema.
+          Aunque el sistema de partida permitía operar con más de 2 cámaras, este era muy sensible a los retardos de cualquiera de estas, además de que no estaba pensado para funcionar asumiendo cierto solape entre las cámaras. Por estos motivos, se tuvo que rediseñar parte de la lógica del sistema para lograr la escalabilidad. Después se realizaron las pruebas de escalabilidad con la nueva versión del sistema.
     \item \textbf{Migración a ROS 2}: la migración se pudo realizar de manera intuitiva, salvo por los problemas generados por un paquete, cuyo coste de migración era demasiado elevado para terminarlo. Finalmente, se migró el sistema prescindiendo de dicho paquete.
-    \item \textbf{Diseño e implementación del sistema adaptativo}: en un principio fue complicado comprender todas las bases de la arquitectura de referencia \cite{Erik}. Tras empezar la dedicación a tiempo completo al proyecto en Octubre, se pudo cumplir con el objetivo el mes siguiente.
-    \item \textbf{Pruebas del sistema extendido}: esta tarea fue según el tiempo previsto, ya que el rendimiento del sistema evolucionaba rápidamente conforme se iban añadiendo mejoras. Aunque fue necesario contar con más personas, con un total de 10 fueron suficientes (4 más que en el \gls{dataset} de las pruebas) para realizar unas pruebas razonables del sistema.
-    \item \textbf{Análisis de nuevos dispositivos}: esta tarea también llevo más tiempo de lo previsto, ya que tuvieron que rehacerse las pruebas de modelos en \textbf{todos los dipositivos}, debido a modificaciones en los modelos que reducían la latencia y el cambio de versión del modelo YOLO8n a YOLO11n.
+    \item \textbf{Diseño e implementación del sistema extendido}: en un principio fue complicado comprender todas las bases de la arquitectura de referencia \cite{Erik}. Tras empezar la dedicación a tiempo completo al proyecto en Octubre, se pudo cumplir con el objetivo el mes siguiente.
+    \item \textbf{Pruebas del reconocimiento adaptativo}: esta tarea fue según el tiempo previsto, ya que el rendimiento del sistema evolucionaba rápidamente conforme se iban añadiendo mejoras. Aunque fue necesario contar con más personas, con un total de 10 fueron suficientes (4 más que en el \gls{dataset} de las pruebas) para realizar unas pruebas razonables del sistema.
+    \item \textbf{Análisis de rendimiento}: esta tarea también llevo más tiempo de lo previsto, ya que tuvieron que rehacerse las pruebas de modelos en \textbf{todos los dipositivos}, debido a modificaciones en los modelos que reducían la latencia y el cambio de versión del modelo YOLO8n a YOLO11n.
+
+          Debido a que las pruebas del sistema no se pudieron realizar en las Jetson hasta lograr la migración a \acrshort{ros} 2, dichas pruebas se realizaron durante el transcurso de esta tarea.
 \end{itemize}
 
 Gracias a la dedicación a tiempo completo desde octubre y que se contaba con un mes de holgura en la planificación, se pudieron completar todas las tareas antes de la deposición en febrero de este proyecto.
