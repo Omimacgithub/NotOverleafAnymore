@@ -1,7 +1,14 @@
 \chapter{Fundamentos teóricos}
 \lettrine{E}{n} este capítulo se exponen los conceptos necesarios para comprender la memoria.
 
-\section{Tipos de aprendizaje máquina semisupervisado}
+\section{Tipos de aprendizaje incremental}
+Como ya se ha introducido en la sección \ref{sec:incrlearning}, el aprendizaje incremental permite añadir nuevo conocimiento al modelo durante su operación o fase de inferencia (\textit{online training}). Esta aproximación permite a los modelos adaptarse a nuevos datos que no corresponden a los etiquetados en los \glspl{dataset} utilizados durante su fase de entrenamiento (\textit{offline training}). Dentro de este campo se encuentran los siguientes tipos de configuración:
+\begin{itemize}
+    \item No supervisado: el modelo se entrena con datos obtenidos durante su operación (muestras o datos \textit{online}), es decir, en \textbf{completa ausencia de datos etiquetados}. El sistema, de forma autónoma, recolecta los datos de los casos de prueba utilizando \textbf{}métodos de seguimiento de los objetos. Esta aproximación debe ser capaz de manejar el \textbf{ruido inevitable} de las muestras \textit{online} \cite{sharma2012unsupervised}.
+    \item Semisupervisado: el modelo parte de un conjunto \textbf{reducido} de datos etiquetados, que se expanden posteriormente con datos \textit{online}. Esta aproximación reduce el impacto del ruido en las muestras iniciales, que es un factor crítico en el rendimiento del sistema \cite{andrew}.
+    \item Supervisado:
+\end{itemize}
+
 El aprendizaje máquina semisupervisado parte de una fase inicial de los modelos entrenados con datos perfectamente \textbf{etiquetados}, dichos datos se complementan o se actualizan con muestras obtenidas durante la operación del sistema (no etiquetadas), de esta forma el modelo amplia su conocimiento de manera autónoma. Existen 3 tipos diferentes de aprendizaje máquina semisupervisado que se aplicarán a lo largo de esta memoria y que son los siguientes:
 
 \subsection{\textit{Closed-Set}}
