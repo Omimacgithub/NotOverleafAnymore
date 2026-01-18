@@ -11,12 +11,10 @@ def def_svm(samples, idx, d1, unk):
     l = [num_samples for IoIs in samplesNegative for num_svm in IoIs for num_samples in num_svm]
     k = nneg if len(l) > nneg else len(l)
     samplesNegative = random_pick(np.array(l), size=k)
-    # Build train data
     trainData = np.vstack([samplesNegative, d1], dtype=np.float32)
     labels = -np.ones([samplesNegative.shape[0], 1], dtype=np.int32)
     plabels = np.ones([len(d1), 1], dtype=np.int32)
     labels = np.vstack([labels, plabels])
-    # SVM creation
     svm = cv2.ml.SVM_create()
     svm.setType(cv2.ml.SVM_C_SVC)
     svm.setKernel(cv2.ml.SVM_LINEAR)

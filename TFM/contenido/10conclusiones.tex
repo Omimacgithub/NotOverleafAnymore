@@ -5,15 +5,21 @@
 
 \section{Conclusiones}
 
-La ejecución de los modelos de redes neuronales y del sistema en múltiples arquitecturas era uno de los objetivos principales, que se ha cumplido con hasta 6 arquitecturas distintas. Los resultados arrojados muestran las similitudes y diferencias entre las arquitecturas de dichos dispositivos. Adicionalmente, se ha probado el sistema ante cargas de trabajo crecientes, cuyo objetivo es acotar el número máximo de cámaras que el sistema puede soportar, todo operado en tiempo real.
+La ejecución de los modelos de redes neuronales y del sistema en múltiples arquitecturas era uno de los objetivos principales, que se ha cumplido con hasta 6 arquitecturas distintas. Los resultados arrojados muestran las similitudes y diferencias entre las arquitecturas de dichos dispositivos. Adicionalmente, se han realizado pruebas del sistema ante una carga de trabajo creciente, cuyo objetivo era acotar el número máximo de cámaras que el sistema puede soportar, todo operado en tiempo real.
 
-Se ha exprimido la capacidad de las \acrshort{gpu}s de todos los dispositivos del proyecto. Los resultados del sistema obtenidos en las placas NVIDIA Jetson llegan incluso a superar el sistema de referencia, que dispone de una \acrshort{cpu} superior, demostrando así la capacidad de las \acrshort{gpu}s de hacer frente a cargas de trabajo relacionadas con la visión artificial.
+Se ha exprimido la capacidad de las \acrshort{gpu}s de todos los dispositivos del proyecto. Los resultados del sistema obtenidos en las placas NVIDIA Jetson llegan incluso a superar al sistema de referencia, que dispone de una \acrshort{cpu} superior, demostrando así la capacidad de las \acrshort{gpu}s de hacer frente a cargas de trabajo relacionadas con la visión artificial.
 
 La integración del sistema en contenedores de Docker fue clave para el éxito del análisis, ya que de otro modo no sería posible integrar el sistema en todas las arquitecturas, teniendo en cuenta que 3 de los dispositivos (Orin Nano, AGX Orin y AGX Thor) pasaron a estar disponibles con tan sólo 3 meses de antelación (desde finales de Septiembre).
 
 Por motivos relacionados con el fin de soporte de \acrshort{ros} 1 y de poder aplicar las últimas librerías disponibles para los distintos dispositivos, se ha realizado una migración del sistema a \acrshort{ros} 2.
 
-Por otra parte, se ha incorporado una nueva funcionalidad, que permite al sistema actualizar su conocimiento ante nuevos individuos detectados. Fue necesario cambiar el funcionamiento del sistema base, de forma que pueda procesar secuencias de frames en vez de un solo frame. Debido al contexto de las pruebas, que implican a múltiples individuos que se entrecruzan, se han tenido que desarrollar algoritmos que mantengan el rastro de dichos individuos, con capacidad de reidentificación ante la pérdida de visión los mismos. Todos los componentes se han sometido a análisis, que exponen el comportamiento del sistema desde múltiples puntos de vista. TODO: resultados
+Por otra parte, se ha incorporado un algoritmo de aprendizaje incremental que permite detectar y reconocer desconocidos, que son posteriormente integrados al sistema, de forma que se expande su conocimiento. Se han explorado diferentes métodos de inicialización, uno partiendo de un conjunto muy reducido de datos etiquetados y el otro que obtiene los datos de manera completamente autónoma. Se cree que este último método favorece el rápido despliegue del sistema en cualquier contexto.
+
+Se modificó el funcionamiento del sistema base, de forma que pueda procesar secuencias de frames en vez de un solo frame.
+
+Debido al contexto de las pruebas, que implican a múltiples individuos que se entrecruzan, se han tenido que desarrollar algoritmos que mantengan el rastro de dichos individuos, con capacidad de reidentificación ante la pérdida de visión los mismos.
+
+Todos los nuevos componentes se han sometido a análisis, que exponen el comportamiento del sistema desde múltiples puntos de vista. TODO: resultados
 
 \subsection{Seguimiento del proyecto}
 

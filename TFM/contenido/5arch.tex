@@ -5,6 +5,10 @@
 \section{Arquitectura general}
 \label{sec:partarch}
 
+En esta sección se explica la estructura general del sistema del proyecto. Para entenderla mejor, se empezará por explicar la arquitectura base de la que se parte y del nodo cámara, el componente más importante. A continuación, se explicarán las mejoras de la arquitectura final extendida.
+
+\subsection{Arquitectura base}
+
 Se parte de un sistema compuesto por 2 cámaras \acrshort{rgbd} y un sensor \acrshort{lidar}, que detecta y reconoce personas a partir de nodos que aplican los respectivos modelos de redes neuronales (o \acrshort{cnn}). El sistema posee la capacidad de fusionar la información de todos los nodos, de forma que se obtiene un único reconocimiento robusto para cada individuo, junto a su posición concreta en el espacio \acrshort{3d}.
 
 Toda la arquitectura se ejecuta en el \textit{framework} \acrshort{ros} \cite{ROS} (sección \ref{sec:ros}). \acrshort{ros} se encarga de crear los procesos para cada nodo, comprobar su estado, regular la frecuencia a la que trabajan, crear la red en la que dichos procesos intercambian mensajes, entre otros muchos detalles que resultan transparentes para el programador.
@@ -29,7 +33,6 @@ La integración de sensores propuesta en \cite{andrew} ha demostrado mejorar los
 \subsection{Nodo cámara}
 \label{sec:basearch}
 
-
 \begin{figure}[hp!]
     \centering
     \includegraphics[width=0.8\linewidth]{imagenes/CAMNOD.jpg}
@@ -47,7 +50,7 @@ Una vez obtenidos los \glspl{embedding} de cada usuario, se calcula la \textbf{d
 
 La identidad del individuo puede tomarse como la primera entrada de la lista de sujetos (es decir, la identidad más parecida), o puede procesarse la lista por medio de los métodos de distancia relativa y/o identidad probable en el nodo integración de sensores. Estos dos posibles comportamientos pueden escogerse con un valor del parámetro \textit{top\_k} de 1 o mayor que 1 respectivamente.
 
-\section{Arquitectura extendida}
+\subsection{Arquitectura extendida}
 \label{sec:finalsys}
 
 \begin{figure}

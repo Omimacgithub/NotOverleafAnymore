@@ -11,8 +11,6 @@
 
 \input{contenido/codes/cash.tex}
 
-TODO: explicar en algún momento que implementamos el reconocimiento adaptativo como módulo por separado del sistema, y que realmente a excepción de la escalabilidad y el ROS 2, el sistema sigue igual.
-
 \section{Códigos de inferencia para el \gls{rt} de TensorRT}
 En la figura \ref{fig:finalsys} se muestran los 4 modelos utilizados en el nodo cámara y que se detallarán en la sección \ref{sec:models}. Dichos modelos cuentan con su implementación optimizada para OpenVINO creada en \cite{andrew}, excepto para el modelo de detección de caras (YuNet), que se ejecuta en el \gls{rt} de OpenCV. En este proyecto se han implementado nuevas versiones de las inferencias adaptadas para su uso en \acrshort{gpu} por medio de TensorRT y PyCUDA. PyCUDA ofrece una API que facilita gran parte de la interacción con CUDA, aun así, se necesita gestionar en el código temas como la creación de contextos y reserva de la memoria.
 
@@ -30,7 +28,9 @@ El código \ref{coud:trtskel} muestra el esqueleto de dichas inferencias, cada v
 
 Dichos recursos se reservan \textbf{una sola vez}, que corresponde con el momento de creación de la instancia de la clase Python que representa al modelo.
 
-La función \textit{infer} del código \ref{coud:trtskel} se ejecuta por cada vez que se recibe un frame de entrada a procesar. Se reserva en \acrshort{cpu} un array de NumPy para almacenar la salida de la inferencia y se ejecuta la función PREPROCESING con el frame de entrada, que representa el pipeline de preprocesado específico para cada modelo. El frame preprocesado se copia a la memoria de la \acrshort{gpu} (o \textit{device}) y se realiza la inferencia en el stream de CUDA reservado. Finalmente, los resultados se copian de vuelta a la memoria de la \acrshort{cpu} (o \textit{host}) y se ejecuta el pipeline de postprocesado del resultado definido en la función POSTPROCESING.
+La función \textit{infer} del código \ref{coud:trtskel} se ejecuta por cada vez que se recibe una entrada a procesar. La entrada puede ser un solo frame o una secuencia de estos.
+
+Se ejecuta la función PREPROCESING con la entrada, que representa el pipeline de preprocesado específico para cada modelo. Los datos preprocesados se copian a la memoria de la \acrshort{gpu} (o \textit{device}) a través de un memcpy y se realiza la inferencia en el stream de CUDA reservado. Antes de realizar la inferencia, se especifica el tamaño concreto de los datos de entrada, ya que en un procesamiento en modo \gls{batch}, el conjunto de imágenes puede diferir. Finalmente, los resultados se copian de vuelta a la memoria de la \acrshort{cpu} (o \textit{host}) y se ejecuta el pipeline de postprocesado del resultado definido en la función POSTPROCESING.
 
 Las operaciones de copia de datos y la inferencia se ejecutan de forma \textbf{asíncrona}, por lo que es necesario introducir una barrera de sincronización una vez todas las operaciones se emitan, de forma que nuevos \glspl{thread} no sobrescriben la memoria de la \acrshort{gpu} mientras esta realiza inferencias.
 
