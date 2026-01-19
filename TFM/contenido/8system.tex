@@ -79,7 +79,7 @@ En la tabla \ref{tab:scaleresourcesros2} se muestra la proporción de recursos u
 
 Ambos dispositivos pueden ejecutar holgadamente el sistema usando 2 cámaras, en el caso de las 5 cámaras es cuando se empiezan a dislumbrar las limitaciones de la Jetson Orin Nano, principalmente en términos de memoria, lo que explica la caída en la precisión de las detecciones, que no permite a los modelos reservar memoria para varias de las inferencias.
 
-Los 8 GB de RAM rápidamente se quedan escasos, debido a todos los recursos necesarios a reservar, como contextos de CUDA, el modelo deserializado, streams de CUDA, entre otros, que pesan en torno a cientos de \acrshort{mb}, que se multiplican por 4 modelos y a su vez por 5 cámaras. Debido al excesivo uso de memoria, se han aplicado ciertas optimizaciones de los códigos de Python, que han permitido ahorrar hasta \textbf{400 \acrshort{mb}} en la inicialización del sistema, y que se citan en el apéndice \ref{chap:optimus}.
+Los 8 GB de memoria rápidamente se quedan escasos, debido a todos los recursos necesarios a reservar, como contextos de CUDA, el modelo deserializado, streams de CUDA, entre otros, que pesan en torno a cientos de \acrshort{mb}, que se multiplican por 4 modelos y a su vez por 5 cámaras. Debido al excesivo uso de memoria, se han aplicado ciertas optimizaciones de los códigos de Python, que han permitido ahorrar hasta \textbf{400 \acrshort{mb}} en la inicialización del sistema, y que se citan en el apéndice \ref{chap:optimus}.
 
 \section{Discusión}
 

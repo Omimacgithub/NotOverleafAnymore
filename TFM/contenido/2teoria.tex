@@ -9,10 +9,10 @@ Los clasificadores o algoritmos de clasificación resuelven la tarea de decidir 
     \item \textbf{\textit{k-Nearest neighbors}}: es un método de clasificación basado en las distancias de la muestra respecto a sus muestras más cercanas (vecinos). El parámetro k establece la cantidad de dichos vecinos, de forma que se asigna la clase predominante de los vecinos a la propia muestra \cite{peterson2009k}.
     \item \textbf{\textit{Decision tree}}: es un método de clasificación que sigue una estructura de árbol, en el que un nodo representa una característica y una rama un conjunto de características. La clasificación empieza desde el nodo raíz y termina en uno de los nodos hoja \cite{ali2012random}.
     \item \textbf{\textit{Artificial Neural Networks}}: es una arquitectura multicapa, compuesta por nodos (o neuronas), cada uno representando a un \textbf{perceptrón}. El perceptrón es un clasificador lineal
-    \item \textbf{\textit{Support Vector Machines}}: trata de dibujar el hiperplano óptimo entre clases de datos. A diferencia de los anteriores clasificadores, las predicciones devueltas por las \acrshort{svm} son puramente \textbf{dicotómicas}, es decir, no devuelve probabilidades de pertenencia para cada clase (al menos de forma nativa) \cite{DREISEITL2002352}.
+    \item \textbf{\textit{Support Vector Machines}}: trata de dibujar el hiperplano óptimo en cuanto al margen que separa las clases de datos. A diferencia de los anteriores clasificadores, las predicciones devueltas por las \acrshort{svm} son puramente \textbf{dicotómicas}, es decir, no devuelve probabilidades de pertenencia para cada clase (al menos de forma nativa) \cite{DREISEITL2002352}.
 \end{itemize}
 
-En este proyecto, se ha optado por el entrenamiento discriminativo, que consiste en resaltar las diferencias entre las muestras de la clase que se representa (positivos) respecto al resto del mundo (negativos). Debido a que las muestras negativas se pueden compartir entre diferentes clasificadores, se obtiene una gran capacidad de generalización partiendo de un conjunto reducido de datos.
+En este proyecto, se ha optado por el \textbf{entrenamiento discriminativo}, que consiste en resaltar las diferencias entre las muestras de la clase que se representa (positivos) respecto al resto del mundo (negativos). Debido a que las muestras negativas se pueden compartir entre diferentes clasificadores, se obtiene una gran capacidad de generalización partiendo de un conjunto reducido de datos \cite{malisiewicz2011ensemble}.
 
 Los clasificadores como KNN o las redes neuronales no poseen la capacidad de aprender de los datos negativos y, en cambio, necesitan grandes \glspl{dataset} para converger correctamente \cite{malisiewicz2011ensemble}. Las \acrshort{svm} sí que cuentan con dicho poder discriminatorio y, por este motivo, son relevantes para el presente proyecto.
 
@@ -44,6 +44,8 @@ A continuación se exponen algunos de los tipos más conocidos:
 \end{itemize}
 
 \section{Tipos de aprendizaje incremental}
+\label{sec:incrtypes}
+
 Como ya se ha introducido en la sección \ref{sec:incrlearning}, el aprendizaje incremental permite añadir nuevo conocimiento al sistema durante su operación o fase de inferencia (\textit{online training}). Esta aproximación permite al sistema adaptarse a nuevos datos que no corresponden a los etiquetados en los \glspl{dataset} utilizados durante su fase de entrenamiento (\textit{offline training}). Dentro de este campo se encuentran los siguientes tipos de configuración:
 \begin{itemize}
     \item \textbf{No supervisado}: el sistema se entrena con datos obtenidos durante su operación (muestras o datos \textit{online}), es decir, en \textbf{completa ausencia de datos etiquetados}. El sistema, de forma autónoma, recolecta los datos de los casos de prueba utilizando \textbf{métodos de seguimiento} de los objetos. Este tipo de aprendizaje debe ser capaz de manejar el \textbf{ruido inevitable} de las muestras \textit{online} \cite{sharma2012unsupervised}.
@@ -55,7 +57,7 @@ No se menciona un tipo supervisado, ya que esto supondría no utilizar datos \te
 Dentro del aprendizaje incremental, los conceptos \textit{Closed-Set}, \textit{Open-Set} y \textit{Open-World} han surgido para etiquetar a los sistemas según el tipo de reconocimiento que implementan. A continuación, se explican los detalles de cada uno.
 
 \subsection{\textit{Closed-Set}}
-Un sistema \textit{Closed-Set} opera en un conjunto \textbf{cerrado} de objetos y no implementa ningún tipo de aprendizaje en absoluto. Se entrena puramente con datos etiquetados y está limitado a reconocer las clases con las que se inicializó. Este es el modo en el que trabaja el sistema base \cite{andrew}.
+Un sistema \textit{Closed-Set} opera en un conjunto \textbf{cerrado} de objetos y no implementa ningún tipo de aprendizaje en absoluto. Se entrena puramente con datos etiquetados y está limitado a reconocer las clases con las que se inicializó (clases de entrenamiento). Este es el modo en el que trabaja el sistema base \cite{andrew}.
 
 Asumiendo que el sistema no va a reconocer nuevas clases, se estrecha enormemente el universo de clases que este conoce, lo que permite implementar métodos de clasificación basados en la clase más probable \cite{bendale2015towards}.
 

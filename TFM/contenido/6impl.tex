@@ -1,18 +1,12 @@
 \chapter{Implementación del sistema}
 \label{chap:impl}
 
-\lettrine{E}{n} este capítulo se ahonda en los detalles de implementación de los componentes del sistema extendido. También se comentan los cambios relevantes realizados al sistema base.
+\lettrine{E}{n} este capítulo se ahonda en los detalles de implementación de los componentes del sistema extendido. También se comentan los cambios relevantes realizados al sistema base y a los modelos para su ejecución en \acrshort{gpu}.
 
 \input{contenido/codes/trtskel.tex}
 
-\input{contenido/codes/training.tex}
-
-\input{contenido/codes/weib.tex}
-
-\input{contenido/codes/cash.tex}
-
 \section{Códigos de inferencia para el \gls{rt} de TensorRT}
-En la figura \ref{fig:finalsys} se muestran los 4 modelos utilizados en el nodo cámara y que se detallarán en la sección \ref{sec:models}. Dichos modelos cuentan con su implementación optimizada para OpenVINO creada en \cite{andrew}, excepto para el modelo de detección de caras (YuNet), que se ejecuta en el \gls{rt} de OpenCV. En este proyecto se han implementado nuevas versiones de las inferencias adaptadas para su uso en \acrshort{gpu} por medio de TensorRT y PyCUDA. PyCUDA ofrece una API que facilita gran parte de la interacción con CUDA, aun así, se necesita gestionar en el código temas como la creación de contextos y reserva de la memoria.
+En la figura \ref{fig:finalsys} se muestran los 4 modelos utilizados en el nodo cámara y que se detallarán en la sección \ref{sec:models}, todos cuentan con su implementación optimizada para OpenVINO creada en \cite{andrew}, excepto para el modelo de detección de caras (YuNet), que se ejecuta en el \gls{rt} de OpenCV. En este proyecto se han implementado nuevas versiones de las inferencias adaptadas para su uso en \acrshort{gpu} por medio de TensorRT y PyCUDA. PyCUDA ofrece una API que facilita gran parte de la interacción con CUDA, aun así, se necesita gestionar en el código temas como la creación de contextos y reserva de la memoria.
 
 TensorRT trabaja con su propio formato de los modelos, por lo que es necesario realizar una conversión de los mismos a dicho formato mediante las herramientas expuestas en el apéndice \ref{chap:procedure}. En el proceso de conversión se aplica un proceso de selección de optimizaciones según la arquitectura de la \acrshort{gpu}, que prueba distintas tácticas para la distribución del trabajo y diferentes precisiones para quedarse con la combinación más rápida, sin comprometer la precisión del modelo.
 
@@ -28,9 +22,9 @@ El código \ref{coud:trtskel} muestra el esqueleto de dichas inferencias, cada v
 
 Dichos recursos se reservan \textbf{una sola vez}, que corresponde con el momento de creación de la instancia de la clase Python que representa al modelo.
 
-La función \textit{infer} del código \ref{coud:trtskel} se ejecuta por cada vez que se recibe una entrada a procesar. La entrada puede ser un solo frame o una secuencia de estos.
+La función \textit{infer} del código \ref{coud:trtskel} se ejecuta por cada vez que se recibe una entrada a procesar, la entrada puede ser un solo frame o una secuencia de estos.
 
-Se ejecuta la función PREPROCESING con la entrada, que representa el pipeline de preprocesado específico para cada modelo. Los datos preprocesados se copian a la memoria de la \acrshort{gpu} (o \textit{device}) a través de un memcpy y se realiza la inferencia en el stream de CUDA reservado. Antes de realizar la inferencia, se especifica el tamaño concreto de los datos de entrada, ya que en un procesamiento en modo \gls{batch}, el conjunto de imágenes puede diferir. Finalmente, los resultados se copian de vuelta a la memoria de la \acrshort{cpu} (o \textit{host}) y se ejecuta el pipeline de postprocesado del resultado definido en la función POSTPROCESING.
+Se ejecuta la función PREPROCESING con la entrada, que representa el pipeline de preprocesado específico para cada modelo. Los datos preprocesados se copian a la memoria de la \acrshort{gpu} (o \textit{device}) a través de un \textit{memcpy} y se realiza la inferencia en el \textit{stream} de CUDA reservado. Antes de realizar la inferencia, se especifica el tamaño concreto de los datos de entrada (función \textit{set\_input\_shape}), ya que en un procesamiento en modo \gls{batch}, el conjunto de imágenes puede diferir. Finalmente, los resultados se copian de vuelta a la memoria de la \acrshort{cpu} (o \textit{host}) y se ejecuta el pipeline de postprocesado del resultado definido en la función POSTPROCESING.
 
 Las operaciones de copia de datos y la inferencia se ejecutan de forma \textbf{asíncrona}, por lo que es necesario introducir una barrera de sincronización una vez todas las operaciones se emitan, de forma que nuevos \glspl{thread} no sobrescriben la memoria de la \acrshort{gpu} mientras esta realiza inferencias.
 
@@ -39,9 +33,10 @@ Las operaciones de copia de datos y la inferencia se ejecutan de forma \textbf{a
 \section{Procesamiento de video}
 La implementación sigue el flujo expuesto en la sección \ref{sec:tracker}.
 
-Para realizar una asignación óptima del método húngaro, se utilizó la función \textit{linear\_sum\_assignment} otorgada por el módulo \textit{optimize} de la librería SciPy \cite{lsa}. Dicha librería implementa el algoritmo Jonker-Volgenan, que es una variante del método húngaro con complejidad computacional $O(n^{3})$ \cite{lsa, o3}. TODO: el coste es muy elevado, estaría bien poner a partir de qué número de personas se vuelve demasiado costoso.
+El cálculo del \acrshort{iou} es sencillo y no entraña apenas complejidad computacional. Previo al \acrshort{iou}, se obtiene el área a partir de las coordenadas de las \glspl{bbox} y se calcula la intersección y la unión. La distancia euclidiana se calcula como se expone en la sección \ref{subsec:reiden} y tampoco entraña mayor dificultad.
 
-El cálculo del \acrshort{iou} es sencillo y no entraña apenas complejidad computacional. La distancia euclidiana se calcula como se expone en la sección \ref{subsec:reiden}, para el cálculo de la raíz cuadrada, se empleó la función \textit{sqrt} de la librería \textit{math}.
+Para realizar una asignación óptima del método húngaro, se utilizó la función \textit{linear\_sum\_assignment} otorgada por el módulo \textit{optimize} de la librería SciPy \cite{lsa}. Dicha librería implementa el algoritmo Jonker-Volgenan, que es una variante del método húngaro con complejidad computacional $O(n^{3})$ \cite{lsa, o3}. Atendiendo a la elevada complejidad computacional, este algoritmo se volvería impracticable con matrices de cientos de filas y columnas (ejemplo: detección de 100 personas de una cámara en un frame y su anterior) \cite{325}. Sin embargo, como en los videos de prueba una cámara llega a detectar como máximo 4 personas a la vez, la ejecución del algoritmo no supone apenas algún coste.
+
 
 \section{Módulo de valoración}
 
@@ -52,6 +47,8 @@ La implementación sigue el funcionamiento descrito en la sección \ref{sec:val}
 \section{Módulo de reconocimiento}
 
 Como se mencionó en la sección \ref{sec:reckon}, el módulo de reconocimiento determina si la entidad detectada se corresponde a un individuo previamente reclutado o a una entidad \textbf{desconocida}.
+
+\input{contenido/codes/weib.tex}
 
 El código \ref{coud:weib}, basado en \cite{src} (función selfUpdate de tools.py), muestra la implementación de dicha funcionalidad. Se parte de la función RDF (Recognition Decision Function), que recibe el conjunto de puntuaciones ordenado y devuelve la decisión de reconocimiento.
 
@@ -71,22 +68,35 @@ Se invoca a la función que calcula el criterio de favorabilidad, que otorga un 
 \section{Personas registradas}
 \label{sec:init}
 
-Como se ha comentado en la sección \ref{sec:initarch}, la base de datos de usuarios se puede inicializar de un modo supervisado o no supervisado. Para que el algoritmo de clasificación y el método de reconocimiento funcionen, es necesario disponer de varias muestras representativas del individuo (a partir de ahora este parámetro se definirá como \textbf{tamaño de plantilla}).
+En esta sección se comentan las implementaciones de los componentes encargados de crear, mantener y compartir la base de datos de las personas registradas del sistema.
 
-En el modo supervisado, se cuenta con un directorio con las muestras (recortes de caras y/o cuerpos) agrupadas por subdirectorios para cada usuario. Se inicializa la base de datos con los \glspl{embedding} generados por los modelos de reconocimiento para cada muestra, tras obtener los \glspl{embedding} de todos los usuarios, se entrenan las \acrshort{svm} que compondrán los comités iniciales. El conjunto de positivos de dichos clasificadores se compone de las muestras del propio usuario, mientras que el conjunto de negativos se corresponde con una selección aleatoria de las muestras del resto de individuos.
+\subsection{Creación y entrenamiento de las \acrshort{svm}}
 
-En el modo no supervisado, se parte puramente de la información de las cámaras en el momento de ejecución del sistema, en el caso de las pruebas realizadas se utilizan los frames de los videos grabados.
+\input{contenido/codes/training.tex}
 
-El código \ref{coud:training} corresponde al proceso seguido a la hora de crear y entrenar nuevos clasificadores. De todas las muestras de individuos de la base de datos, se \textbf{excluyen las del propio sujeto} en el caso de crear una \acrshort{svm} para un comité existente. Posteriormente, se extrae un subconjunto aleatorio de estas (función random\_pick), que representará al conjunto de muestras negativas del entrenamiento.
+El código \ref{coud:training}, basado en extractos de \cite{src}, corresponde al proceso seguido a la hora de crear y entrenar nuevas \acrshort{svm}. De todas las muestras de individuos de la base de datos, se \textbf{excluyen las del propio sujeto} en el caso de crear una \acrshort{svm} para un comité existente. Posteriormente, se extrae un subconjunto aleatorio de estas (función random\_pick), que representará al conjunto de muestras negativas del entrenamiento.
 
-A la hora de entrenar las \acrshort{svm}, se asigna la etiqueta 1 (variable plabels) cuando la muestra se corresponde con el conjunto de positivos (variable d1) y -1 (variable labels) cuando corresponde con el de negativos (variable samplesNegative). De esta forma, cuando el clasificador determine que las muestras pertenecen a la clase que representa, devolverá como máximo una puntuación de -1, en caso contrario devolverá un 1 TODO: no sé porqué se comporta al revés. Este comportamiento se ha aplicado simplemente por comodidad, pero la \acrshort{svm} podría entrenarse para que cause el efecto contrario.
+A la hora de entrenar las \acrshort{svm}, se asigna la etiqueta 1 (variable \textit{plabels}) para las muestras positivas (variable \textit{d1}) y -1 (variable \textit{labels}) para las negativas (variable \textit{samplesNegative}). OpenCV asigna los signos a las clases según el orden de los signos y las etiquetas que se presentan en el entrenamiento. En el caso de presentar primero las muestras negativas con -1 y las positivas con +1, entonces la \acrshort{svm} devuelve como máximo -1 cuando una muestra pertenece a la clase positiva, siendo -1 la distancia al hiperplano desde la clase positiva, en caso contrario se devolverá como máximo un +1 para las clases negativas. Se ha aplicado este comportamiento para que la fusión de puntuaciones mediante la mediana \textbf{funcione} (ya que ordena los valores de menor a mayor), pero la \acrshort{svm} podría entrenarse para causar el efecto contrario, solo es necesario cambiar el orden de aparición de las etiquetas y los signos en el entrenamiento.
 
-%La función comentada se invoca durante la inicialización del sistema y cuando se llama al módulo de actualización, o lo que es lo mismo, cada vez que se necesite crear un nuevo clasificador a registrar en el sistema.
+\subsection{Método de inicialización no supervisado}
 
-TODO: poner algún extracto de código?
+Como ya se explicó en la sección \ref{sec:initarch}, se parte únicamente de la información de las cámaras en el momento de ejecución del sistema, en el caso de las pruebas realizadas se utilizan los frames de los videos grabados.
 
+Para la implementación del algoritmo de la figura \ref{fig:init} se ha podido aprovechar el módulo de procesamiento de video para la fase de recolección de \glspl{bbox}. El resto de detalles de implementación no entrañan nada destacable.
+
+\subsection{Registro compartido}
+
+Se han implementado los 2 métodos descritos en la sección \ref{sec:shared}.
+
+Para la base de datos se escogió \textbf{Redis}, que funciona puramente en memoria principal. La base de datos se despliega en un contenedor de Docker separado del sistema, el propio equipo en el que se despliega la base de datos se comunica con el sistema mediante un \textbf{socket de Unix}, el resto de clientes remotos acceden por dirección IP (Internet Protocol) (TODO: la implementación no está acabada).
+
+El nodo integración de sensores se encarga de revisar si se han reconocido a nuevos usuarios en el sistema, si es el caso, este manda una petición de escritura a la base de datos Redis, (TODO: Redis tiene unos hooks que permiten propagar los cambios en la información en forma de broadcast, de forma que llegan a los nodos cámara, pero esto no lo implementé)
+
+Debido a que la base de datos introduce latencia al sistema, especialmente si las escrituras son recurrentes, se ha adoptado otra alternativa que aproveche la red \acrshort{ros}. Los nodos cámara se CONTINUAR suscrben
 
 \section{Escalabilidad y tolerancia a fallos de las cámaras}
+
+\input{contenido/codes/cash.tex}
 
 Cuando se fusionan los resultados procesados por los distintos sensores (nodo integración de sensores en la figura \ref{fig:finalsys}), se requiere que todos ellos se encuentren \textbf{sincronizados} dentro de un intervalo temporal (ejemplo: 100 milisegundos), de forma que las predicciones no se realizan a partir de información desactualizada.
 

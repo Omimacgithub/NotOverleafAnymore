@@ -9,7 +9,6 @@ import pycuda.driver as cuda
 # osize: output tensor size of the model
 # ifp: input tensor precision of the model
 # ofp: output tensor precision of the model
-# isversion10: flag that indicates TensorRT API version 10 when True, else version 8 
 class CNN_model:
     def __init__(self, cuda_ctx):
         super().__init__()
@@ -26,25 +25,19 @@ class CNN_model:
         self.d_output = cuda.mem_alloc(self.output_size)
         self.bindings = [int(self.d_input), int(self.d_output)]
         self.outputs = np.empty([BATCH_SIZE, osize], dtype=ofp)
-        if isversion10:
-          for binding in range(self.engine.num_io_tensors):
-            tensor_name = self.engine.get_tensor_name(binding)
-            self.context.set_tensor_address(tensor_name, self.bindings[binding])
+        for binding in range(self.engine.num_io_tensors):
+          tensor_name = self.engine.get_tensor_name(binding)
+          self.context.set_tensor_address(tensor_name, self.bindings[binding])
         self.ctx.pop()
 
     def infer(self, data):
       self.ctx.push()
       try:
         preprocesed_input = PREPROCESING(data)
-        if isversion10:
-          for binding in range(1):
-            tensor = self.engine.get_tensor_name(binding)
-            self.context.set_input_shape(tensor,(data.shape[0],size,size,NUM_CHANNELS))
+        tensor = self.engine.get_tensor_name(0) # Get input tensor name
+        self.context.set_input_shape(tensor,(data.shape[0],size,size,NUM_CHANNELS))
         cuda.memcpy_htod_async(self.d_input, preprocesed_input.astype(ifp), self.stream)
-        if isversion10:
-          self.context.execute_async_v3(self.stream.handle)
-        else:
-          self.context.execute_async_v2(self.bindings, self.stream.handle, None)
+        self.context.execute_async_v3(self.stream.handle)
         cuda.memcpy_dtoh_async(self.outputs, self.d_output, self.stream)
         self.stream.synchronize()
         return POSTPROCESING(self.outputs)
