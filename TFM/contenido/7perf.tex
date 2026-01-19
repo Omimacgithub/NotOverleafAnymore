@@ -14,7 +14,7 @@ Es un modelo de detección facial diseñado para sistemas con recursos muy limit
 
 \subsection{ArcFace}
 
-\textit{Additive Angular Margin Loss} (o ArcFace) es una función de pérdida (\gls{lossfunc}) que mejora el poder discriminativo de los modelos de reconocimiento facial, es decir, maximiza el margen que separa a las clases y minimiza el margen de los datos que pertenecen a una misma clase \cite{deng2019arcface}. Los \glspl{embedding} con los que opera ArcFace pertenecen al modelo ResNet-100. Se emplea el archivo de pesos de una implementación en TensorFlow Lite, accesible mediante el siguiente enlace \footnote{https://www.digidow.eu/f/datasets/arcface-tensorflowlite/model.tflite}.
+\textit{Additive Angular Margin Loss} o ArcFace es una función de pérdida (\gls{lossfunc}) que mejora el poder discriminativo de los modelos de reconocimiento facial, es decir, maximiza el margen que separa a las clases y minimiza el margen de los datos que pertenecen a una misma clase \cite{deng2019arcface}. Los \glspl{embedding} con los que opera ArcFace pertenecen al modelo ResNet-100. Se emplea el archivo de pesos de una implementación en TensorFlow Lite, accesible mediante el siguiente enlace \footnote{https://www.digidow.eu/f/datasets/arcface-tensorflowlite/model.tflite}.
 
 %ha demostrado ser de las mejores redes en el \acrshort{sota} del reconocimiento facial.
 
@@ -38,7 +38,7 @@ En la tabla \ref{tab:modelspecs} se muestra el tamaño de la entrada, el número
 
 Cada valor de la columna \textit{input size} se compone de la resolución de la imagen de entrada (ejemplo: 112x112) multiplicado por el número de canales de entrada (en este caso 3, que se corresponde con los canales \textit{Red, Green} y \textit{Blue} de una imagen \acrshort{rgb}). Los modelos OSNet y ArcFace utilizan una resolución fija de 256x128 y 112x112 respectivamente de los frames de entrada, mientras que YOLO y YuNet permiten un ajuste dinámico de dicha resolución en tiempo de ejecución. Para obtener el mejor balance entre precisión y latencia, se ha optado por establecer una resolución fija de 640x640 y 480x480 respectivamente.
 
-\section{Datasets de las pruebas}
+\section{Dataset de las pruebas}
 \label{sec:modset}
 
 A modo de evaluar el rendimiento en términos de precisión de los modelos de visión artificial, se parte de un \gls{dataset} compuesto de la información extraída de un fichero Rosbag, que contiene los datos generados por dos cámaras Kinect \acrshort{rgbd} y un sensor \acrshort{lidar} instalados en el Summit\_XL durante la realización de una prueba.
@@ -70,17 +70,6 @@ Existe un fichero \acrshort{json} con el \gls{dataset} específico para cada cá
     \item \textit{\textbf{camera}}: identificador de la cámara.
     \item \textit{\textbf{face\_padding}}: valor de relleno para aumentar el tamaño de la \gls{bbox} facial.
     \item \textit{\textbf{input}}: ruta al video generado por la cámara.
-\end{itemize}
-
-En el caso que ocupa al sistema (pruebas de la sección \ref{sec:syscal}), se dispone de un \gls{dataset} que representa el \gls{gt} del nodo integración de sensores (ver sección \ref{sec:basearch}), ya que cada entrada del fichero es idéntica a la salida de dicho nodo. La prueba de la que se ha extraído el \gls{dataset} corresponde con la misma del \gls{dataset} de las cámaras. Cada entrada del fichero \acrshort{json} está compuesta de los siguientes objetos:
-\begin{itemize}
-    \item \textbf{\textit{secs}}: \gls{timestamp} del tiempo de UNIX en segudos
-    \item \textbf{\textit{nsecs}}: \gls{timestamp} del tiempo en nanosegundos del segundo correspondiente al campo secs.
-    \item \textbf{\textit{people}}: lista de objetos, cada uno compuesto por los siguientes elementos:
-          \begin{itemize}
-              \item \textbf{\textit{person\_id}}: etiqueta que identifica al usuario detectado (ejemplo: carlos)
-              \item \textbf{\textit{position}}: coordenadas del espacio \acrshort{3d} compartido por las cámaras y el \acrshort{lidar} en el que se sitúa dicho usuario.
-          \end{itemize}
 \end{itemize}
 
 \section{Realización de las pruebas}

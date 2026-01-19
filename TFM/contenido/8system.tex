@@ -3,6 +3,19 @@
 
 \lettrine{E}{s}te capítulo pretende evaluar el techo del sistema al elevar el número de cámaras implicadas.
 
+\section{Dataset de las pruebas}
+
+En el caso que ocupa al sistema (pruebas de la sección \ref{sec:syscal}), se dispone de un \gls{dataset} que representa el \gls{gt} del nodo integración de sensores (ver sección \ref{sec:basearch}), ya que cada entrada del fichero es idéntica a la salida de dicho nodo. La prueba de la que se ha extraído el \gls{dataset} corresponde con la misma del \gls{dataset} de las cámaras. Cada entrada del fichero \acrshort{json} está compuesta de los siguientes objetos:
+\begin{itemize}
+    \item \textbf{\textit{secs}}: \gls{timestamp} del tiempo de UNIX en segudos
+    \item \textbf{\textit{nsecs}}: \gls{timestamp} del tiempo en nanosegundos del segundo correspondiente al campo secs.
+    \item \textbf{\textit{people}}: lista de objetos, cada uno compuesto por los siguientes elementos:
+          \begin{itemize}
+              \item \textbf{\textit{person\_id}}: etiqueta que identifica al usuario detectado (ejemplo: carlos)
+              \item \textbf{\textit{position}}: coordenadas del espacio \acrshort{3d} compartido por las cámaras y el \acrshort{lidar} en el que se sitúa dicho usuario.
+          \end{itemize}
+\end{itemize}
+
 \section{Realización de las pruebas}
 
 Es importante remarcar que todas las pruebas de esta sección se realizan en \textbf{tiempo real}. Según el proyecto, la frecuencia del tiempo real puede variar, en este caso, se espera que el sistema trabaje a \textbf{10 Hz}, que es la frecuencia a la que ambos sensores \acrshort{lidar} y Kinect devuelven datos.
