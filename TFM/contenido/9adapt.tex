@@ -65,7 +65,7 @@ En el caso del parámetro \textit{max\_svm}, tampoco es seguro qué único valor
 
 \subsection{Modo \textit{Open-World}}
 
-En el modo \textit{Open-World}, el sistema crea un nuevo comité cuando se reconoce a una nueva entidad en el sistema. Sin embargo, debido a las predicciones incorrectas del método, puede ocurrir que se creen nuevos comités para un individuo ya registrado. Estos nuevos comités pueden desplazar a los comités originales adueñándose de su identidad.
+Como ya se comentó en la sección \ref{sec:incrtypes}, en el modo \textit{Open-World} el sistema añade nuevo conocimiento de forma incremental, adaptándose al nuevo contexto y realizando así mejores predicciones. Sin embargo, debido a las predicciones incorrectas del sistema (ejemplo: que una persona se detecte como desconocida cuando ya es conocida), puede ocurrir que se creen nuevos comités para un individuo ya registrado. Esto puede ser perjudicial debido a que las \acrshort{svm} se entrenarían con muestras del mismo individuo en los conjuntos positivo y negativo, lo que podría anular el poder discriminatorio de dichas \acrshort{svm}.
 
 \input{contenido/tables/tests/owparams.tex}
 

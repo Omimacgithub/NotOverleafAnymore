@@ -16,10 +16,8 @@ def RDF(R, sorted_ens_scr, Tw):
   m = np.median(sorted_ens_scr[1:])
   v = np.abs(set_of_mins - m) #Non-match distribution
   cand_scr = np.abs(c - m)  #Best score
-  #Obtain shape and scale Weibull parameters
   shape,loc,scale = stats.weibull_min.fit(v, floc=0)  
   pdf = weib(cand_scr, scale, shape)  #Calculate PDF
-  # Decision
   if (pdf<Tw):
     decision = np.where( R == c )[0][0] # Drift
   else:
