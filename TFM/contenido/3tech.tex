@@ -89,6 +89,24 @@ Desafortunadamente, el software que controla el \acrshort{mig} en la Jetson no f
 
 La tabla \ref{tab:x86} muestra los equipos con \acrshort{cpu}s Intel empleados en el proyecto. La columna \textit{Reference} muestra el equipo de pruebas utilizado en \cite{andrew} para realizar comparaciones de resultados.
 
+\subsection{Comparación entre familias}
+Las diferencias y similitudes clave a la hora de comparar la familia Jetson con la Intel se describen a continuación.
+\begin{itemize}
+    \item La familia Intel posee \acrshort{gpu}s y \acrshort{cpu}s de \textbf{alta frecuencia} respecto a la familia Jetson.
+    \item Las \acrshort{gpu}s de la familia Intel \textbf{no poseen tensor cores}.
+    \item Las \acrshort{gpu}s de la familia Intel son \textbf{discretas}, es decir, tienen su propia memoria (\acrshort{dram}) separada de la \acrshort{cpu}, con la que se comunica mediante PCIe. Por otro lado, las \acrshort{gpu}s de la familia Jetson se encuentran \textbf{integradas con la \acrshort{cpu}}, es decir, ambas comparten la memoria del sistema.
+
+          Las \acrshort{gpu}s integradas pueden beneficiarse de la \textbf{memoria fijada mapeada} (o pinned mapped memory) de CUDA. La memoria fijada es una región de memoria que no puede ser paginada de vuelta a disco, de forma que siempre se mantiene en \acrshort{dram}, lo que acelera las transferencias de datos. Si la \acrshort{gpu} es integrada, entonces el acceso a la memoria entre el \textit{host} (o \acrshort{cpu}) y el \textit{device} (o \acrshort{gpu}) es \textbf{directo} (se pueden mapear directamente las direcciones de memoria ente el \textit{host} y el \textit{device}), de este modo, se \textbf{evitan copias de memoria} (cudaMemcpy), lo que permite ahorrar la latencia asociada a estas operaciones \cite{leimao}.
+
+          La figura \ref{fig:memcpy} muestra un esquema de interconexión de una \acrshort{gpu} discreta (familia Intel) y una \acrshort{gpu} integrada (familia Jetson), en la que la primera requiere un cudaMemcpy para poder disponer de los datos en la \acrshort{gpu} y la segunda aplica la técnica \textbf{zero-copy}, que mediante la memoria fijada mapeada evita realizar transferencias.
+\end{itemize}
+
+\begin{figure}[tbp]
+    \centering
+    \includegraphics[width=1\linewidth]{imagenes/memcpy.png}
+    \caption{Arquitectura de interconexión de una \acrshort{gpu} discreta y una \acrshort{gpu} integrada. Figura extraída de \cite{zerocpy}}
+    \label{fig:memcpy}
+\end{figure}
 
 \section{Hardware}
 \label{sec:hw}

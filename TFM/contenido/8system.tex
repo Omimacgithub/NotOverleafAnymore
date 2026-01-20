@@ -18,7 +18,7 @@ En el caso que ocupa al sistema (pruebas de la sección \ref{sec:syscal}), se di
 
 \section{Realización de las pruebas}
 
-Es importante remarcar que todas las pruebas de esta sección se realizan en \textbf{tiempo real}. Según el proyecto, la frecuencia del tiempo real puede variar, en este caso, se espera que el sistema trabaje a \textbf{10 Hz}, que es la frecuencia a la que ambos sensores \acrshort{lidar} y Kinect devuelven datos.
+Es importante remarcar que todas las pruebas de esta sección se realizan en \textbf{tiempo real}. Según el proyecto, la frecuencia del tiempo real puede variar, en este caso, se espera que el sistema trabaje a \textbf{10 Hz} (o 10 \acrshort{fps}), que es la frecuencia a la que ambos sensores \acrshort{lidar} y Kinect devuelven datos.
 
 Se inicializa el sistema con el nodo integración de sensores, el nodo \acrshort{lidar} y el número de nodos cámara deseado (ver sección \ref{sec:basearch}). Se reproduce el fichero rosbag una vez inicializado el sistema, que lo nutrirá con la información generada por los sensores en \textbf{tiempo real}. Cada predicción generada por el nodo integrador se almacena en memoria y se vuelca en un fichero \acrshort{json} una vez el sistema se detiene (por ejemplo, con un Ctrl-C). Los datos guardados en el fichero \acrshort{json} se procesan contra el \textit{\gls{dataset}} y se devuelven los resultados finales en forma de las siguientes métricas:
 
@@ -88,7 +88,7 @@ TODO: se ha conseguido optimizar YOLO en GPU, que suponía el cuello de botella 
 
 \input{contenido/tables/tests/scaleresourcesros2.tex}
 
-En la tabla \ref{tab:scaleresourcesros2} se muestra la proporción de recursos utilizados en las pruebas del sistema en \acrshort{ros} 2. TODO: Como en la tabla \ref{tab:scaleresources}, se expone la mediana de todas las lecturas de recursos en una ejecución completa del sistema, para ignorar los picos de uso de los recursos.
+En la tabla \ref{tab:scaleresourcesros2} se muestra la proporción de recursos utilizados en las pruebas del sistema en \acrshort{ros} 2. TODO: Como en la tabla \ref{tab:scaleresources}, se expone la mediana de todas las lecturas de recursos en una ejecución completa del sistema. Se emplea la mediana, ya que es robusta frente a los picos de uso de recursos.
 
 Ambos dispositivos pueden ejecutar holgadamente el sistema usando 2 cámaras, en el caso de las 5 cámaras es cuando se empiezan a dislumbrar las limitaciones de la Jetson Orin Nano, principalmente en términos de memoria, lo que explica la caída en la precisión de las detecciones, que no permite a los modelos reservar memoria para varias de las inferencias.
 
