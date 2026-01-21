@@ -113,8 +113,8 @@ Los 8 GB de memoria rápidamente se quedan escasos, debido a todos los recursos 
 
 \section{Discusión}
 
-En varios equipos, se ha logrado escalar el sistema hasta un número de cámaras más que suficiente para el caso de uso al que se aplica (10 cámaras sobran para cubrir un espacio de 360º), al menos para ser procesado por un solo dispositivo. La Jetson Orin Nano ha conseguido mantener resultados aceptables hasta las 5 cámaras, que es especialmente interesante debido a su bajo consumo y peso, que permite integrarse fácilmente en un robot móvil.
+En varios equipos, se ha logrado escalar el sistema hasta un número de cámaras más que suficiente para el caso de uso de este proyecto (10 cámaras sobran para cubrir un espacio de 360º), al menos para ser procesado por un solo dispositivo. La \textbf{Jetson Orin Nano} ha superado los resultados de \textbf{\textit{det\_r}} y el \textbf{\textit{idp}} para 2 cámaras respecto al equipo de referencia y ha conseguido mantener resultados aceptables hasta las 5 cámaras. Esto es especialmente interesante, debido a que este equipo es de muy bajo consumo y peso, lo que permite su fácil integración en un robot móvil.
+
+El uso de la \acrshort{gpu} ha sido un factor clave en los resultados obtenidos, ya que, al ejecutar todo el procesamiento en la \acrshort{cpu}, no solo se saturan sus propios recursos, sino que la latencia de las inferencias aumenta y, por tanto, se devuelven predicciones en instantes de tiempo posteriores, cuya diferencia se va acumulando.
 
 Es importante destacar que las pruebas se realizaron con \textbf{6 personas registradas en la base de datos}. Aumentar este número tendría consecuencias en los modelos de reconocimiento, ya que iteran toda la base de datos para calcular las distancias del vector con cada individuo, para devolver la mejor coincidencia. Según el dispositivo, esta operación tarda menos o alrededor de 1 milisegundo, lo que podría aumentar en varios milisegundos si se añaden por ejemplo 100 personas.
-
-El uso de la \acrshort{gpu} ha sido un factor clave en los resultados obtenidos, ya que, al ejecutar todo el procesamiento en la \acrshort{cpu}, no solo se saturan sus propios recursos, sino que la latencia de las inferencias aumenta y, por tanto, se devuelven predicciones en instantes de tiempo posteriores, que se van acumulando entre predicciones.

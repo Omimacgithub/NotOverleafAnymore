@@ -302,6 +302,7 @@ Conforma la base de datos de todos los individuos registrados en el sistema. Cad
 La base de datos de personas registradas se conforma mediante un proceso de \textbf{inicialización}, que crea las entradas de cada individuo dentro de la lista inicial de individuos. Posteriormente, dicho registro se actualiza a partir de los módulos de actualización y limitación dentro del módulo de reconocimiento adaptativo. El registro se comparte a nivel de sistema por todos los nodos.
 
 \subsection{Inicialización}
+\label{sec:initieing}
 
 %fundamental, debido a que la \acrshort{svm} inicial es la que define la identidad del comité. Si dicha \acrshort{svm} está compuesta por muestras de baja calidad (ejemplo: caras borrosas o parcialmente ocluidas), entonces el comité \textbf{no se identificará correctamente consigo mismo} y, por lo tanto, generará \textbf{mayor confusión} a la hora de aplicar Weibull, es decir, \textbf{se generarán más desconocidos}.
 
@@ -309,9 +310,9 @@ En esta primera fase del sistema, se crean los registros que representarán a lo
 
 Como se ha demostrado en \cite{Erik}, el proceso de inicialización es \textbf{crítico} y depende de la calidad de las muestras escogidas. Las muestras borrosas o parcialmente ocluidas agregan confusión a las \acrshort{svm}, que devuelven puntuaciones similares al no distinguir correctamente las características del individuo.
 
-En este proyecto se han probado 2 aproximaciones, una \textbf{supervisada}, es decir, con intervención del operador, y la otra \textbf{no supervisada}, en la que el sistema se inicializa de manera completamente autónoma. En ambos modos, se requieren de mínimo \textbf{5 muestras} del individuo, acorde a las pruebas de \cite{Erik}.
+En este proyecto se han probado 2 aproximaciones, una \textbf{semisupervisada}, es decir, con intervención del operador, y la otra \textbf{no supervisada}, en la que el sistema se inicializa de manera completamente autónoma. En ambos modos, se requieren de mínimo \textbf{5 muestras} del individuo, acorde a las pruebas de \cite{Erik}.
 
-\subsubsection{Supervisado}
+\subsubsection{Semisupervisado}
 El operador realiza una selección de los frames más representativos para cada individuo, de los que se obtienen las características (\glspl{embedding}) a partir de los modelos de reconocimiento. Una vez inicializados los individuos iniciales, el sistema deja de recibir datos etiquetados para entrenarse con datos no etiquetados durante su operación, por lo que este método se clasificaría dentro del aprendizaje incremental \textbf{semisupervisado} (ver sección \ref{sec:incrtypes}).
 
 \subsubsection{No supervisado}

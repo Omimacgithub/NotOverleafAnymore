@@ -1,32 +1,32 @@
-\chapter{Pruebas y resultados del reconocimiento adaptativo}
+\chapter{Pruebas y resultados del sistema extendido}
 \label{chap:systesting}
 
-\lettrine{E}{n} este capítulo se exponen las pruebas y los resultados de rendimiento del sistema final.
+\lettrine{E}{n} este capítulo se exponen las pruebas y los resultados de rendimiento de los nuevos componentes implementados en el sistema.
 
 \section{Introducción}
 
-En esta sección se introducen las pruebas escogidas para medir las capacidades de reconocimiento adaptativo desarrollado, en concreto las siguientes:
+En esta sección se introducen las pruebas escogidas para medir las capacidades del reconocimiento adaptativo desarrollado, en concreto las siguientes:
 
 \begin{itemize}
     \item \textbf{Ajuste de parámetros:} se realiza un conjunto de pruebas con diferentes valores de parámetros para evaluar su impacto y por qué generan los resultados expuestos.
-    \item \textbf{Inicialización de personas registradas:} se ha estudiado varios métodos de inicialización de la base de datos, desde un método supervisado hasta uno totalmente controlado por el propio sistema. Se han comparado los resultados entre las diferentes inicializaciones y se ha explicado el motivo de los resultados y de los factores implicados.
+    \item \textbf{Inicialización de personas registradas:} se ha estudiado varios métodos de inicialización de la base de datos, desde un método semisupervisado hasta uno totalmente controlado por el propio sistema (no supervisado). Se han comparado los resultados entre las diferentes inicializaciones TODO: y se ha realizado una discusión.
     \item \textbf{Número de usuarios implicados:} se demuestra por qué el número de usuarios registrados es un factor crítico en el rendimiento del sistema.
-    \item \textbf{Evolución del sistema:} debido a que el sistema se adapta a lo largo del tiempo, se han realizado pruebas que midan la consistencia del sistema a lo largo de varias repeticiones del video, para averiguar si este sufre de una caída repentina en el rendimiento por algún fallo del software.
+    \item \textbf{TODO: Evolución del sistema:} debido a que el sistema se adapta a lo largo del tiempo, se han realizado pruebas que midan la consistencia del sistema a lo largo de varias repeticiones del video, para averiguar si este sufre de una caída repentina en el rendimiento por algún fallo del software.
 \end{itemize}
 
-Todas las pruebas mencionadas se ejecutan en las modalidades \textit{Open-Set}, que detecta desconocidos y actualiza las entidades existentes y \textit{Open-World}, que realiza las mismas funciones que \textit{Open-Set}, pero con la capacidad de registrar a los desconocidos en el sistema.
+Todas las pruebas mencionadas se ejecutan en las modalidades \textbf{\textit{Open-Set}}, que en este caso \textbf{detecta desconocidos y actualiza las entidades existentes}\footnote{en un sistema típico \textit{Open-Set}, no se aplica la actualización de las entidades existentes} y \textbf{\textit{Open-World}}, que realiza las mismas funciones que \textit{Open-Set}, pero con la capacidad de \textbf{registrar a los desconocidos en el sistema}.
 
 \section{Dataset de las pruebas}
 
-Las pruebas que analizan los métodos de inicialización y las capacidades del reconocimiento adaptativo se realizaron por separado del sistema bajo el modelo de reconocimiento facial \textbf{ArcFace}. Por lo tanto, para dichas pruebas se ha empleado el \gls{dataset} expuesto en la sección \ref{sec:modset}.
+Las pruebas que analizan los nuevos componentes se realizaron por separado del sistema bajo el modelo de reconocimiento facial \textbf{ArcFace}. Por lo tanto, para dichas pruebas se ha empleado el \gls{dataset} expuesto en la sección \ref{sec:modset}.
 
 \section{Realización de las pruebas}
 
-Las pruebas que analizan los métodos de inicialización y las capacidades del reconocimiento adaptativo se realizaron por separado del sistema bajo el modelo de reconocimiento facial \textbf{ArcFace}. Por lo tanto, las pruebas siguen el mismo procedimiento que el expuesto en la sección \ref{sec:probes} para los modelos de reconocimiento, salvo por los siguientes cambios:
+Las pruebas siguen el mismo procedimiento que el expuesto en la sección \ref{sec:probes} para los modelos de reconocimiento, salvo por los siguientes cambios:
 
 \begin{itemize}
-    \item Los frames se procesan \textbf{por bloques}, de forma que se agrupan los recortes según el individuo mediante la técnica de procesamiento de video (sección \ref{sec:video}), se obtienen los \glspl{embedding} por medio de ArcFace y se aplica el reconocimiento adaptativo para reconocer a las personas de la secuencia.
-    \item Se devuelven las métricas de \textit{precision}, \textit{recall} y \textit{F1\_score}, en vez de únicamente la métrica \textit{precision} para evaluar los reconocimientos.
+    \item Los frames se procesan \textbf{por bloques}, de forma que se agrupan las \glspl{bbox} según el individuo mediante la técnica de procesamiento de video (sección \ref{sec:video}), se obtienen los \glspl{embedding} por medio de ArcFace y se aplica el reconocimiento adaptativo para reconocer a las personas de la secuencia.
+    \item Se devuelven las métricas de \textbf{\textit{precision}, \textit{recall}} y \textbf{\textit{F1\_score}}, en vez de únicamente la métrica \textit{precision} para evaluar los reconocimientos.
 \end{itemize}
 
 \section{Ajuste de parámetros del aprendizaje y reconocimiento}
@@ -34,56 +34,67 @@ Las pruebas que analizan los métodos de inicialización y las capacidades del r
 
 En esta sección se realiza un estudio acerca de la configuración óptima de parámetros en términos de rendimiento del sistema. A continuación, se exponen los parámetros utilizados y su función, junto con el rango de valores para la prueba.
 
+\begin{figure}
+    \centering
+    \includegraphics[width=0.75\linewidth]{imagenes/SOLAPING.jpg}
+    \caption{Ejemplo de funcionamiento del parámetro \textit{step\_size}}
+    \label{fig:SOLAPING}
+\end{figure}
+
 \begin{itemize}
-    \item \textbf{Umbral de Weibull (\textit{Tw})}: valor que determina si una entidad es desconocida o no. El rango probado es (0.05 0.1 0.25), no se ha decidido explorar valores más altos debido a las implicaciones que tienen en la precisión como se verán más adelante.
+    \item \textbf{Umbral de Weibull (\textit{Tw})}: valor que determina si una entidad es desconocida o no. El rango probado es (0.05 0.1 0.25), no se ha decidido explorar valores más altos debido al impacto en la precisión como se verán más adelante.
     \item \textbf{Percentil (\textit{percent})}: valor del percentil aplicado en la combinación de las puntuaciones generadas por las \acrshort{svm}. El rango probado es (0.25 0.5 0.75).
-    \item \textbf{Número de \acrshort{svm} (\textit{max\_svm})}: valor que representa al tamaño máximo de un comité. El rango probado es (1 3 7 10),  valores más altos implicarían un mayor coste computacional en cada iteración.
+    \item \textbf{Número de \acrshort{svm} (\textit{max\_svm})}: valor que representa el tamaño máximo de un comité. El rango probado es (1 3 7 10),  valores más altos implicarían un mayor coste computacional en cada iteración.
     \item \textbf{Número de negativos (\textit{nneg})}: tamaño del conjunto de muestras negativas. El rango probado es (10 50). No se han podido probar valores más altos, debido a la escasez de muestras disponibles.
-    \item \textbf{Tamaño de la plantilla}: establece el número de frames positivos que define a un comité. El tamaño se ha fijado en 5 frames, ya que se ha demostrado que otorga buen rendimiento, al mismo tiempo que supone una cantidad muy escasa de muestras \cite{5samples}.
-    \item \textbf{Tamaño de secuencia}: número de frames que forman una secuencia de video. Se ha fijado el valor en 15 frames, que equivalen a 1,5 segundos de video con cámaras funcionando a 10 Hz.
-    \item \textbf{Solapamiento}: establece el salto en el número de frames entre secuencias. Se ha fijado el valor en 5, dando lugar a más secuencias para analizar al coincidir frames entre las mismas.
+    \item \textbf{Tamaño de la plantilla}: establece el número de frames positivos que define a un comité. El tamaño se ha fijado en 5 frames, ya que se ha demostrado que otorga buen rendimiento, al mismo tiempo que utiliza el mínimo de muestras posibles \cite{5samples}.
+    \item \textbf{Tamaño de secuencia (\textit{frame\_block})}: número de frames que forman una secuencia de video. Se ha fijado el valor en 15 frames, que equivalen a 1,5 segundos de video con cámaras funcionando a 10 Hz.
+    \item \textbf{Tamaño de salto (\textit{step\_size})}: establece el salto en el número de frames entre secuencias. Gracias a este parámetro, se obtiene un mayor número de secuencias a partir de un mismo video de prueba. La figura \ref{fig:SOLAPING} muestra un ejemplo con tamaño de secuencia 15 y valor de \textit{step\_size} de 5 (que es el que se va a mantener para las pruebas).
 \end{itemize}
 
-A continuación se exponen los resultados obtenidos para cada combinación en \textit{Open-Set} y \textit{Open-World} como una media de 5 ejecuciones. Se parte de \textbf{10 individuos registrados de antemano}, 6 de ellos presentes en el video de prueba. Se inicializa cada comité con 5 frames representativos.
+A continuación se exponen los resultados obtenidos para cada combinación en \textit{Open-Set} y \textit{Open-World} como una media de 5 ejecuciones. Se parte de \textbf{10 individuos registrados de antemano}, 6 de ellos presentes en el video de prueba. Se inicializa cada comité con 5 frames representativos (que corresponde con el \textbf{tamaño de la plantilla}).
 
 \subsection{Modo \textit{Open-Set}}
 \label{sec:osparams}
 
 \input{contenido/tables/tests/osparams.tex}
 
-La tabla \ref{tab:osparams} muestra los 5 mejores resultados de las pruebas del análisis de parámetros acorde a la métrica \textit{F1\_score}.
+La tabla \ref{tab:osparams} muestra los 5 mejores resultados de las pruebas del análisis de parámetros ordenados según la métrica \textit{F1\_score}.
 
-El parámetro \textbf{\textit{percent}} muestra una tendencia clara al valor \textbf{0.25}. Un percentil de 25 implica escogen las 2/3 primeras \acrshort{svm} que han dado los valores más bajos y que compondrán la puntuación final del comité.
+El parámetro \textbf{\textit{percent}} muestra una tendencia clara al valor \textbf{0.25}. Un percentil de 0.25 implica escoger las 2/3 primeras \acrshort{svm} para otorgar la puntuación final del comité. Los \textbf{valores extremos} en el percentil implican en un \textbf{bajo \textit{recall}}, un percentil de 100 implica obtener el mayor valor (que se corresponde con la peor coincidencia), este valor puede proceder de una \acrshort{svm} "intrusa" (de otro individuo), que hace que el comité no se active ante sus muestras. Lo mismo sucede con un percentil de 0, si por ejemplo se añade una \acrshort{svm} que corresponde a otro comité, la \acrshort{svm} se activaría ante las muestras que pertenecen a ese comité. En ambos casos se tendría una situación de 2 comités activados, lo que resultaría en un \textbf{desconocido} cuando realmente no lo es.
 
-Los valores extremos en el percentil implican en un bajo \textit{recall}, un percentil de 100 implica obtener el mayor valor (que se corresponde con la peor coincidencia), este valor puede proceder de una \acrshort{svm} "intrusa" (de otro individuo), que hace que el comité no se active ante sus muestras. Lo mismo sucede con un percentil de 0, si por ejemplo se añade una \acrshort{svm} "intrusa", el comité se activaría ante las muestras que pertenecen a otro comité, en cuyas condiciones normales también se activaría, lo que resultaría en un \textbf{desconocido} cuando realmente no lo es.
+Para el parámetro \textbf{\textit{nneg}} se considera más efectivo un tamaño de 50 del conjunto de negativos frente al valor de 10, ya que con 50 muestras se puede albergar un \textbf{mayor número de individuos}, la \acrshort{svm} puede definir mejor el hiperplano que separa las muestras positivas de las negativas, luego su \textbf{poder discriminatorio aumenta}.
 
-Para el parámetro \textit{nneg} se considera más efectivo un tamaño de 50 del conjunto de negativos frente al valor de 10 según el sistema. Ya que con 50 muestras se puede albergar un mayor número de individuos, mayor capacidad obtiene la \acrshort{svm} de definir mejor sus fronteras.
+En cuanto al valor del parámetro \textbf{\textit{Tw}} no existe una tendencia clara. Atendiendo a los valores de \textit{precision} y \textit{recall}, se puede apreciar como al \textbf{aumentar el umbral de Weibull}, el \textbf{\textit{recall} aumenta a costa de la precisión}. Debido a que se está agregando cierta tolerancia de la mejor puntuación a pertenecer a la distribución de puntuaciones no coincidentes, por lo tanto, \textbf{menos desconocidos} se detectan (aumenta el \textit{recall}) a costa de aceptar un mayor número de \textbf{predicciones erróneas} (baja la precisión), un valor bajo demuestra justo lo contrario. Un valor de \textbf{0.1} parece ser la opción \textbf{más balanceada} entre un excelente \textit{recall} y una excelente precisión.
 
-En cuanto al valor del parámetro \textit{Tw} no existe una tendencia clara. Atendiendo a los valores de \textit{precision} y \textit{recall}, se puede apreciar como al aumentar el umbral de Weibull, el \textit{recall} aumenta en consecuencia a costa de la precisión, debido a que se está agregando cierta tolerancia de la mejor puntuación a pertenecer a la distribución, por lo tanto, menos desconocidos se detectan (aumenta el \textit{recall}) a costa de aceptar predicciones erróneas (baja la precisión), un valor bajo demuestra justo lo contrario. Un valor de 0.1 en el umbral es la opción más balanceada entre estas dos métricas.
-
-En el caso del parámetro \textit{max\_svm}, tampoco es seguro qué único valor escoger. Puede afirmarse que un valor alto devuelve resultados más robustos, esto se debe a que se implica un mayor número de \acrshort{svm} en cada reconocimiento, lo que da lugar a más diversidad y por lo tanto a unos comités que se activan en una mayor cantidad de situaciones de la entidad.
+En el caso del parámetro \textbf{\textit{max\_svm}}, tampoco es seguro qué único valor escoger. Puede afirmarse que un valor alto devuelve resultados más robustos, esto se debe a que se implica un mayor número de \acrshort{svm} en cada reconocimiento, lo que da lugar a más diversidad y por lo tanto a unos comités que se activan en una mayor cantidad de diversas situaciones de la entidad.
 
 \subsection{Modo \textit{Open-World}}
 
-Como ya se comentó en la sección \ref{sec:incrtypes}, en el modo \textit{Open-World} el sistema añade nuevo conocimiento de forma incremental, adaptándose al nuevo contexto y realizando así mejores predicciones. Sin embargo, debido a las predicciones incorrectas del sistema (ejemplo: que una persona se detecte como desconocida cuando ya es conocida), puede ocurrir que se creen nuevos comités para un individuo ya registrado. Esto puede ser perjudicial debido a que las \acrshort{svm} se entrenarían con muestras del mismo individuo en los conjuntos positivo y negativo, lo que podría anular el poder discriminatorio de dichas \acrshort{svm}.
+Como ya se comentó en la sección \ref{sec:incrtypes}, en el modo \textit{Open-World} el sistema añade nuevo conocimiento de forma incremental, adaptándose al nuevo contexto y realizando así mejores predicciones.
 
 \input{contenido/tables/tests/owparams.tex}
 
-Como en la sección \ref{sec:osparams}, en la tabla \ref{tab:owparams} se muestran los cinco mejores resultados fruto del análisis de parámetros.
+Al igual que en la sección \ref{sec:osparams}, en la tabla \ref{tab:owparams} se muestran los cinco mejores resultados, ordenados acorde al \textbf{\textit{F1\_score}}.
 
-Los parámetros \textit{nneg} y \textit{percent} permanecen constantes, acorde a las pruebas de la anterior sección.
+Los parámetros \textbf{\textit{nneg}} y \textbf{\textit{percent}} permanecen constantes, acorde a las pruebas de la anterior sección.
 
-A la hora de escoger un valor de umbral de Weibull (\textit{tw}), es necesario tener en cuenta una métrica adicional, que es el número de comités que se han generado (\textit{Number of ensembles} en la tabla \ref{tab:owparams}), contando los 10 comités iniciales. Un valor alto del umbral implica una reducción en la creación de comités, debido al elevado \textit{recall} y por ende a un menor número de desconocidos. Al reducir el valor de \textit{Tw}, se elevan notablemente los comités creados, pasando de 18 a 34 comités, lo que es problemático para este sistema, ya que no posee la capacidad de asociar los nuevos comités a los ya existentes (en esta prueba, todas las entidades son conocidas), por lo que aumenta el riesgo de que más de un comité se active, dando el reconocimiento como desconocido.
+A la hora de escoger un valor de \textbf{\textit{Tw}}, es necesario tener en cuenta una métrica adicional, que es el \textbf{número de comités} que se han generado (\textit{Number of ensembles} en la tabla \ref{tab:owparams}), contando los 10 comités iniciales. Un \textbf{valor alto del umbral} implica una \textbf{reducción} en la creación de \textbf{comités}, debido al \textbf{elevado \textit{recall}} y por ende a un \textbf{menor número de desconocidos}. Al \textbf{reducir el valor de \textit{Tw}}, se \textbf{elevan notablemente} los \textbf{comités} creados, pasando de 18 a 34 comités, lo que es \textbf{problemático} para este sistema, ya que no posee la capacidad de \textbf{asociar los nuevos comités} a los ya existentes (en esta prueba, todas las entidades son conocidas), por lo que aumenta el riesgo de que más de un comité se active, dando el reconocimiento como \textbf{desconocido}.
 
-En cuanto al parámetro \textit{max\_svm}, los resultados conducen a la misma conclusión que en las pruebas de la sección \ref{sec:osparams}, salvo por el valor de 3 en uno de los resultados, que implica que el sistema prefiere un valor de \textit{Tw} de 0.25, aunque solo opere con 3 \acrshort{svm}s por comité (realmente 1 \acrshort{svm}, por el percentil 25).
+En cuanto al parámetro \textbf{\textit{max\_svm}}, los resultados conducen a la misma conclusión que en las pruebas de la sección \ref{sec:osparams}, salvo por el valor de 3 en uno de los resultados, que implica que el sistema prefiere un valor de \textit{Tw} de 0.25, aunque solo opere con 3 \acrshort{svm}s por comité (realmente 1 \acrshort{svm}, por el percentil 25).
 
 %TODO:\textbf{Umbral de actualización}: valor que se compara frente a la fusión de scores de una secuencia. El rango probado es (0.1 0.3)
 
-TODO: Uno de los objetivos del sistema es obtener la mayor diversidad intra-comité y la mayor especificidad inter-comité. Un \textbf{percentil alto} encajaría si las SVM son \textbf{específicas} entre sí (la mayoría de las SVM devuelven match). En cambio, un \textbf{bajo percentil} funcionaría con unas SVM \textbf{más diversas} (se espera que la minoría de las SVM den un resultado coincidente).
+\subsection{Discusión}
+
+Los resultados de precisión en el modo \textit{Open-World} son claramente \textbf{inferiores} al modo \textit{Open-Set}. El principal factor de esta caída es la existencia de \textbf{comités duplicados} para un individuo, lo que aumenta las probabilidades de otorgar un reconocimiento \textbf{desconocido}. Para colmo, cabe la posibilidad de que las \acrshort{svm} que pertenecen a los comités duplicados se entrenen con muestras del \textbf{mismo individuo} en los conjuntos \textbf{positivo y negativo}, lo que podría \textbf{anular el poder discriminatorio} de dichas \acrshort{svm}, lo que implica en una \textbf{pérdida de precisión}.
+
+Por los motivos ya comentados, es necesario implementar un método que permita \textbf{asociar comités duplicados} y/o mejorar el reconocimiento por medio del \acrfull{evt}.
+
+Uno de los objetivos del sistema es obtener la \textbf{mayor diversidad intra-comité} y la \textbf{mayor especificidad inter-comité}, de esta forma, el comité responde a la mayor variedad de situaciones de su entidad, mientras que no se activa ante otros individuos. En este sistema las \acrshort{svm} creadas \textbf{son muy parecidas entre sí}, dando lugar a poca información nueva del individuo, esto se debe principalmente al \textbf{\textit{step\_size}} introducido en las pruebas, que hace que se incluyan los mismos frames entre \acrshort{svm}s. Esto podría explicar el valor de 3 en el parámetro \textbf{\textit{max\_svm}} en la tabla \ref{tab:owparams}.
+
+%Un \textbf{percentil alto} encajaría si las SVM son \textbf{específicas} entre sí (la mayoría de las SVM devuelven match). En cambio, un \textbf{bajo percentil} funcionaría con unas SVM \textbf{más diversas} (se espera que la minoría de las SVM den un resultado coincidente).
 
 %TODO: En relación con el anterior punto, el número de SVM influye en la decisión de que percentil tomar. Si se utilizan 3 SVM por comité y la mediana, al menos 2 SVM deben de devolver un score bajo para dar un resultado coincidente. Por otro lado, si se utilizan 10 SVM y un percentil de 30, sólo 3 de las 10 SVM necesitan estar de acuerdo para devolver un match. En los resultados se muestra como un comité de 3 SVM y TW=0.05 destaca respecto a un comité de 1 SVM y TW=0.5. Los resultados utilizando 10 SVM por comité no llegan a mejorar notablemente el valor de 3 SVM, esto es de gran relevancia, puesto que se reduce el número de iteraciones de cada reconocimiento de 10*n a 3*n, siendo n el número de comités que existen y asumiendo que todos los comités han llegado al límite de SVM. Con estos resultados se ha demostrado que implementar varias SVM por comité mejora el recall manteniendo la precisión. 1 sóla SVM por comité es efectiva si dicha SVM es representativa del individuo, en caso contrario puede devolver respuestas coincidentes acerca de una entidad distinta del comité, generando ruido que perjudica a las predicciones de Weibull. Un mayor número de SVM combinado con el percentil devuelve un resultado conforme dicta un grupo que omite los scores de SVM intrusas (de entidades distintas) y permite expulsarlas mediante los criterios ya comentados en la sección \ref{seq:limmod}.
-
-TODO: comentar como el solapamiento puede influir en la creación de nuevas SVM.
 
 \section{TODO: Influencia del número de usuarios en el rendimiento}
 El número de usuarios registrados es un factor crítico, ya que el sistema implementado se nutre de los datos de los individuos. Por un lado, tener más individuos se traduce en más comités, por lo tanto se dispone de más puntos para definir la distribución de Weibull, lo que refuerza las predicciones. Por otra parte, se dispone de un mayor número de muestras negativas, lo que permite definir mejor las fronteras de las \acrshort{svm} y así mejorar la capacidad de predicción.
@@ -92,18 +103,19 @@ La calidad de la función de reconocimiento viene determinada por el número de 
 
 \section{Métodos de inicialización del sistema}
 
-La selección de los frames que conforman un nuevo comité es un factor crítico para el correcto funcionamiento del sistema. En esta sección se evalúa el sistema en los modos \textit{Open-Set} y \textit{Open-World} aplicando 3 técnicas de inicialización:
+La selección de los frames que conforman un nuevo comité es un factor crítico para el correcto funcionamiento del sistema. En esta sección se evalúa el sistema en los modos \textit{Open-Set} y \textit{Open-World} en las 2 técnicas de inicialización vistas en la sección \ref{sec:initieing}, más una adicional que se exponen a continuación:
+
 \begin{itemize}
-    \item \textbf{Supervisada}: los comités se inicializan con muestras (recortes faciales) seleccionadas de antemano por el operador. Es el modo utilizado en las pruebas de la sección \ref{seq:paramtunning}.
-    \item \textbf{Semisupervisada}: se escoge un momento del video en el que aparece un mínimo de personas simultáneamente y se agrupan las muestras por individuo con la información del \gls{dataset}. Para los individuos que no hayan aparecido en ese instante, se inicializan sus comités por medio del método supervisado.
-    \item \textbf{No supervisada}: se escoge un momento del video en el que aparece un mínimo de personas simultáneamente y se delega el agrupamiento al método de tracking implementado. Para los individuos que no hayan aparecido en ese instante, se ejecuta la prueba y se incluyen en el momento que se reconoce un desconocido (se apoya en la información del \gls{dataset} para asignarle la etiqueta que corresponde).
+    \item \textbf{Semisupervisada}: los comités se inicializan con muestras (recortes faciales) seleccionadas de antemano por el operador. Es el modo utilizado en las pruebas de la sección \ref{seq:paramtunning}.
+    \item \textbf{No supervisada}: se escoge un momento del video en el que aparece un mínimo de personas simultáneamente y se delega el agrupamiento al módulo de procesamiento de video implementado (ver sección \ref{sec:video}). Para los individuos que no hayan aparecido en ese instante, se ejecuta la prueba y se incluyen en el momento que se reconoce un desconocido (se apoya en la información del \gls{dataset} para asignarle la etiqueta que corresponde).
+    \item \textbf{No supervisada con apoyo del \gls{dataset}}: se escoge un momento del video en el que aparece un mínimo de personas simultáneamente y se agrupan las muestras por individuo con la información del \gls{dataset}. Para los individuos que no hayan aparecido en ese instante, se inicializan sus comités por medio de la técnica semisupervisada. El objetivo de probar esta técnica es establecer una \textbf{línea base} en la que medir el funcionamiento del procesamiento de video y de la inclusión de nuevos usuarios de la técnica no supervisada.
 \end{itemize}
-Para los modos semisupervisado y no supervisado se tiene que cumplir que el instante del video agrupe un número mínimo de personas y que se pueda extraer un número mínimo de caras para la inicialización. Adicionalmente, las muestras recolectadas deben de cumplir las siguientes condiciones:
+Para ambas técnicas no supervisadas, se tiene que cumplir que el instante del video agrupe un número mínimo de personas y que se pueda extraer un número mínimo de caras para la inicialización. Adicionalmente, las muestras recolectadas deben de cumplir las siguientes condiciones:
 \begin{itemize}
     \item Que la cara se encuentre enteramente dentro de la cámara.
     \item Que el ancho del recorte no supere al alto del recorte.
 \end{itemize}
-La situación ideal sería encontrar un instante en el que todas las personas del video aparezcan. Como mínimo para que el sistema se inicialice es necesario que aparezcan 5 entidades, que equivale al número mínimo de puntos necesarios para definir la distribución de Weibull. En el \gls{dataset} de prueba solo aparece un instante de 5 individuos que cumpla con las condiciones anteriores. Por lo tanto, es necesario añadir a la entidad restante a partir de los datos registrados en el caso de la inicialización no supervisada.
+La situación ideal sería encontrar un instante en el que todas las personas del video (6 en total) aparezcan. Como mínimo para que el sistema se inicialice es necesario que aparezcan 5 entidades, que equivale al número mínimo de puntos necesarios para definir la distribución de Weibull. En el \gls{dataset} de prueba solo aparece un instante de 5 individuos que cumpla con las condiciones anteriores. Por lo tanto, es necesario añadir a la entidad restante durante la inferencia en el caso de la técnica no supervisada.
 
 \subsection{Modo \textit{Open-Set}}
 
@@ -122,11 +134,11 @@ Por último, el modo no supervisado refleja el peor rendimiento. La caída en la
     \begin{subfigure}[t]{0.2\textwidth}
         \includegraphics[width=\textwidth]{imagenes/supervised.jpg}
     \end{subfigure}
-    \subcaption{modo supervisado/\\semisupervisado}
+    \subcaption{modo semisupervisado/\\no supervisado + \gls{dataset}}
     \begin{subfigure}[t]{0.2\textwidth}
         \includegraphics[width=\textwidth]{imagenes/nosupervised.jpg}
     \end{subfigure}
-    \subcaption{modo no supervisado/\\semisupervisado}
+    \subcaption{modo no supervisado/\\no supervisado + \gls{dataset}}
     \caption{Conjuntos de muestras según la inicialización}
     \label{fig:inits}
 \end{figure}
@@ -139,7 +151,7 @@ La figura \ref{fig:inits} expone un ejemplo de las muestras recogidas por los di
 
 En la tabla \ref{tab:owinittab} se muestran los resultados esta vez para \textit{Open-World}. Salvo en el modo no supervisado, se obtienen mejores resultados con un \textit{Tw} de 0.25 respecto a 0.1, esto puede deberse a que el sistema es menos propenso a crear comités que puedan adueñarse de las entidades existentes, por lo tanto, se genera una menor confusión y equivocación. TODO: analizar porque el \textit{Tw} da mejor en 0.1. El número de comités aumenta en el modo no supervisado, ya que al contar con muestras de peor calidad (generalmente) la confusión inter-comité aumenta.
 
-\section{Evolución del sistema en el tiempo}
+\section{TODO: Evolución del sistema en el tiempo}
 \subsection{Modo \textit{Open-Set}}
 
 La figura \ref{fig:osevol}
