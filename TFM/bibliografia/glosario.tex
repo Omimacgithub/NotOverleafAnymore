@@ -104,8 +104,14 @@
     description={En el contexto de este proyecto, se refiere al contexto de ejecución del software capaz de realizar las inferencias de los modelos de inteligencia artificial}
 }
 
+\newglossaryentry{stream}
+{
+    name=stream,
+    description={En el lenguaje CUDA, un stream es una cola en la que se planifican y ejecutan operaciones en la \acrshort{gpu}. Dentro de un contexto de \acrshort{gpu}, se pueden disponer de múltiples streams, que permiten la ejecución \textbf{concurrente} de operaciones como \glspl{kernel} o copias de memoria}
+}
+
 \newglossaryentry{kernel}
 {
     name=kernel,
-    description={Función que se ejecuta \textbf{en paralelo} dentro de una \acrshort{gpu}}
+    description={Función que es ejecutada \textbf{en paralelo} por los hilos de una \acrshort{gpu}}
 }

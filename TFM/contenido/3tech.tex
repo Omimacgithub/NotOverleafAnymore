@@ -166,7 +166,7 @@ Es el software encargado de optimizar la implementación de los modelos y ejecut
 
           La versión 10 de TensorRT está disponible para las aceleradoras de NVIDIA con un \textit{compute capability} igual o superior a 7.5. En el caso de querer usar el software con una \textit{compute capability} inferior (ejemplo: Jetson Xavier NX), es necesario instalar la versión 8 u otra anterior. El código de la \acrshort{api} generado en la versión 8 \textbf{no es compatible} con la versión 10.
     \item \textbf{OpenVINO} \cite{OpenVINO}: desarrollado por Intel para la optimización de inferencias en \acrshort{cpu}s (ARM,x86) y en aceleradoras de Intel (\acrshort{gpu},\acrshort{npu}). Permite la conversión directa de modelos entrenados en frameworks como Tensorflow y Pytorch a ficheros XML, que son versiones optimizadas de las \acrshort{cnn} y que se utilizan para realizar las inferencias. Se ha empleado para optimizar y ejecutar las inferencias de los modelos a la hora de ejecutarlos en \acrshort{cpu}.
-    \item \textbf{OpenCV} \cite{OpenCVCUDA}: el módulo de redes neuronales profundas (dnn) incluye modelos ya entrenados y un \gls{rt} para realizar inferencias. Dicho módulo puede ejecutarse en \textbf{CUDA}, sólo si se compila el código fuente. En este proyecto se ha utilizado un modelo de detección de caras ofrecido por dicha librería.
+    \item \textbf{OpenCV} \cite{OpenCVCUDA}: el módulo de redes neuronales profundas (dnn) incluye modelos ya entrenados y un \gls{rt} para realizar inferencias. Dicho módulo puede ejecutarse en \textbf{CUDA}, solo si se compila el código fuente. En este proyecto se ha utilizado un modelo de detección de caras ofrecido por dicha librería.
 \end{itemize}
 
 \subsection{Docker}

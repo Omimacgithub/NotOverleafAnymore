@@ -17,11 +17,21 @@ La principal desventaja de \acrshort{onnx} frente a otros formatos es la incompa
 \end{itemize}
 
 \subsection{Conversión a TensorRT engine}
-Los archivos \textit{engine} de TensorRT (extensión .trt o .engine) representan los modelos finales optimizados por dicha herramienta. El proceso de conversión se puede realizar a través de la API de Python/C++ o mediante el ejecutable \textit{trtexec}, este último analiza el rendimiento del modelo ejecutando una serie de inferencias y devuelve los resultados de \gls{profiling} del mismo. Según la distribución del software (TODO: comentar sobre las imágenes de Docker), el ejecutable \textit{trtexec} no se encuentra instalado, por lo que una forma más cómoda y general es usar la API.
+Los archivos \textit{engine} de TensorRT (extensión .trt o .engine) representan los modelos finales optimizados por dicha herramienta. El proceso de conversión se puede realizar a través de la API de Python/C++ o mediante el ejecutable \textit{trtexec}, este último analiza el rendimiento del modelo ejecutando una serie de inferencias y devuelve los resultados de \gls{profiling} del mismo. Según la imagen de Docker que se utilize, el ejecutable \textit{trtexec} no se encuentra instalado (las imágenes de TensorRT pensadas para la Jetson suelen tenerlo), en ese caso es necesario utilizar la API para convertir los modelos.
 
 \input{contenido/codes/trtshapes.tex}
 
 En \ref{coud:trtshapes} se muestran las características de un modelo transformado en un \textit{engine} de TensorRT. La aparición de un -1 en la primera dimensión de los tensores indica que el modelo soporta \textit{\glspl{batch}} de tamaño dinámico.
+
+\subsection{Flags de \textit{trtexec}}
+
+A la hora de compilar algunos de los modelos a partir de la herramienta \textit{trtexec}, se han aplicado los siguientes flags:
+\begin{itemize}
+    \item --\acrshort{fp}16: activa el uso de tácticas \acrshort{fp}32 y \acrshort{fp}16 en cada capa del modelo (se escoge la precisión que se ejecute más rápido). Se aplica en todos los dispositivos Jetson.
+    \item --sparsity: activa la aceleración de operaciones de matrices dispersas, a partir de la arquitectura Ampere.
+    \item --tacticSources=+CUBLAS,+CUDNN: emplea el uso de tácticas de las librerías cuBLAS y cuDNN. Se aplica en todos los dispositivos Jetson.
+    \item --builderOptimizationLevel: por defecto utiliza el valor 3, este valor se mantiene en todas las Jetson salvo en un caso de la Jetson AGX Thor (ver sección \ref{sec:discuss}).
+\end{itemize}
 
 \subsection{Características de los modelos}
 Hablar de los 4 modelos que usamos

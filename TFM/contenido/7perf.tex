@@ -10,7 +10,7 @@ A continuación se exponen las \acrshort{cnn} utilizadas en los nodos cámara, q
 
 \subsection{YuNet}
 
-Es un modelo de detección facial diseñado para sistemas con recursos muy limitados, con tan sólo 75856 parámetros \cite{wu2023yunet}. Debido a los múltiples \textit{outputs} del modelo, complejos de procesar, se ha optado por utilizar la versión de OpenCV, que simplifica todo el proceso de pre y postprocesado. El modelo en formato \acrshort{onnx} se encuentra en este enlace \footnote{https://github.com/opencv/opencv\_zoo/blob/main/models/face\_detection\_yunet/face\_detection\_yunet\_2023mar.onnx}.
+Es un modelo de detección facial diseñado para sistemas con recursos muy limitados, con tan solo 75856 parámetros \cite{wu2023yunet}. Debido a los múltiples \textit{outputs} del modelo, complejos de procesar, se ha optado por utilizar la versión de OpenCV, que simplifica todo el proceso de pre y postprocesado. El modelo en formato \acrshort{onnx} se encuentra en este enlace \footnote{https://github.com/opencv/opencv\_zoo/blob/main/models/face\_detection\_yunet/face\_detection\_yunet\_2023mar.onnx}.
 
 \subsection{ArcFace}
 
@@ -84,14 +84,6 @@ Para la ejecución de inferencias, se han empleado los \glspl{rt} de OpenVINO, T
 
 Es importante destacar que los \glspl{rt} de OpenVINO y TensorRT soportan precisión mixta, es decir, se ejecutan las capas de un modelo en la precisión que menor latencia reporte dentro de una lista de precisiones (ejemplo: \acrshort{fp}16 o \acrshort{fp}32) \cite{mixed}. Esta funcionalidad puede emplearse siempre que la arquitectura de los dispositivos la implemente. Las últimas versiones de OpenCV también implementan soporte para ambas precisiones \acrshort{fp}32 y \acrshort{fp}16. Los modelos del proyecto se han compilado para utilizar la precisión mixta en \acrshort{fp}16 o \acrshort{fp}32.
 
-A la hora de compilar los modelos para su uso con TensorRT, se han aplicado los siguientes flags con \textit{trtexec} (\textbf{solo equipos Jetson}):
-\begin{itemize}
-    \item --\acrshort{fp}16: activa el uso de tácticas \acrshort{fp}32 y \acrshort{fp}16 en cada capa del modelo (se escoge la precisión que se ejecute más rápido). Se aplica en todos los dispositivos Jetson.
-    \item --sparsity: activa la aceleración de operaciones de matrices dispersas, a partir de la arquitectura Ampere.
-    \item --tacticSources=+CUBLAS,+CUDNN: emplea el uso de tácticas de las librerías cuBLAS y cuDNN. Se aplica en todos los dispositivos Jetson.
-    \item --builderOptimizationLevel: por defecto utiliza el valor 3, este valor se mantiene en todas las Jetson salvo en un caso de la Jetson AGX Thor (ver sección \ref{sec:discuss}).
-\end{itemize}
-
 \section{Resultados}
 \label{sec:modelic}
 
@@ -120,7 +112,9 @@ Las \acrshort{gpu}s de los equipos de sobremesa rinden de una forma excelente, c
 
 Los resultados tan bajos de latencia en los equipos de sobremesa son especialmente sorprendentes, teniendo en cuenta de que las operaciones de copia de memoria y sincronización deberían de añadir una sobrecarga notoria en las inferencias.
 
-La Jetson AGX Orin, a pesar de doblar los recursos computacionales de la Orin Nano, apenas consigue una mejora en cuanto a reducción de latencia, al mismo tiempo que se queda atrás de los resultados logrados en la AGX Thor.
+El uso de memoria fijada mapeada en los dispositivos Jetson supone una ligera reducción en la latencia (en torno a 1 milisegundo según las pruebas), que no compensa la latencia de procesamiento. De todos modos, se consiguen ahorrar las llamadas a cudaMemcpy en los sistemas con \acrshort{gpu}s integradas, lo que ayuda a reducir la congestión de la cola de operaciones de un \gls{stream} en la \acrshort{gpu}.
+
+La Jetson AGX Orin, a pesar de doblar los recursos computacionales de la Orin Nano, apenas consigue una mejora en cuanto a reducción de latencia, al mismo tiempo que se queda atrás de los resultados logrados en la AGX Thor. Un ejemplo es la ejecución de YOLO11n en TensorRT, cuya diferencia entre ambas AGX es de \textbf{15 milisegundos} a favor de la AGX Thor, que es una diferencia enormemente significativa (TODO: porqué?).
 
 Las arquitecturas anteriores a Blackwell demuestran ser más conservadoras a la hora de aplicar optimizaciones, mientras que esta última arquitectura opta por las tácticas más rápidas, aunque impliquen una pérdida en la precisión. Un claro ejemplo es el modelo OSNet\_x1, la tabla \ref{tab:equips} muestra los resultados del modelo compilado con un nivel de optimización de 0 en \textit{trtexec} (builderOptimizationLevel igual a 0) que no aplica la generación de \glspl{kernel} dinámicos (que equivale a no aplicar ninguna optimización de la arquitectura y escoger la primera táctica que funcione correctamente). Al aplicar la generación de \glspl{kernel} dinámicos (nivel de optimización > 1), la Jetson AGX Thor consigue unos excelentes \textbf{1.7 milisegundos}, llegando a ser la triunfadora, a costa de una precisión en torno al \textbf{40\%}.
 

@@ -16,7 +16,7 @@ El código \ref{coud:trtskel} muestra el esqueleto de dichas inferencias, cada v
 \begin{itemize}
     \item \textbf{Contexto de CUDA}: en este caso se recibe como parámetro, ya que es necesario crear dicho contexto en el mismo código donde se ejecuta el bucle infinito de \acrshort{ros} (ejemplo: nodo cámara), de modo que pueda manejarse correctamente.
     \item \textbf{Contexto del modelo}: dicho contexto se crea a partir del modelo deserializado de TensorRT.
-    \item \textbf{CUDA Stream}: canal que utilizará la \acrshort{gpu} para ejecutar todas las inferencias.
+    \item \textbf{CUDA \gls{stream}}: cola que utilizará la \acrshort{gpu} para ejecutar las inferencias.
     \item \textbf{Device input}: memoria del \gls{tensor} de entrada reservado en la \acrshort{gpu}. Se especifica el tamaño en bytes del \gls{tensor} que representa los datos de entrada.
     \item \textbf{Device output}: memoria del \gls{tensor} de salida reservado en la \acrshort{gpu}. Se especifica el tamaño en bytes del \gls{tensor} que representa los datos de salida.
     \item \textbf{Bindings}: lista de direcciones de memoria de los \glspl{tensor} a utilizar durante la inferencia.
@@ -26,7 +26,7 @@ Dichos recursos se reservan \textbf{una sola vez}, que corresponde con el moment
 
 La función \textit{infer} del código \ref{coud:trtskel} se ejecuta por cada vez que se recibe una entrada a procesar, la entrada puede ser un solo frame o una secuencia de estos.
 
-Se ejecuta la función PREPROCESING con la entrada, que representa el pipeline de preprocesado específico para cada modelo. Los datos preprocesados se copian a la memoria de la \acrshort{gpu} (o \textit{device}) a través de un \textit{memcpy} y se realiza la inferencia en el \textit{stream} de CUDA reservado. Antes de realizar la inferencia, se especifica el tamaño concreto de los datos de entrada (función \textit{set\_input\_shape}), ya que en un procesamiento en modo \gls{batch}, el conjunto de imágenes puede diferir. Finalmente, los resultados se copian de vuelta a la memoria de la \acrshort{cpu} (o \textit{host}) y se ejecuta el pipeline de postprocesado del resultado definido en la función POSTPROCESING.
+Se ejecuta la función PREPROCESING con la entrada, que representa el pipeline de preprocesado específico para cada modelo. Los datos preprocesados se copian a la memoria de la \acrshort{gpu} (o \textit{device}) a través de un \textit{memcpy} y se realiza la inferencia en el \textit{\gls{stream}} de CUDA reservado. Antes de realizar la inferencia, se especifica el tamaño concreto de los datos de entrada (función \textit{set\_input\_shape}), ya que en un procesamiento en modo \gls{batch}, el conjunto de imágenes puede diferir. Finalmente, los resultados se copian de vuelta a la memoria de la \acrshort{cpu} (o \textit{host}) y se ejecuta el pipeline de postprocesado del resultado definido en la función POSTPROCESING.
 
 Las operaciones de copia de datos y la inferencia se ejecutan de forma \textbf{asíncrona}, por lo que es necesario introducir una barrera de sincronización una vez todas las operaciones se emitan, de forma que nuevos \glspl{thread} no sobrescriben la memoria de la \acrshort{gpu} mientras esta realiza inferencias.
 
