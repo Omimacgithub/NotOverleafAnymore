@@ -42,7 +42,7 @@ En esta sección se realiza un estudio acerca de la configuración óptima de pa
 \end{figure}
 
 \begin{itemize}
-    \item \textbf{Umbral de Weibull (\textit{Tw})}: valor que determina si una entidad es desconocida o no. El rango probado es (0.05 0.1 0.25), no se ha decidido explorar valores más altos debido al impacto en la precisión como se verán más adelante.
+    \item \textbf{Umbral de Weibull (\textit{Tw})}: valor que determina si una entidad es desconocida o no. El rango probado es (0.05 0.1 0.25), (TODO: coherente?) no se ha decidido explorar valores más altos debido al impacto en la precisión como se verán más adelante.
     \item \textbf{Percentil (\textit{percent})}: valor del percentil aplicado en la combinación de las puntuaciones generadas por las \acrshort{svm}. El rango probado es (0.25 0.5 0.75).
     \item \textbf{Número de \acrshort{svm} (\textit{max\_svm})}: valor que representa el tamaño máximo de un comité. El rango probado es (1 3 7 10),  valores más altos implicarían un mayor coste computacional en cada iteración.
     \item \textbf{Número de negativos (\textit{nneg})}: tamaño del conjunto de muestras negativas. El rango probado es (10 50). No se han podido probar valores más altos, debido a la escasez de muestras disponibles.
@@ -89,6 +89,8 @@ En cuanto al parámetro \textbf{\textit{max\_svm}}, los resultados conducen a la
 Los resultados de precisión en el modo \textit{Open-World} son claramente \textbf{inferiores} al modo \textit{Open-Set}. El principal factor de esta caída es la existencia de \textbf{comités duplicados} para un individuo, lo que aumenta las probabilidades de otorgar un reconocimiento \textbf{desconocido}. Para colmo, cabe la posibilidad de que las \acrshort{svm} que pertenecen a los comités duplicados se entrenen con muestras del \textbf{mismo individuo} en los conjuntos \textbf{positivo y negativo}, lo que podría \textbf{anular el poder discriminatorio} de dichas \acrshort{svm}, lo que implica en una \textbf{pérdida de precisión}.
 
 Por los motivos ya comentados, es necesario implementar un método que permita \textbf{asociar comités duplicados} y/o mejorar el reconocimiento por medio del \acrfull{evt}.
+
+El valor del parámetro \textbf{\textit{Tw}} es \textbf{clave} para el correcto funcionamiento del sistema, mientras que en el modo \textit{Open-Set} un valor bajo de este parámetro resulta en un balance muy favorable para la precisión y el \textit{recall}, en el modo \textit{Open-World} es \textbf{perjudicial} para ambas métricas, debido a que fomenta la creación de comités duplicados. En cambio, un \textbf{valor alto} de este parámetro en el modo \textbf{\textit{Open-World}}, aunque a priori sea negativo para la precisión, es la \textbf{mejor opción} para reducir la creación de comités duplicados.
 
 Uno de los objetivos del sistema es obtener la \textbf{mayor diversidad intra-comité} y la \textbf{mayor especificidad inter-comité}, de esta forma, el comité responde a la mayor variedad de situaciones de su entidad, mientras que no se activa ante otros individuos. En este sistema las \acrshort{svm} creadas \textbf{son muy parecidas entre sí}, dando lugar a poca información nueva del individuo, esto se debe principalmente al \textbf{\textit{step\_size}} introducido en las pruebas, que hace que se incluyan los mismos frames entre \acrshort{svm}s. Esto podría explicar el valor de 3 en el parámetro \textbf{\textit{max\_svm}} en la tabla \ref{tab:owparams}.
 

@@ -9,25 +9,23 @@ Definen las funcionalidades que el sistema debe de ofrecer. Para este proyecto, 
 
 \begin{itemize}
     \item Pasar de reconocimientos frame a frame a ventanas de frames, aprovechando así la coherencia espacio-temporal.
-    \item Reconocimiento de desconocidos (\textit{Open-Set}) e inclusión al sistema (\textit{Open-World}): el sistema debe ser capaz de reconocer y agregar nuevas personas a su base de datos.
+    \item Aprendizaje incremental: el sistema debe ser capaz de reconocer desconocidos (\textit{Open-Set}) e incluirlos a su base de datos (\textit{Open-World}).
     \item El sistema debe de ser capaz de inicializarse con una cantidad muy reducida de muestras. Las muestras pueden ser provistas por el operador o incluso ser recolectadas de manera autónoma. Dado que la recopilación de datos biométricos (ejemplo: caras y cuerpos) está fuertemente regulada por la ley de protección de datos, este requisito se vuelve casi obligatorio para el sistema.
 \end{itemize}
 \subsection{Requisitos no funcionales}
 Definen las características técnicas que debería de cumplir el sistema:
 \begin{itemize}
-    \item Que el sistema evolucione adecuadamente (ejemplo: evitar caídas drásticas en la precisión) a lo largo del tiempo.
-    \item Operación en tiempo real: sujeto a la frecuencia del componente más "lento". En el caso de este proyecto, las cámaras RGBD otorgan una imagen RGB cada 100 ms (\textbf{10 Hz}). El objetivo es que el sistema sea capaz de mantener dicha frecuencia.
+    \item Operación en tiempo real sujeto a la frecuencia del componente más "lento". En el caso de este proyecto, las cámaras \acrshort{rgbd} otorgan una imagen \acrshort{rgb} cada 100 ms (\textbf{10 Hz}). El objetivo es que el sistema sea capaz de mantener dicha frecuencia.
     \item Portabilidad: la ejecución del sistema no debe de depender exclusivamente de la arquitectura o de las diferentes versiones de librerías.
     \item Escalabilidad: debe permitir incluir nuevos componentes (ejemplo: cámaras) sin comprometer significativamente al rendimiento.
-    \item TODO Flexible: todos los requisitos anteriores deben cumplirse para los dispositivos del proyecto.
     \item Usabilidad: el sistema debe de poder instalarse, configurarse y desplegarse de forma sencilla e intuitiva para un usuario ajeno al mismo.
 \end{itemize}
 \subsection{Actores}
 A continuación se definen los actores (o roles) implicados y sus papeles:
 
 \begin{itemize}
-    \item Usuario o persona registrada: individuo que acepta registrar sus datos biométricos para enriquecer el sistema.
-    \item Operador del sistema: encargado de ejecutar y mantener el sistema.
+    \item \textbf{Usuario o persona registrada}: individuo que acepta registrar sus datos biométricos para enriquecer el sistema.
+    \item \textbf{Operador del sistema}: encargado de ejecutar y mantener el sistema.
 \end{itemize}
 
 \section{Metodología de desarrollo}
@@ -36,6 +34,7 @@ A continuación se definen los actores (o roles) implicados y sus papeles:
 Para el presente proyecto, se ha empleado una metodología basada en Kanban \cite{knban}. Kanban es una herramienta de gestión \textbf{visual}, cuyo objetivo es otorgar al equipo una visión global del proyecto y de su flujo de trabajo, de forma que se logra optimizar la eficiencia.
 
 El proyecto en sí es un \textbf{tablero} en el que cada tarea representa una tarjeta, las tarjetas pasan por múltiples fases, que suponen los diferentes estados de la tarea. Normalmente, las primeras fases definen las tareas abstractas, que posteriormente se dividen en tareas más concretas a medida que se avanza en las fases. Debido a que no existe un número fijo de fases por las que tengan que pasar las tareas, se han definido las siguientes fases:
+
 \begin{itemize}
     \item \textbf{\textit{Backlog}}: son las tareas que se encuentran en fase de \textbf{definición} y que esperan a ser divididas en una o varias tareas más concretas.
     \item \textbf{\textit{TO-DO}}: en esta fase se ubican las tareas que representan objetivos concretos, pero que aún no se han iniciado.

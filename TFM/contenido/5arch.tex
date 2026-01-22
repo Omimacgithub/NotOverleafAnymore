@@ -62,17 +62,18 @@ La identidad del individuo puede tomarse como la primera entrada de la lista de 
 
 En la figura \ref{fig:finalsys} se muestra la arquitectura extendida, los nuevos componentes desarrollados se encuentran marcados en negrita, mientras que el resto de la arquitectura sigue la estructura ya comentada.
 
-En concreto, se han propuesto los siguientes componentes:
+Debido a que el nodo \acrshort{lidar} no está dentro del foco de este proyecto y tampoco se pudo realizar una migración satisfactoria a \acrshort{ros} 2 del mismo (ver sección \ref{subsec:ROS2}), se ha decidido omitirlo del nuevo sistema extendido.
 
+El nodo cámara pasa de operar frame a frame a procesar una \textbf{secuencia de frames}, con el fin de explotar la coherencia espacio-temporal (módulo de procesamiento de vídeo). Se obtiene la \textbf{lista de entidades} con la lista de \glspl{embedding} para cada individuo y se ejecuta el módulo de reconocimiento adaptativo.
+
+En concreto, se han propuesto los siguientes componentes:
 \begin{itemize}
     \item \textbf{Procesamiento de video:} implementa toda la lógica necesaria para agrupar las \glspl{bbox} por individuos en más de un frame (video o secuencia). Todas las \glspl{bbox} se transforman en \glspl{embedding}, que se guardan en una lista para ser procesados por el módulo de \textbf{reconocimiento adaptativo}.
-    \item \textbf{Reconocimiento adaptativo:} implementa la capacidad de detección e inclusión de desconocidos en el sistema (modo \textbf{\textit{Open-Set} y \textit{Open-World}}). Evalúa, mediante el uso de la teoría estadística, si una \textbf{puntuación} particular para un individuo no comparte similitudes con el resto de individuos registrados. En caso afirmativo, se trata de un conocido, en caso contrario, de un desconocido. En ambos casos, el sistema actualiza su conocimiento acerca del individuo por medio de la base de datos de \textbf{personas registradas}. Dichas puntuaciones son los resultados de los \textbf{comités de \acrshort{svm}}, que clasifican las secuencias de \glspl{embedding}.
+    \item \textbf{Reconocimiento adaptativo:} implementa la capacidad de detección e inclusión de desconocidos en el sistema (modo \textbf{\textit{Open-Set} y \textit{Open-World}}). Evalúa, mediante el uso de la teoría estadística, si una \textbf{puntuación} particular para un individuo no comparte similitudes con el resto de individuos registrados. En caso afirmativo, se trata de un conocido, en caso contrario, de un desconocido. En ambos casos, el sistema actualiza su conocimiento acerca del individuo por medio de la base de datos de \textbf{personas registradas}.
     \item \textbf{Personas registradas:} representa al conocimiento existente acerca de los individuos, que es compartido por \textbf{todo el sistema}, es decir, por todos los nodos cámara. Este módulo también abarca la inicialización de dicho registro al arrancar el sistema, los distintos métodos para su compartición entre nodos, así como su composición.
 \end{itemize}
 
-El nodo \acrshort{lidar} no se incluye en el sistema extendido, debido a que TODO.
-
-El nodo cámara pasa de operar frame a frame a procesar una \textbf{secuencia de frames}, con el fin de explotar la coherencia espacio-temporal (módulo de procesamiento de secuencias de frames). Se obtiene la \textbf{lista de entidades} con la lista de \glspl{embedding} para cada individuo y se ejecuta el módulo de reconocimiento adaptativo.
+Las \textbf{puntuaciones} utilizadas por el reconocimiento adaptativo no son más que los \textbf{resultados de los comités de \acrshort{svm}} sobre las secuencias de \glspl{embedding} de cada individuo (en la sección \ref{sec:val} se indaga en este asunto).
 
 El módulo de reconocimiento adaptativo devuelve la decisión de reconocimiento y actualiza las \textbf{personas registradas}. Los nuevos cambios de los individuos son actualizados y compartidos entre todos los nodos. El método de clasificación pasa de utilizar la \textbf{distancia coseno} a emplear los \textbf{comités de \acrshort{svm}}, que devuelven una serie de \textbf{puntuaciones} que se estudian bajo el teorema estadístico \textbf{\acrfull{evt}}, útil para detectar casos extremos en la distribución de dichas puntuaciones. Este último método permite implementar el reconocimiento \textbf{\textit{Open-Set} y/o \textit{Open-World}}.
 
@@ -194,8 +195,6 @@ El módulo de reconocimiento adaptativo se compone de los siguientes componentes
     \item \textbf{Módulo de limitación}: reemplaza la \acrshort{svm} que menos aporta a un comité, en el caso de que este exceda el límite establecido.
 \end{itemize}
 
-TODO: debe de ir en otro lugar? La base de datos de personas registradas está compuesta por \textbf{comités (o colecciones) de \acrshort{svm} lineales} para cada individuo.
-
 El módulo de reconocimiento adaptativo recibe la secuencia de vectores de un individuo, que son procesados por el \textbf{módulo de valoración}, que devuelve las puntuaciones de cada comité, dichas puntuaciones se ordenan de menor a mayor, de forma que la mejor puntuación se corresponde (supuestamente) con el comité del individuo. Las puntuaciones son recibidas por el \textbf{módulo de reconocimiento}, que determina, mediante el \acrfull{evt}, si el comité corresponde realmente al individuo (conocido) o no (desconocido). El \textbf{módulo de actualización} recibe la decisión y agrega una nueva \acrshort{svm}, entrenada con la secuencia de vectores como positivos y con muestras guardadas del resto de individuos como negativos, en caso de determinar que el individuo es conocido, en caso contrario, se crea el nuevo comité con una \acrshort{svm} entrenada del mismo modo. Finalmente, si el comité se excede en el límite fijado de \acrshort{svm}s, el \textbf{módulo de limitación} determina la \acrshort{svm} que menos aporta a dicho comité. En la figura \ref{fig:ADAPTSYS} se muestran el flujo comentado con todos los módulos.
 
 \subsection{Módulo de valoración}
@@ -203,7 +202,7 @@ El módulo de reconocimiento adaptativo recibe la secuencia de vectores de un in
 
 Es el módulo encargado de devolver una puntuación comparable de cada individuo que será aplicada en la decisión de reconocimiento.
 
-Por cada secuencia de entrada, siendo esta una secuencia de \textit{\gls{embedding}} (figura \ref{fig:ADAPTSYS}), se calculan las \textbf{puntuaciones (scores) para cada comité}. La puntuación de un comité es a su vez un valor consensuado entre los resultados de las predicciones de las \acrshort{svm} que lo conforman, el criterio de consenso (o de fusión) se basa en un percentil (generalmente la media). Aplicar percentiles es igual a escoger un conjunto amplio o reducido de \acrshort{svm}, ya que pueden existir \acrshort{svm} dañinas para el comité (ejemplo: corresponden a otra persona), los percentiles ayudan a descartar los resultados de dichas \acrshort{svm}.
+Por cada secuencia de entrada, siendo esta una secuencia de \textit{\gls{embedding}} (figura \ref{fig:ADAPTSYS}), se calculan las \textbf{puntuaciones (scores) para cada comité}. La puntuación de un comité es a su vez un valor consensuado entre los resultados de las predicciones de las \acrshort{svm} que lo conforman, el criterio de consenso (o de fusión) se basa en un percentil (generalmente la media). Aplicar percentiles es igual a escoger un conjunto amplio o reducido de \acrshort{svm}, ya que pueden existir \acrshort{svm} dañinas para el comité (ejemplo: corresponden a otra persona), los percentiles ayudan a tolerar los resultados de dichas \acrshort{svm}.
 
 Para cada comité, se ejecutan las siguientes funciones:
 \begin{itemize}

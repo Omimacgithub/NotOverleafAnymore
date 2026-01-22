@@ -1,5 +1,4 @@
 \begin{lstlisting}[language=Python, float=t, label=coud:trtskel, caption=Esqueleto del código de las inferencias con TensorRT]
-import numpy as np
 import tensorrt as trt
 import pycuda.driver as cuda
 
@@ -9,7 +8,6 @@ import pycuda.driver as cuda
 # osize: output tensor size of the model
 # ifp: input tensor precision of the model
 # ofp: output tensor precision of the model
-#
 class CNN_model:
     def __init__(self, cuda_ctx):
         super().__init__()
@@ -25,12 +23,11 @@ class CNN_model:
         self.d_input = cuda.mem_alloc(self.input_size)
         self.d_output = cuda.mem_alloc(self.output_size)
         self.bindings = [int(self.d_input), int(self.d_output)]
-        self.outputs = np.empty([BATCH_SIZE, osize], dtype=ofp)
+        self.outputs = numpy.empty([BATCH_SIZE, osize], dtype=ofp)
         for binding in range(self.engine.num_io_tensors):
           tensor_name = self.engine.get_tensor_name(binding)
           self.context.set_tensor_address(tensor_name, self.bindings[binding])
         self.ctx.pop()
-
     def infer(self, data):
       self.ctx.push()
       try:
