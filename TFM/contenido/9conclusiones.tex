@@ -21,14 +21,6 @@ Debido al contexto de las pruebas, que implican a múltiples individuos que se e
 
 Todos los nuevos componentes se han sometido a análisis, que exponen el comportamiento del sistema desde múltiples puntos de vista. TODO: resultados
 
-\subsection{Seguimiento del proyecto}
-
-Las principales causas de los retrasos en el proyecto fueron las pruebas de rendimiento de los modelos y del sistema.
-
-Aunque el motor de Docker despliegue el mismo software con el mismo \acrshort{so} y las mismas versiones de las librerías, las arquitecturas de los dispositivos hacen que los resultados de latencia y precisión cambien completamente.
-
-También se producen fallos en las fases menos esperadas, por ejemplo, al momento de exportar el modelo YOLO11n a \acrshort{onnx}. En todos los dispositivos, el modelo se exporta sin problema utilizando PyTorch en \acrshort{cpu}, a excepción de la Jetson AGX Orin, cuya exportación se realizó a partir de la versión de PyTorch para \acrshort{gpu}.
-
 \section{Trabajo Futuro}
 
 Los nuevos componentes de la arquitectura extendida (sección \ref{sec:finalsys}) se han probado de forma aislada bajo un modelo de reconocimiento facial, debido a no disponer del tiempo suficiente. La integración de dichos componentes en el sistema implicaría muchos cambios en el código, aunque no debería de afectar significativamente a la lógica del sistema base ni a la interacción con \acrshort{ros}.

@@ -3,18 +3,17 @@
 
 \section{Clasificadores}
 
-Los clasificadores o algoritmos de clasificación resuelven la tarea de decidir la membresía de un nuevo dato a una clase a partir de un \gls{dataset}. Se suelen mencionar los siguientes algoritmos en el campo de la detección de objetos y en otros problemas de clasificación \cite{DREISEITL2002352}:
+Los clasificadores o algoritmos de clasificación resuelven la tarea de decidir la membresía de un nuevo dato a una clase a partir de un \gls{dataset}. Aparte de las extendidas \textbf{redes neuronales artificiales} (ann), se suelen emplear los siguientes algoritmos en el campo de la detección de objetos y en otros problemas de clasificación \cite{DREISEITL2002352}:
 
 \begin{itemize}
-    \item \textbf{\textit{k-Nearest neighbors}}: es un método de clasificación basado en las distancias de la muestra respecto a sus muestras más cercanas (vecinos). El parámetro k establece la cantidad de dichos vecinos, de forma que se asigna la clase predominante de los vecinos a la propia muestra \cite{peterson2009k}.
+    \item \textbf{\textit{k-nearest neighbors (knn)}}: es un método de clasificación basado en las distancias de la muestra respecto a sus muestras más cercanas (vecinos). El parámetro k establece la cantidad de dichos vecinos, de forma que se asigna la clase predominante de los vecinos a la propia muestra \cite{peterson2009k}.
     \item \textbf{\textit{Decision tree}}: es un método de clasificación que sigue una estructura de árbol, en el que un nodo representa una característica y una rama un conjunto de características. La clasificación empieza desde el nodo raíz y termina en uno de los nodos hoja \cite{ali2012random}.
-    \item TODO: \textbf{\textit{Artificial Neural Networks}}: es una arquitectura multicapa, compuesta por nodos (o neuronas), cada uno representando a un \textbf{perceptrón}. El perceptrón es un clasificador lineal
-    \item \textbf{\textit{Support Vector Machines}}: trata de dibujar el hiperplano óptimo en cuanto al margen que separa las clases de datos. A diferencia de los anteriores clasificadores, las predicciones devueltas por las \acrshort{svm} son puramente \textbf{dicotómicas}, es decir, no devuelve probabilidades de pertenencia para cada clase (al menos de forma nativa) \cite{DREISEITL2002352}.
+    \item \textbf{\textit{\acrfull{svm}}}: trata de dibujar el hiperplano óptimo en cuanto al margen que separa las clases de datos. A diferencia de los anteriores clasificadores, las predicciones devueltas por las \acrshort{svm} son puramente \textbf{dicotómicas}, es decir, no devuelve probabilidades de pertenencia para cada clase (al menos de forma nativa) \cite{DREISEITL2002352}.
 \end{itemize}
 
 En este proyecto, se ha optado por el \textbf{entrenamiento discriminativo}, que consiste en resaltar las diferencias entre las muestras de la clase que se representa (positivos) respecto al resto del mundo (negativos). Debido a que las muestras negativas se pueden compartir entre diferentes clasificadores, se obtiene una gran capacidad de generalización partiendo de un conjunto reducido de datos \cite{malisiewicz2011ensemble}.
 
-Los clasificadores como KNN o las redes neuronales no poseen la capacidad de aprender de los datos negativos y, en cambio, necesitan grandes \glspl{dataset} para converger correctamente \cite{malisiewicz2011ensemble}. Las \acrshort{svm} sí que cuentan con dicho poder discriminatorio y, por este motivo, son relevantes para el presente proyecto.
+Los clasificadores como \textit{knn, decision tree} o las redes neuronales artificiales no poseen la capacidad de aprender de los datos negativos y, en cambio, necesitan grandes \glspl{dataset} para converger correctamente \cite{malisiewicz2011ensemble}. Las \acrshort{svm} sí que cuentan con dicho poder discriminatorio y, por este motivo, son relevantes para el presente proyecto.
 
 \subsection{Support Vector Machine (SVM)}
 

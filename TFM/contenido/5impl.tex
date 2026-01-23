@@ -3,10 +3,6 @@
 
 \lettrine{E}{n} este capítulo se ahonda en los detalles de implementación de los componentes del sistema extendido. También se comentan los cambios relevantes realizados al sistema base y a los modelos para su ejecución en \acrshort{gpu}.
 
-Para los módulos que conforman el reconocimiento adaptativo, se ha tomado como base el siguiente repositorio \cite{src}.
-
-\input{contenido/codes/trtskel.tex}
-
 \section{Códigos de inferencia para el \gls{rt} de TensorRT}
 En la figura \ref{fig:finalsys} se muestran los 4 modelos utilizados en el nodo cámara y que se detallarán en la sección \ref{sec:models}, todos cuentan con su implementación optimizada para OpenVINO creada en \cite{andrew}, excepto para el modelo de detección de caras (YuNet), que se ejecuta en el \gls{rt} de OpenCV. En este proyecto se han implementado nuevas versiones de las inferencias adaptadas para su uso en \acrshort{gpu} por medio de TensorRT y PyCUDA. PyCUDA ofrece una API que facilita gran parte de la interacción con CUDA, aun así, se necesita gestionar en el código temas como la creación de contextos y reserva de la memoria.
 
@@ -30,8 +26,6 @@ Se ejecuta la función PREPROCESING con la entrada, que representa el pipeline d
 
 Las operaciones de copia de datos y la inferencia se ejecutan de forma \textbf{asíncrona}, por lo que es necesario introducir una barrera de sincronización una vez todas las operaciones se emitan, de forma que nuevos \glspl{thread} no sobrescriben la memoria de la \acrshort{gpu} mientras esta realiza inferencias.
 
-%\section{Creación de las SVM}
-%\label{sec:training}
 \section{Procesamiento de video}
 La implementación sigue el flujo expuesto en la sección \ref{sec:tracker}.
 
@@ -39,45 +33,12 @@ El cálculo del \acrshort{iou} es sencillo y no entraña apenas complejidad comp
 
 Para realizar una asignación óptima del método húngaro, se utilizó la función \textit{linear\_sum\_assignment} otorgada por el módulo \textit{optimize} de la librería SciPy \cite{lsa}. Dicha librería implementa el algoritmo Jonker-Volgenan, que es una variante del método húngaro con complejidad computacional $O(n^{3})$ \cite{lsa, o3}. Atendiendo a la elevada complejidad computacional, este algoritmo se volvería impracticable con matrices de cientos de filas y columnas (ejemplo: detección de 100 personas de una cámara en un frame y su anterior) \cite{325}. Sin embargo, como en los videos de prueba una cámara llega a detectar como máximo 4 personas a la vez, la ejecución del algoritmo no supone apenas algún coste.
 
-\section{Módulo de valoración}
-
-Como se expuso en la sección \ref{sec:val}, el módulo de valoración devuelve un conjunto de puntuaciones que representan a la secuencia para todos los comités.
-
-La implementación sigue el funcionamiento descrito en la sección \ref{sec:val}. Para calcular los percentiles y la mediana en las funciones FDF y SDF se utilizan las funciones \textit{percentile} y \textit{median} respectivamente de la librería NumPy.
-
-\section{Módulo de reconocimiento}
-
-Como se mencionó en la sección \ref{sec:reckon}, el módulo de reconocimiento determina si la entidad detectada se corresponde a un individuo previamente reclutado o a una entidad \textbf{desconocida}.
-
-\input{contenido/codes/weib.tex}
-
-El código \ref{coud:weib} muestra la implementación de dicha funcionalidad. Se parte de la función RDF (Recognition Decision Function), que recibe el conjunto de puntuaciones ordenado y devuelve la decisión de reconocimiento.
-
-Del conjunto de puntuaciones ordenadas, se excluye la mejor puntuación de todos los comités (es decir, la puntuación más baja) y se compone la distribución de puntuaciones no coincidentes. Se calcula para cada punto la distancia respecto a la mediana (variable v), de forma que los puntos de la distribución se distancian del mejor comité. Se obtienen los parámetros \textit{shape} y \textit{scale} a partir de la distribución, que modelan la función de Weibull. Finalmente, se calcula la probabilidad de pertenencia del mejor comité a la distribución (función weib) y se toma la decisión en base a un umbral (Tw). Si la probabilidad es inferior al umbral, se reconoce el caso como un extremo y se asigna la identidad correspondiente al sujeto (\textit{drift}), en caso contrario se devuelve como desconocido (\textit{unknown}).
-
-Para obtener los parámetros que componen la distribución de Weibull, se utiliza la función \textit{fit} de la clase \textit{weibull\_fit} del módulo \textit{stats} de la librería SciPy.
-
-\section{Módulo de actualización}
-
-La implementación del módulo sigue el flujo descrito en la sección \ref{sec:reckon}. En el caso de una clase conocida, la nueva \acrshort{svm} se guarda en el comité junto a la selección de positivos, que sirven para entrenar nuevas \acrshort{svm}, en el caso contrario se crea una nueva entrada en la base de datos con la nueva etiqueta del individuo (\textbf{person\_id}), el comité con su \acrshort{svm} inicial (\textbf{ensemble}) y la selección de positivos (\textbf{descriptors}) y la lista de valores de coherencia (\textbf{coherence}) inicializada a 0. En la selección de los positivos se aplica la función de valor absoluto a la lista de puntuaciones de las muestras, que posteriormente se ordena de menor a mayor y se recuperan los primeros valores, que son los más cercanos al 0.
-
-La creación de las \acrshort{svm} se realiza a partir de la función \textit{def\_svm}, que se verá en la sección \ref{sec:init}.
-
-\section{Módulo de limitación}
-En el \textbf{módulo de actualización}, si el comité excede el máximo de \acrshort{svm} establecido, este módulo se activa para hallar la \acrshort{svm} que menos contribuye, por tanto la que debe de abandonar el comité.
-
-Se invoca a la función que calcula el criterio de favorabilidad, que otorga un valor para cada \acrshort{svm} a partir de la suma de los criterios de diversidad y coherencia. Se almacenan los resultados en un array de NumPy y se ordenan los valores devueltos mediante la función \textit{argsort} de NumPy, por lo que la \acrshort{svm} a eliminar se corresponde con la primera entrada del vector (es decir, el que tenga el valor de favorabilidad más bajo).
-
-Los valores de coherencia se calculan sobre el valor acumulado de cada \acrshort{svm} cada vez que se invoca a este módulo. Por simpleza, se ha optado por reiniciar este valor en todo el comité a 0 cada vez que se reemplaza una \acrshort{svm}, de forma que se mantenga una comparación justa entre todas las \acrshort{svm}.
-
 \section{Personas registradas}
 \label{sec:init}
 
 En esta sección se comentan las implementaciones de los componentes encargados de crear, mantener y compartir la base de datos de las personas registradas del sistema.
 
 \subsection{Creación y entrenamiento de las \acrshort{svm}}
-
-\input{contenido/codes/training.tex}
 
 El código \ref{coud:training} corresponde al proceso seguido a la hora de crear y entrenar nuevas \acrshort{svm}. Si el individuo es un desconocido, entonces todas las muestras de la base de datos sirven como datos \textbf{negativos}, de lo contrario, es necesario \textbf{excluir las muestras del propio sujeto} del conjunto negativo, si no se estaría perdiendo el poder discriminativo de las \acrshort{svm}.
 
@@ -87,25 +48,9 @@ A la hora de entrenar las \acrshort{svm}, se asigna la etiqueta 1 (variable \tex
 
 \subsection{Método de inicialización no supervisado}
 
-Como ya se explicó en la sección \ref{sec:initarch}, se parte únicamente de la información de las cámaras en el momento de ejecución del sistema, en el caso de las pruebas realizadas se utilizan los frames de los videos grabados.
-
-Para la implementación del algoritmo de la figura \ref{fig:init} se ha podido aprovechar el módulo de procesamiento de video para la fase de recolección de \glspl{bbox}. El resto de detalles de implementación no entrañan nada destacable.
-
-\subsection{Registro compartido}
-
-Se han implementado los 2 métodos descritos en la sección \ref{sec:shared}, que se comentan a continuación.
-
-\begin{itemize}
-    \item \textbf{Base de datos centralizada}: para la base de datos se escogió \textbf{Redis}, que funciona puramente en memoria principal. La base de datos se despliega en un contenedor de Docker separado del sistema, el propio equipo en el que se despliega la base de datos se comunica con el sistema mediante un \textbf{socket de Unix}, el resto de clientes remotos acceden por dirección IP (Internet Protocol) (TODO: la implementación no está acabada).
-
-          El nodo integración de sensores se encarga de revisar si se han reconocido a nuevos usuarios en el sistema, si es el caso, este manda una petición de escritura a la base de datos Redis, (TODO: Redis tiene unos hooks que permiten propagar los cambios en la información en forma de broadcast, de forma que llegan a los nodos cámara, pero esto no lo implementé).
-    \item \textbf{Red de \acrshort{ros}}: debido a que la base de datos introduce latencia al sistema, especialmente si las escrituras son recurrentes, se ha adoptado otra alternativa que aprovecha la red de \acrshort{ros}. Los nodos cámara se suscriben a un tópico, en el que el nodo integración de sensores publica los nuevos cambios y entidades en el sistema. De esta forma, todos los nodos cámara mantienen su copia actualizada. Esta aproximación permite ahorrarse las latencias en las peticiones de lectura/escritura de una base de datos.
-
-\end{itemize}
+Como ya se explicó en la sección \ref{sec:initarch}, se parte únicamente de la información de las cámaras en el momento de ejecución del sistema, en el caso de las pruebas realizadas se utilizan los frames de los videos grabados. Para la implementación del algoritmo de la figura \ref{fig:init} se ha podido aprovechar el módulo de procesamiento de video para la fase de recolección de \glspl{bbox}. El resto de detalles de implementación no entrañan nada destacable.
 
 \section{Escalabilidad y tolerancia a fallos de las cámaras}
-
-\input{contenido/codes/cash.tex}
 
 Cuando se fusionan los resultados procesados por los distintos sensores (nodo integración de sensores en la figura \ref{fig:finalsys}), se requiere que todos ellos se encuentren \textbf{sincronizados} dentro de un intervalo temporal (ejemplo: 100 milisegundos), de forma que las predicciones no se realizan a partir de información desactualizada.
 

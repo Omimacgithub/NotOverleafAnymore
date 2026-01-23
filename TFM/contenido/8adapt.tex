@@ -16,11 +16,9 @@ En esta sección se introducen las pruebas escogidas para medir las capacidades 
 
 Todas las pruebas mencionadas se ejecutan en las modalidades \textbf{\textit{Open-Set}}, que en este caso \textbf{detecta desconocidos y actualiza las entidades existentes}\footnote{en un sistema típico \textit{Open-Set}, no se aplica la actualización de las entidades existentes} y \textbf{\textit{Open-World}}, que realiza las mismas funciones que \textit{Open-Set}, pero con la capacidad de \textbf{registrar a los desconocidos en el sistema}.
 
-\section{Dataset de las pruebas}
+\section{Realización de las pruebas}
 
 Las pruebas que analizan los nuevos componentes se realizaron por separado del sistema bajo el modelo de reconocimiento facial \textbf{ArcFace}. Por lo tanto, para dichas pruebas se ha empleado el \gls{dataset} expuesto en la sección \ref{sec:modset}.
-
-\section{Realización de las pruebas}
 
 Las pruebas siguen el mismo procedimiento que el expuesto en la sección \ref{sec:probes} para los modelos de reconocimiento, salvo por los siguientes cambios:
 
@@ -110,10 +108,9 @@ Debido a la influencia del parámetro \textbf{\textit{Tw}} en los resultados, se
 
 %TODO: En relación con el anterior punto, el número de SVM influye en la decisión de que percentil tomar. Si se utilizan 3 SVM por comité y la mediana, al menos 2 SVM deben de devolver un score bajo para dar un resultado coincidente. Por otro lado, si se utilizan 10 SVM y un percentil de 30, sólo 3 de las 10 SVM necesitan estar de acuerdo para devolver un match. En los resultados se muestra como un comité de 3 SVM y TW=0.05 destaca respecto a un comité de 1 SVM y TW=0.5. Los resultados utilizando 10 SVM por comité no llegan a mejorar notablemente el valor de 3 SVM, esto es de gran relevancia, puesto que se reduce el número de iteraciones de cada reconocimiento de 10*n a 3*n, siendo n el número de comités que existen y asumiendo que todos los comités han llegado al límite de SVM. Con estos resultados se ha demostrado que implementar varias SVM por comité mejora el recall manteniendo la precisión. 1 sóla SVM por comité es efectiva si dicha SVM es representativa del individuo, en caso contrario puede devolver respuestas coincidentes acerca de una entidad distinta del comité, generando ruido que perjudica a las predicciones de Weibull. Un mayor número de SVM combinado con el percentil devuelve un resultado conforme dicta un grupo que omite los scores de SVM intrusas (de entidades distintas) y permite expulsarlas mediante los criterios ya comentados en la sección \ref{seq:limmod}.
 
-\section{TODO: Influencia del número de usuarios en el rendimiento}
-El número de usuarios registrados es un factor crítico, ya que el sistema implementado se nutre de los datos de los individuos. Por un lado, tener más individuos se traduce en más comités, por lo tanto se dispone de más puntos para definir la distribución de Weibull, lo que refuerza las predicciones. Por otra parte, se dispone de un mayor número de muestras negativas, lo que permite definir mejor las fronteras de las \acrshort{svm} y así mejorar la capacidad de predicción.
+%El número de usuarios registrados es un factor crítico, ya que el sistema implementado se nutre de los datos de los individuos. Por un lado, tener más individuos se traduce en más comités, por lo tanto se dispone de más puntos para definir la distribución de Weibull, lo que refuerza las predicciones. Por otra parte, se dispone de un mayor número de muestras negativas, lo que permite definir mejor las fronteras de las \acrshort{svm} y así mejorar la capacidad de predicción.
 
-La calidad de la función de reconocimiento viene determinada por el número de puntos que componen la función de Weibull, cuantos más puntos, mayor definición y por tanto reconocimientos más precisos \cite{Erik}. Con un universo de 20 individuos, solo 5 puntos componen la función de Weibull (de las 20 entidades solo 10 se registran en el sistema, a modo de probar el open-set, y de esos 10, la mitad definen la función), lo que lleva a un comportamiento más impreciso que con un universo mayor. El sistema inicial cuenta con un universo de \textbf{6 individuos}, lo que claramente \textbf{es insuficiente} para realizar una diferenciación precisa de los IoI respecto a lo desconocido.
+%La calidad de la función de reconocimiento viene determinada por el número de puntos que componen la función de Weibull, cuantos más puntos, mayor definición y por tanto reconocimientos más precisos \cite{Erik}. Con un universo de 20 individuos, solo 5 puntos componen la función de Weibull (de las 20 entidades solo 10 se registran en el sistema, a modo de probar el open-set, y de esos 10, la mitad definen la función), lo que lleva a un comportamiento más impreciso que con un universo mayor. El sistema inicial cuenta con un universo de \textbf{6 individuos}, lo que claramente \textbf{es insuficiente} para realizar una diferenciación precisa de los IoI respecto a lo desconocido.
 
 \section{Métodos de inicialización del sistema}
 
@@ -173,17 +170,3 @@ Se puede apreciar una caída en la precisión en las técnicas no supervisadas, 
 %El número de comités aumenta en el modo no supervisado, ya que al contar con muestras de peor calidad (generalmente) la confusión inter-comité aumenta.
 
 Como se comentó en la discusión de las pruebas de parámetros (sección \ref{sec:discusparamtunning}), el valor de 0.25 del parámetro \textit{Tw} otorga los mejores resultados en \textit{Open-World}, debido a que con 0.1 se crea casi el \textbf{doble de comités} en los casos no supervisados, cuya mayoría son duplicados que añaden incertidumbre al sistema. Se puede apreciar en el modo semisupervisado como se reduce tanto el número de comités creados como la desviación en su número, ya que TODO.
-
-\section{TODO: Evolución del sistema en el tiempo}
-\subsection{Modo \textit{Open-Set}}
-
-La figura \ref{fig:osevol}
-
-\begin{figure}
-    \centering
-    \includegraphics[width=0.5\linewidth]{imagenes/figaro.png}
-    \caption{Diagrama con datos de ejemplo.}
-    \label{fig:osevol}
-\end{figure}
-
-\subsection{Modo \textit{Open-World}}

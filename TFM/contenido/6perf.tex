@@ -6,68 +6,27 @@
 \section{Modelos de redes neuronales utilizadas}
 \label{sec:models}
 
-A continuación se exponen las \acrshort{cnn} utilizadas en los nodos cámara, que también se emplearon en \cite{andrew}.
+A continuación se exponen las \acrshort{cnn} utilizadas en los nodos cámara, que también se emplearon en \cite{andrew}:
 
-\subsection{YuNet}
-
-Es un modelo de detección facial diseñado para sistemas con recursos muy limitados, con tan solo \textbf{75856 parámetros} \cite{wu2023yunet}. Debido a los múltiples \textit{outputs} del modelo, complejos de procesar, se ha optado por utilizar la versión de OpenCV, que simplifica todo el proceso de pre y postprocesado. El modelo en formato \acrshort{onnx} se encuentra en este enlace \footnote{https://github.com/opencv/opencv\_zoo/blob/main/models/face\_detection\_yunet/face\_detection\_yunet\_2023mar.onnx}.
-
-\subsection{ArcFace}
-
-\textit{Additive Angular Margin Loss} o ArcFace es una función de pérdida (\gls{lossfunc}) que mejora el poder discriminativo de los modelos de reconocimiento facial, es decir, maximiza el margen que separa a las clases y minimiza el margen de los datos que pertenecen a una misma clase \cite{deng2019arcface}. Los \glspl{embedding} con los que opera ArcFace pertenecen al modelo ResNet-100. Se emplea el archivo de pesos de una implementación en TensorFlow Lite, accesible mediante el siguiente enlace \footnote{https://www.digidow.eu/f/datasets/arcface-tensorflowlite/model.tflite}.
-
-%ha demostrado ser de las mejores redes en el \acrshort{sota} del reconocimiento facial.
-
-\subsection{YOLO}
-
-\textit{You Only Look Once} (YOLO) es la red más rápida y simple de detección de objetos en tiempo real, que logra mantener una buena precisión \cite{redmon2016you, mdpi}. Existen múltiples versiones de YOLO, en \cite{andrew} se probaron las versiones 3, 5 y 8 en el tamaño nano, más ligero y veloz, pero al mismo tiempo más impreciso. En este proyecto a mayores se ha probado la versión 11, la última existente a día de hoy, en su tamaño nano. El modelo se puede obtener mediante la \acrshort{api} de Python de ultralytics, que permite realizar exportaciones con diferentes ajustes (ver sección \ref{sec:exports}).
-
-Se ha optimizado el postprocesado explotando la librería de NumPy y los resultados son muy notorios.
-
-\subsection{OSNet}
-
-\textit{Omni-Scale Network} (OSNet) es un modelo de reidentificación de personas que emplea características de diferentes tamaños (\textit{omni-scale features}) para la clasificación. Destaca por ser extremadamente ligero y por su elevada precisión \cite{zhou2019omni}. Se realizó una exportación a partir del modelo implementado en Pytorch (\cite{andrew}).
-
-\subsection{Características de los modelos}
+\begin{description}
+    \item[YuNet] Es un modelo de detección facial diseñado para sistemas con recursos muy limitados, con tan solo \textbf{75856 parámetros} \cite{wu2023yunet}. Debido a los múltiples \textit{outputs} del modelo, complejos de procesar, se ha optado por utilizar la versión de OpenCV, que simplifica todo el proceso de pre y postprocesado. El modelo en formato \acrshort{onnx} se encuentra en este enlace \footnote{https://github.com/opencv/opencv\_zoo/blob/main/models/face\_detection\_yunet/face\_detection\_yunet\_2023mar.onnx}.
+    \item[ArcFace] \textit{Additive Angular Margin Loss} o ArcFace es una función de pérdida (\gls{lossfunc}) que mejora el poder discriminativo de los modelos de reconocimiento facial, es decir, maximiza el margen que separa a las clases y minimiza el margen de los datos que pertenecen a una misma clase \cite{deng2019arcface}. Los \glspl{embedding} con los que opera ArcFace pertenecen al modelo ResNet-100. Se emplea el archivo de pesos de una implementación en TensorFlow Lite, accesible mediante el siguiente enlace \footnote{https://www.digidow.eu/f/datasets/arcface-tensorflowlite/model.tflite}.
+    \item[YOLO] \textit{You Only Look Once} (YOLO) es la red más rápida y simple de detección de objetos en tiempo real, que logra mantener una buena precisión \cite{redmon2016you, mdpi}. Existen múltiples versiones de YOLO, en \cite{andrew} se probaron las versiones 3, 5 y 8 en el tamaño nano, más ligero y veloz, pero al mismo tiempo más impreciso. En este proyecto a mayores se ha probado la versión 11, la última existente a día de hoy, en su tamaño nano. El modelo se puede obtener mediante la \acrshort{api} de Python de ultralytics, que permite realizar exportaciones con diferentes ajustes (ver sección \ref{sec:exports}).
+    \item[OSNet] \textit{Omni-Scale Network} (OSNet) es un modelo de reidentificación de personas que emplea características de diferentes tamaños (\textit{omni-scale features}) para la clasificación. Destaca por ser extremadamente ligero y por su elevada precisión \cite{zhou2019omni}. Se realizó una exportación a partir del modelo implementado en Pytorch (\cite{andrew}).
+\end{description}
 
 \input{contenido/tables/modelspecs.tex}
 
-En la tabla \ref{tab:modelspecs} se muestra el tamaño de la entrada, el número de parámetros y la latencia de cada modelo.
-
-Cada valor de la columna \textit{input size} se compone de la resolución de la imagen de entrada (ejemplo: 112x112) multiplicado por el número de canales de entrada (en este caso 3, que se corresponde con los canales \textit{Red, Green} y \textit{Blue} de una imagen \acrshort{rgb}). Los modelos OSNet y ArcFace utilizan una resolución fija de 256x128 y 112x112 respectivamente de los frames de entrada, mientras que YOLO y YuNet permiten un ajuste dinámico de dicha resolución en tiempo de ejecución. Para obtener el mejor balance entre precisión y latencia, se ha optado por establecer una resolución fija de 640x640 y 480x480 respectivamente.
+En la tabla \ref{tab:modelspecs} se muestra el tamaño de la entrada, el número de parámetros y la latencia de cada modelo. Cada valor de la columna \textit{input size} se compone de la resolución de la imagen de entrada (ejemplo: 112x112) multiplicado por el número de canales de entrada (en este caso 3, que se corresponde con los canales \textit{Red, Green} y \textit{Blue} de una imagen \acrshort{rgb}). Los modelos OSNet y ArcFace utilizan una resolución fija de 256x128 y 112x112 respectivamente de los frames de entrada, mientras que YOLO y YuNet permiten un ajuste dinámico de dicha resolución en tiempo de ejecución. Para obtener el mejor balance entre precisión y latencia, se ha optado por establecer una resolución fija de 640x640 y 480x480 respectivamente.
 
 \section{Dataset de las pruebas}
 \label{sec:modset}
 
-A modo de evaluar el rendimiento en términos de precisión de los modelos de visión artificial, se parte de un \gls{dataset} compuesto de la información extraída de un fichero Rosbag, que contiene los datos generados por dos cámaras Kinect \acrshort{rgbd} y un sensor \acrshort{lidar} instalados en el Summit\_XL durante la realización de una prueba.
+A modo de evaluar el rendimiento en términos de precisión de los modelos de visión artificial, se parte de un \gls{dataset} compuesto de la información extraída de un fichero \gls{rosbag}, que contiene los datos generados por dos cámaras Kinect \acrshort{rgbd} y un sensor \acrshort{lidar} instalados en el Summit\_XL durante la realización de una prueba.
 
 La prueba del Rosbag se ha grabado en el laboratorio de robótica del \acrshort{citic}, en el que 6 personas caminan alrededor del Summit\_XL y se entrecruzan durante 105 segundos (aproximadamente). El robot también se desplaza, generando así imágenes borrosas y cambios impredecibles de la posición de las personas respecto del robot.
 
-Existe un fichero \acrshort{json} con el \gls{dataset} específico para cada cámara. Este se compone de los siguientes objetos \cite{andrew}:
-\begin{itemize}
-    \item \textit{\textbf{frames}}: lista de todos los frames capturados por la cámara. Cada entrada en la lista sigue la siguiente estructura:
-          \begin{itemize}
-              \item \textit{\textbf{id}}: identificador del frame.
-              \item \textit{\textbf{entities}}: lista de las personas presentes, que contiene los siguientes campos:
-                    \begin{itemize}
-                        \item \textbf{bbox}: \gls{bbox} corporal del sujeto, compuesta por los siguientes elementos:
-                              \begin{itemize}
-                                  \item \textit{\textbf{x0, x1, y0 e y1}}: Coordenadas de la \gls{bbox}.
-                                  \item \textit{\textbf{conf}}: confianza de la detección.
-                                  \item \textit{\textbf{height}}: altura de la \gls{bbox}.
-                                  \item \textit{\textbf{width}}: anchura de la \gls{bbox}.
-                                  \item \textit{\textbf{difficulty}}: valoración de la dificultad de detección (easy, medium o hard), las dificultades se asignan de acuerdo con un sistema de puntos desarrollado en \cite{andrew} que tiene en cuenta diversos factores (ejemplo: porcentaje de oclusión o borrosidad), de esta forma, se organizan los resultados a partir de este criterio. Por sencillez, los resultados reflejados son siempre globales (es decir, la media de todas las dificultades).
-                              \end{itemize}
-                        \item \textit{\textbf{face\_bbox}}: \gls{bbox} facial del sujeto, compuesta por los mismos elementos que el campo \textbf{bbox}, agregando dos campos más, uno con las coordenadas de los puntos faciales (\textit{landmarks}) y el otro con la orientación de la cara (si está frontal, girada a la izquierda o a la derecha), calculada a partir de los \textit{landmarks}.
-                        \item \textit{\textbf{filename}}: nombre de los archivos con los recortes facial y corporal del individuo.
-                        \item \textit{\textbf{person\_id}}: etiqueta asignada al individuo.
-                    \end{itemize}
-          \end{itemize}
-    \item \textit{\textbf{res}}: resolución de la cámara.
-    \item \textit{\textbf{camera}}: identificador de la cámara.
-    \item \textit{\textbf{face\_padding}}: valor de relleno para aumentar el tamaño de la \gls{bbox} facial.
-    \item \textit{\textbf{input}}: ruta al video generado por la cámara.
-\end{itemize}
+Existe un fichero \acrshort{json} con el \gls{dataset} específico para cada cámara. En el apéndice \ref{sec:datcam} se expone su composición.
 
 \section{Realización de las pruebas}
 \label{sec:probes}
@@ -78,7 +37,7 @@ Se realiza una medición de la latencia de la inferencia, en el caso de los mode
 
 En las pruebas de los modelos de detección, se obtienen los frames directamente de los videos. El test determina una detección como coincidente si los porcentajes de intersección entre la \gls{bbox} obtenida respecto a la de referencia y viceversa superan o igualan un umbral. En este caso, dicho umbral se ha fijado en el 50\% \cite{andrew}.
 
-En el caso de los modelos de reconocimiento, se recupera para cada frame una lista de recortes generados por los modelos de detección \textbf{previamente a la ejecución de la prueba}. El test determina un reconocimiento como correcto si la predicción obtenida es la misma que la etiqueta (\textit{\gls{gt}}) recogida en el \gls{dataset}. Por sencillez, siempre se escoge la primera predicción de la lista como la predicción final (\textit{top\_k=1}, ver sección \ref{sec:basearch}).
+En el caso de los modelos de reconocimiento, se recupera para cada frame una lista de recortes generados por los modelos de detección \textbf{previamente a la ejecución de la prueba}. El test determina un reconocimiento como correcto si la predicción obtenida es la misma que la etiqueta (\textit{\gls{gt}}) recogida en el \gls{dataset}. Como se ha comentado en la sección \ref{sec:basearch}, existen varios métodos para escoger la identidad ganadora dentro de un conjunto de identidades probables, por simplicidad, siempre se escoge la primera predicción de la lista como la ganadora.
 
 Para la ejecución de inferencias, se han empleado los \glspl{rt} de OpenVINO, TensorRT y OpenCV, este último para el caso concreto de la red YuNet. OpenVINO ejecuta las inferencias \textbf{puramente en \acrshort{cpu}}, mientras que TensorRT realiza las inferencias en \textbf{\acrshort{gpu}}. OpenCV permite la ejecución en el propio \gls{rt} que ofrece, que opera \textbf{puramente en \acrshort{cpu}} o permite realizar la inferencia por medio de CUDA, que aplica la \acrshort{gpu}.
 

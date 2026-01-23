@@ -1,0 +1,52 @@
+\chapter{Datasets del sistema}
+\label{chap:datsets}
+
+\lettrine{E}{n} este apéndice se exponen los elementos que conforman los \glspl{dataset} de las pruebas de los capítulos \ref{chap:cnn}, \ref{chap:syscal} y \ref{chap:systesting}.
+
+Con el fin de evaluar el rendimiento del sistema en términos de precisión, se dispone principalmente de 2 \glspl{dataset}, uno que contiene el \gls{gt} para evaluar el nodo cámara y el otro para evaluar el nodo integración de sensores. A continuación se explican los detalles de ambos.
+
+\section{Nodo cámara}
+\label{sec:datcam}
+
+Este \gls{dataset} contiene el \gls{gt} que permite evaluar la salida de los nodos cámara y que se compone de los siguientes elementos \cite{andrew}:
+\begin{itemize}
+    \item \textit{\textbf{frames}}: lista de todos los frames capturados por la cámara. Cada entrada en la lista sigue la siguiente estructura:
+          \begin{itemize}
+              \item \textit{\textbf{id}}: identificador del frame.
+              \item \textit{\textbf{entities}}: lista de las personas presentes, que contiene los siguientes campos:
+                    \begin{itemize}
+                        \item \textbf{bbox}: \gls{bbox} corporal del sujeto, compuesta por los siguientes elementos:
+                              \begin{itemize}
+                                  \item \textit{\textbf{x0, x1, y0 e y1}}: Coordenadas de la \gls{bbox}.
+                                  \item \textit{\textbf{conf}}: confianza de la detección.
+                                  \item \textit{\textbf{height}}: altura de la \gls{bbox}.
+                                  \item \textit{\textbf{width}}: anchura de la \gls{bbox}.
+                                  \item \textit{\textbf{difficulty}}: valoración de la dificultad de detección (easy, medium o hard), las dificultades se asignan de acuerdo con un sistema de puntos desarrollado en \cite{andrew} que tiene en cuenta diversos factores (ejemplo: porcentaje de oclusión o borrosidad), de esta forma, se organizan los resultados a partir de este criterio. Por sencillez, los resultados reflejados son siempre globales (es decir, la media de todas las dificultades).
+                              \end{itemize}
+                        \item \textit{\textbf{face\_bbox}}: \gls{bbox} facial del sujeto, compuesta por los mismos elementos que el campo \textbf{bbox}, agregando dos campos más, uno con las coordenadas de los puntos faciales (\textit{landmarks}) y el otro con la orientación de la cara (si está frontal, girada a la izquierda o a la derecha), calculada a partir de los \textit{landmarks}.
+                        \item \textit{\textbf{filename}}: nombre de los archivos con los recortes facial y corporal del individuo.
+                        \item \textit{\textbf{person\_id}}: etiqueta asignada al individuo.
+                    \end{itemize}
+          \end{itemize}
+    \item \textit{\textbf{res}}: resolución de la cámara.
+    \item \textit{\textbf{camera}}: identificador de la cámara.
+    \item \textit{\textbf{face\_padding}}: valor de relleno para aumentar el tamaño de la \gls{bbox} facial.
+    \item \textit{\textbf{input}}: ruta al video generado por la cámara.
+\end{itemize}
+
+\section{Nodo integración de sensores}
+\label{sec:datsys}
+
+Este \gls{dataset} contiene la información del \gls{gt} que permite evaluar la salida del nodo integrador y que se compone de los siguientes elementos \cite{andrew}:
+\begin{itemize}
+    \item \textbf{\textit{frames}}: lista con todos los frames del \gls{dataset}, cada frame contiene los siguientes elementos:
+          \begin{itemize}
+              \item \textbf{\textit{secs}}: \gls{timestamp} del tiempo de UNIX en segundos.
+              \item \textbf{\textit{nsecs}}: \gls{timestamp} del tiempo en nanosegundos del segundo correspondiente al campo secs.
+              \item \textbf{\textit{people}}: lista de objetos, cada uno compuesto por los siguientes elementos:
+                    \begin{itemize}
+                        \item \textbf{\textit{person\_id}}: etiqueta que identifica al usuario detectado (ejemplo: carlos).
+                        \item \textbf{\textit{position}}: coordenadas del espacio \acrshort{3d} compartido por las cámaras y el \acrshort{lidar} en el que se sitúa dicho usuario.
+                    \end{itemize}
+          \end{itemize}
+\end{itemize}

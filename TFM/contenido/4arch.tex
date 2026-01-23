@@ -9,18 +9,18 @@ En esta sección se explica la estructura general del sistema del proyecto. Para
 
 \subsection{Arquitectura base}
 
-Se parte de un sistema compuesto por 2 cámaras \acrshort{rgbd} y un sensor \acrshort{lidar}, que detecta y reconoce personas a partir de nodos que aplican los respectivos modelos de redes neuronales (o \acrshort{cnn}). El sistema posee la capacidad de fusionar la información de todos los nodos, de forma que se obtiene un único reconocimiento robusto para cada individuo, junto a su posición concreta en el espacio \acrshort{3d}.
+Se parte de un sistema diseñado para el robot móvil Summit\_XL, compuesto por 2 cámaras \acrshort{rgbd} y un sensor \acrshort{lidar}, que detecta y reconoce personas a partir de nodos que aplican los respectivos modelos de redes neuronales convolucionales (o \acrshort{cnn}). El sistema posee la capacidad de fusionar la información de todos los nodos, de forma que se obtiene un único reconocimiento robusto para cada individuo, junto a su posición concreta respecto al robot en el espacio \acrshort{3d}.
 
 Toda la arquitectura se ejecuta en el \textit{framework} \acrshort{ros} \cite{ROS} (sección \ref{sec:ros}). \acrshort{ros} se encarga de crear los procesos para cada nodo, comprobar su estado, regular la frecuencia a la que trabajan, crear la red en la que dichos procesos intercambian mensajes, entre otros muchos detalles que resultan transparentes para el programador.
 
-\begin{figure}[hp!]
+\begin{figure}[tbp]
     \centering
     \includegraphics[width=0.6\linewidth]{imagenes/SYSARCH.png}
     \caption{Arquitectura del sistema de partida. Figura extraída de \cite{andrew}}
     \label{fig:sysarch}
 \end{figure}
 
-En la figura \ref{fig:sysarch} se muestra la arquitectura planteada en \cite{andrew}, compuesta por un nodo que procesa los datos del \acrshort{lidar}, 1 o varios nodos que procesan los datos de las cámaras (2 en el caso del robot) y un nodo que devuelve una lista final de todos los individuos reconocidos y su posición a partir de la información de todos los nodos anteriores en un frame (nodo integración de sensores).
+En la figura \ref{fig:sysarch} se muestra la arquitectura planteada en \cite{andrew}, compuesta por un nodo que procesa los datos del \acrshort{lidar}, 1 o varios nodos que procesan los datos de las cámaras (2 en el caso del robot) y un nodo que devuelve una lista final de todos los individuos reconocidos y su posición, fruto de la fusión de la información de todos los nodos anteriores (nodo integración de sensores). El sistema opera \textbf{frame a frame}, es decir, devuelve la información de los individuos en cada frame capturado por las cámaras.
 
 Cada cámara otorga una imagen \acrshort{rgb}, que es procesada por los modelos de detección y reconocimiento, y otra de distancias, que permite realizar una conversión a coordenadas \acrshort{3d}. Cada nodo cámara recibe los datos \textbf{de una sola cámara}.
 
@@ -28,32 +28,28 @@ El sensor \acrshort{lidar} otorga una \gls{pcl} del entorno, que sirve como entr
 
 Finalmente, mediante los datos de todos los nodos, el uso de la coherencia espacio-temporal y la aplicación de métodos como la distancia relativa y/o la identidad probable (definidos en \cite{andrew}), se obtiene la lista final de identidades. La posición \acrshort{3d} de cada individuo se obtiene mediante el contraste de las posiciones devueltas del nodo cámara y el \acrshort{lidar} para dicho individuo.
 
-La integración de sensores propuesta en \cite{andrew} ha demostrado mejorar los resultados, debido a su capacidad de rastrear individuos por medio del \acrshort{lidar} fuera del ángulo de visión de las cámaras (cada una con un rango de visión horizontal de 57º), lo que otorga detecciones robustas y persistentes en el tiempo.
+%La integración de sensores propuesta en \cite{andrew} ha demostrado mejorar los resultados, debido a su capacidad de rastrear individuos por medio del \acrshort{lidar} fuera del ángulo de visión de las cámaras (cada una con un rango de visión horizontal de 57º), lo que otorga detecciones robustas y persistentes en el tiempo.
 
 \subsection{Nodo cámara}
 \label{sec:basearch}
 
-\begin{figure}[hp!]
+\begin{figure}[tbp]
     \centering
     \includegraphics[width=0.8\linewidth]{imagenes/CAMNOD.jpg}
     \caption{Nodo cámara. Figura extraída de \cite{andrew}}
     \label{fig:camnod}
 \end{figure}
 
-En la figura \ref{fig:camnod} se muestra el flujo del nodo cámara.
-
-El nodo cámara recibe la información de un frame \acrshort{rgb} de una de las cámaras, que es procesado por 2 modelos de detección, uno destinado a rostros (YuNet en la figura \ref{fig:camnod}) y el otro a cuerpos (YOLO en la figura \ref{fig:camnod}). Se obtienen las \glspl{bbox} de los rostros y cuerpos detectados, que se comparan para asegurar que cada recorte facial se encuentra contenido en cada recorte corporal.
+En la figura \ref{fig:camnod} se muestra el flujo del nodo cámara. Dicho nodo recibe la información de un frame \acrshort{rgb} de una de las cámaras, que es procesado por 2 modelos de detección, uno destinado a rostros (YuNet en la figura \ref{fig:camnod}) y el otro a cuerpos (YOLO en la figura \ref{fig:camnod}). Se obtienen las \glspl{bbox} de los rostros y cuerpos detectados, que se comparan para asegurar que cada recorte facial se encuentra contenido en cada recorte corporal.
 
 Tras comprobar que cada cara detectada se corresponde con un cuerpo, se procede al reconocimiento facial (ArcFace en la figura \ref{fig:camnod}) y corporal (OSNet en la figura \ref{fig:camnod}), que devuelven un vector con las características representativas para un individuo (o \gls{embedding}).
 
-Una vez obtenidos los \glspl{embedding} de cada usuario, se calcula la \textbf{distancia} de dicho vector con todos los vectores (sujetos) guardados en la base de datos, este cálculo se realiza mediante el algoritmo de \textbf{distancia de cosenos}, que otorga el grado de similitud entre dos vectores \cite{andrew}. Como resultado, se obtiene una lista ordenada de los sujetos según el grado de similitud.
-
-La identidad del individuo puede tomarse como la primera entrada de la lista de sujetos (es decir, la identidad más parecida), o puede procesarse la lista por medio de los métodos de distancia relativa y/o identidad probable en el nodo integración de sensores. Estos dos posibles comportamientos pueden escogerse con un valor del parámetro \textit{top\_k} de 1 o mayor que 1 respectivamente.
+Una vez obtenidos los \glspl{embedding} de cada usuario, se calcula la \textbf{distancia} de dicho vector con todos los vectores (sujetos) guardados en la base de datos, este cálculo se realiza mediante el algoritmo de \textbf{distancia de cosenos}, que otorga el grado de similitud entre dos vectores \cite{andrew}. Como resultado, se obtiene una lista ordenada de los sujetos según el grado de similitud. La identidad del individuo puede tomarse como la primera entrada de la lista de sujetos (es decir, la identidad \textit{a priori} más parecida) o puede procesarse y obtener la entidad por medio de algoritmos más avanzados (en \cite{andrew} se proponen los métodos de distancia relativa e identidad probable).
 
 \subsection{Arquitectura extendida}
 \label{sec:finalsys}
 
-\begin{figure}
+\begin{figure}[tbp]
     \centering
     \includegraphics[width=1\linewidth]{imagenes/FINALSYS.jpg}
     \caption{Arquitectura del sistema extendido, los módulos en negrita se corresponden con los nuevos componentes desarrollados.}
@@ -81,7 +77,7 @@ Finalmente, las predicciones de cada nodo cámara se contrastan dentro del nodo 
 
 %coherente con la información otorgada por los nodos (ejemplo: dos cámaras que no están solapadas no pueden reconocer a una misma persona en el mismo instante temporal).
 
-A continuación, se exponen en detalle los componentes recién comentados.
+A continuación, se exponen en detalle los componentes recién comentados. El \textbf{diseño e implementación del módulo de reconocimiento adaptativo} se detalla en el apéndice \ref{chap:adaptrecon}. Se ha decidido así, puesto que no incluye ninguna mejora significativa respecto a los modelos propuestos en \cite{Erik,CESAR}.
 
 \section{Procesamiento de video}
 \label{sec:video}
@@ -174,118 +170,6 @@ Se aplica el método húngaro para asociar detecciones entre el frame anterior y
 
 Al final de cada iteración del módulo, se añaden las nuevas detecciones a la lista de entidades. Los nuevos casos se corresponden con asignaciones de \gls{bbox} que no se corresponden con ninguna entidad antes registrada.
 
-\section{Reconocimiento adaptativo}
-
-\begin{figure}[tb]
-    \centering
-    \includegraphics[width=1\linewidth]{imagenes/ADAPTSYS.jpg}
-    \caption{Diseño del módulo adaptativo}
-    \label{fig:ADAPTSYS}
-\end{figure}
-
-El módulo de reconocimiento adaptativo se encarga de devolver las predicciones y actualizar el conocimiento existente a partir de la lista de entidades generada (ver sección \ref{sec:video}).
-
-En la figura \ref{fig:ADAPTSYS} se muestra la arquitectura de este módulo, cuyos componentes se han diseñado partiendo de \cite{Erik, CESAR} como referencia.
-
-El módulo de reconocimiento adaptativo se compone de los siguientes componentes:
-\begin{itemize}
-    \item \textbf{Módulo de valoración}: cada comité asigna una puntuación a la secuencia de \glspl{embedding} (o vectores) de un individuo.
-    \item \textbf{Módulo de reconocimiento}: devuelve una decisión de reconocimiento basándose en las puntuaciones de cada comité.
-    \item \textbf{Módulo de actualización}: se encarga de crear un nuevo comité si se detecta un usuario nuevo (\textit{unknown}) o de crear una nueva \acrshort{svm} para registrar los cambios del usuario existente (\textit{drift}).
-    \item \textbf{Módulo de limitación}: reemplaza la \acrshort{svm} que menos aporta a un comité, en el caso de que este exceda el límite establecido.
-\end{itemize}
-
-El módulo de reconocimiento adaptativo recibe la secuencia de vectores de un individuo, que son procesados por el \textbf{módulo de valoración}, que devuelve las puntuaciones de cada comité, dichas puntuaciones se ordenan de menor a mayor, de forma que la mejor puntuación se corresponde (supuestamente) con el comité del individuo. Las puntuaciones son recibidas por el \textbf{módulo de reconocimiento}, que determina, mediante el \acrfull{evt}, si el comité corresponde realmente al individuo (conocido) o no (desconocido). El \textbf{módulo de actualización} recibe la decisión y agrega una nueva \acrshort{svm}, entrenada con la secuencia de vectores como positivos y con muestras guardadas del resto de individuos como negativos, en caso de determinar que el individuo es conocido, en caso contrario, se crea el nuevo comité con una \acrshort{svm} entrenada del mismo modo. Finalmente, si el comité se excede en el límite fijado de \acrshort{svm}s, el \textbf{módulo de limitación} determina la \acrshort{svm} que menos aporta a dicho comité. En la figura \ref{fig:ADAPTSYS} se muestran el flujo comentado con todos los módulos.
-
-\subsection{Módulo de valoración}
-\label{sec:val}
-
-Es el módulo encargado de devolver una puntuación comparable de cada individuo que será aplicada en la decisión de reconocimiento.
-
-Por cada secuencia de entrada, siendo esta una secuencia de \textit{\gls{embedding}} (figura \ref{fig:ADAPTSYS}), se calculan las \textbf{puntuaciones (scores) para cada comité}. La puntuación de un comité es a su vez un valor consensuado entre los resultados de las predicciones de las \acrshort{svm} que lo conforman, el criterio de consenso (o de fusión) se basa en un percentil (generalmente la media). Aplicar percentiles es igual a escoger un conjunto amplio o reducido de \acrshort{svm}, ya que pueden existir \acrshort{svm} dañinas para el comité (ejemplo: corresponden a otra persona), los percentiles ayudan a tolerar los resultados de dichas \acrshort{svm}.
-
-Para cada comité, se ejecutan las siguientes funciones:
-\begin{itemize}
-    \item \textbf{FDF} (Frame Decision Function): se calculan los scores de cada \acrshort{svm} contra \textbf{un frame} de la secuencia y se fusionan las salidas (o puntuaciones) en una única puntuación, que representa la puntuación del comité para dicho frame. Antes de la fusión, se aplica la normalización Euclidiana a cada puntuación con el fin de hacerlas comparables. Siendo $x_{i}$ un \textit{\gls{embedding}} o la salida de una \acrshort{svm}, se obtiene el vector normalizado $s_{i}$ como sigue en la ecuación \ref{eq:l2norm}.
-    \item \textbf{SDF} (Sequence Decision Function): se encarga de fusionar todas las puntuaciones de la anterior función para obtener un único resultado que representa a la \textbf{secuencia}.
-\end{itemize}
-
-\begin{equation}
-    s_{i} = \frac{x_{i}}{\left\| x_{i}\right\|_{2}} \label{eq:l2norm}
-\end{equation}
-
-\subsection{Módulo de reconocimiento}
-\label{sec:reckon}
-
-Este módulo determina si la entidad detectada se corresponde a un individuo previamente reclutado o a una entidad \textbf{desconocida}.
-
-Para tomar la decisión de si un sujeto es o no un desconocido, se ha implementado un algoritmo basado en el teorema estadístico \acrfull{evt} o teorema de Fisher–Tippett–Gnedenko, que permite \textbf{detectar extremos} en distribuciones estadísticas. Dicho teorema dicta que la distribución de los valores máximos o mínimos sigue una de las siguientes 3 distribuciones: Gumbel, Frechet, Weibull \cite{rudd2017extreme, scorenorm, Erik}. Gumbel y Frechet son distribuciones \textbf{no acotadas}, mientras que Weibull es una distribución acotada. Para sistemas de reconocimiento que calculan las distancias o similitudes entre puntuaciones (ejemplo: valores devueltos por una \acrshort{svm} para una clase), la distribución de puntos para cada clase sigue una distribución de Weibull, ya que los valores se encuentran acotados \cite{scorenorm}.
-
-Siendo \textit{f(x)} la distribución de puntuaciones de los comités \textbf{que no corresponden con el sujeto}, se analiza si la puntuación del comité que se corresponde supuestamente con el sujeto es un \textbf{extremo} de la distribución \textit{f(x)}, en dicho caso, la entidad se reconoce claramente diferenciada con el resto, en caso contrario, se denota como \textbf{desconocido}.
-
-\begin{figure}
-    \centering
-    \includegraphics[width=1\linewidth]{imagenes/FITS.jpg}
-    \caption{Ejemplos de distribuciones de Weibull y como el umbral (Tw) distingue entre un desconocido (\textit{unknown} y una deriva (\textit{drift})).}
-    \label{fig:FITS}
-\end{figure}
-
-Se calcula la probabilidad de pertenencia a la distribución de la puntuación en cuestión, es decir, la salida de la función \acrfull{pdf} de Weibull. Si la probabilidad se encuentra por debajo de un \textbf{umbral} (Tw en la figura \ref{fig:ADAPTSYS}), entonces se trata de un \textbf{extremo} \cite{Erik, scorenorm}. En la situación de la derecha de la figura \ref{fig:FITS} se muestra un caso en el que la puntuación ganadora es un extremo, al contrario de la gráfica de la izquierda.
-
-Las puntuaciones de todos los comités se ordenan por su valor (función sort de la figura \ref{fig:ADAPTSYS}), siendo la mejor puntuación la primera de la lista, es decir, la más baja (en la sección \ref{sec:init} se explica el porqué) y el resto de puntuaciones las no coincidentes.
-
-El algoritmo expuesto otorga un conocimiento robusto, ya que convierte puntuaciones (o scores) concretos de una \acrshort{svm} en probabilidades que siguen una teoría estadística. Esto permite la \textbf{fusión de datos de diferentes fuentes} como nuevas \acrshort{cnn} de reconocimiento o nuevas cámaras diferentes a las Kinect en el sistema \cite{scorenorm}.
-
-\subsection{Módulo de actualización}
-Es el módulo que implementa la actualización de los comités tras el reconocimiento realizado en la anterior función.
-
-Según la entidad predicha, se toma una cierta decisión de actualización. Si el sujeto es \textbf{desconocido}, se crea un nuevo comité con una \acrshort{svm} que se añade al registro. La \acrshort{svm} se entrena con las muestras (\textit{\glspl{embedding}} de caras o cuerpos) obtenidas del propio sujeto como conjunto de positivos, mientras que el conjunto de negativos se compone de muestras aleatorias extraídas directamente de la base de datos. Si el sujeto es \textbf{conocido}, se agrega una nueva \acrshort{svm} al comité, entrenada con las muestras del propio individuo como positivos y como negativos un muestreo aleatorio de todas las entidades \textbf{excepto el propio sujeto}.
-
-Una condición necesaria para que este módulo se ejecute es que la secuencia de entrada \textbf{contenga un mínimo de \textit{\glspl{embedding}} para la inicialización de la \acrshort{svm}}, dicho mínimo es fijado por el operador de antemano.
-
-Otra precondición, que aplica a las entidades conocidas, es comprobar si las muestras a añadir son lo suficientemente representativas. Las puntuaciones cerca del cero indican que las muestras se encuentran en el borde de lo que es nuevo y de lo que la \acrshort{svm} ya conoce. Si la mediana de las puntuaciones de los \glspl{embedding} para un comité se encuentra por debajo de un umbral (\textit{update\_th}), se procede a seleccionar las muestras más cercanas al 0 (función \textit{sample\_selection} en la figura \ref{fig:ADAPTSYS}), que compondrán el conjunto de positivos de la \acrshort{svm}.
-
-\textbf{El tamaño del conjunto de positivos y de negativos es prefijado por el operador}, en la sección \ref{seq:paramtunning} se evalúa su impacto en el rendimiento.
-
-\subsection{Módulo de limitación}
-\label{seq:limmod}
-
-Dicho módulo se encuentra inherente al de actualización. Si un comité excede un número prefijado de \acrshort{svm} almacenadas, se toma una decisión para eliminar una de las \acrshort{svm} según los siguientes criterios.
-
-\subsubsection{Diversidad}
-
-Este criterio devuelve un valor que representa el grado de diferenciación de una \acrshort{svm} respecto a su comité.
-
-Se escoge un conjunto aleatorio de \textit{\glspl{embedding}} de entre todos los comités y se calcula la puntuación de cada \acrshort{svm} del comité. Posteriormente, se acumula el producto de los signos entre scores y se multiplica por -1, de esta forma, el \acrshort{svm} más discordante (es decir, el único que devuelve un resultado contrario respecto a una amplia mayoría) obtendrá un mayor valor de este criterio y viceversa. El valor de diversidad de cada \acrshort{svm} se calcula como en \cite{Erik}. Dado un conjunto de \glspl{embedding} \{$x_{0}$, $x_{1}$, ..., $x_{Q-1}$\} y un comité $e^{k}$ con N \acrshort{svm}s \{$h^{k}_{0}$, $h^{k}_{1}$, ..., $h^{k}_{N-1}$\}, $D(h^{k}_{i})$ se calcula como sigue en la ecuación \ref{eq:diversity}, donde \textit{sgn} es la función \textit{sign}, que devuelve 1 o -1 dependiendo del signo del número real.
-
-\begin{align}
-    D(h_{i}^{k})= \sum_{j=0;j\neq i}^{N-1} d(h_{i}^{k}, h_{j}^{k}) \label{eq:diversity} \\
-    d(h_{i}^{k}, h_{j}^{k}) = -\frac{1}{Q}\sum_{q=0}^{Q-1} sgn(h_{i}^{k}(x_{q})) \cdot sgn(h_{j}^{k}(x_{q}))
-\end{align}
-
-\subsubsection{Coherencia}
-
-Este criterio viene a determinar la precisión de una \acrshort{svm} en el reconocimiento respecto a las salidas de su comité.
-
-El valor de coherencia determina cuantas veces una \acrshort{svm} devuelve el mismo signo que el resultado consensuado del comité para un conjunto de \textit{\glspl{embedding}}. Si los signos coinciden, se suma 1 al valor de coherencia, en caso contrario, se resta 1 a dicho valor, de forma que un valor alto se corresponde con una buena precisión. En el momento de creación de una \acrshort{svm}, este valor se inicializa a 0 y se va acumulando. Dado un comité ganador $e^{k}$ de N \acrshort{svm}s \{$h^{k}_{0}$, $h^{k}_{1}$, ..., $h^{k}_{N-1}$\} y un conjunto de \textit{\glspl{embedding}} \{$x_{0}$, $x_{1}$, ..., $x_{Q-1}$\}, $C_{k,i}$ se calcula como sigue en \cite{CESAR} (ecuación \ref{eq:coherence}), donde $1[\cdot]$ representa a un condicional que devuelve 1 si la condición se cumple o 0 en caso contrario.
-
-\begin{align}
-    C_{k,i} = 1[sgn(e^{k}) == sgn(\bar{y})] - 1 [sgn(e^{k}) \neq sgn(\bar{y})] \label{eq:coherence} \\
-    \bar{y} = \frac{1}{Q} \sum_{q=1}^{Q-1} h_{n}^{k} (x_{q})
-\end{align}
-
-\subsubsection{Favorabilidad}
-
-Finalmente, los dos criterios anteriores se fusionan en un valor llamado \textbf{índice de favorabilidad}
-
-La fórmula para calcular dicho índice es la misma que en \cite{CESAR}. Dado el valor de coherencia $C_{k,i}$ de la \acrshort{svm} $h^{i}$ del comité ganador $e^{k}$ y el valor de diversidad $D(h^{m})$, la favorabilidad se calcula como sigue en la figura \ref{eq:fav}, donde son $\alpha$ y $\gamma$ constantes que ajustan el peso de la coherencia y la diversidad respectivamente.
-
-\begin{equation}
-    F(h_{i}^{k}) = \alpha C_{k,i} + \gamma D(h_{i}^{k}) \label{eq:fav}
-\end{equation}
-
-Como en los dos criterios anteriores, cuanto mayor sea el valor devuelto, mejor se valora la \acrshort{svm}. De este modo, la \acrshort{svm} con el menor valor de dicho índice \textbf{se elimina del comité}.
-
 \section{Personas registradas}
 \label{sec:initarch}
 
@@ -305,9 +189,7 @@ La base de datos de personas registradas se conforma mediante un proceso de \tex
 
 %fundamental, debido a que la \acrshort{svm} inicial es la que define la identidad del comité. Si dicha \acrshort{svm} está compuesta por muestras de baja calidad (ejemplo: caras borrosas o parcialmente ocluidas), entonces el comité \textbf{no se identificará correctamente consigo mismo} y, por lo tanto, generará \textbf{mayor confusión} a la hora de aplicar Weibull, es decir, \textbf{se generarán más desconocidos}.
 
-En esta primera fase del sistema, se crean los registros que representarán a los individuos iniciales.
-
-Como se ha demostrado en \cite{Erik}, el proceso de inicialización es \textbf{crítico} y depende de la calidad de las muestras escogidas. Las muestras borrosas o parcialmente ocluidas agregan confusión a las \acrshort{svm}, que devuelven puntuaciones similares al no distinguir correctamente las características del individuo.
+En esta primera fase del sistema, se crean los registros que representarán a los individuos iniciales. Como se ha demostrado en \cite{Erik}, el proceso de inicialización es \textbf{crítico} y depende de la calidad de las muestras escogidas. Las muestras borrosas o parcialmente ocluidas agregan confusión a las \acrshort{svm}, que devuelven puntuaciones similares al no distinguir correctamente las características del individuo.
 
 En este proyecto se han probado 2 aproximaciones, una \textbf{semisupervisada}, es decir, con intervención del operador, y la otra \textbf{no supervisada}, en la que el sistema se inicializa de manera completamente autónoma. En ambos modos, se requieren de mínimo \textbf{5 muestras} del individuo, acorde a las pruebas de \cite{Erik}.
 

@@ -103,7 +103,7 @@ Las diferencias y similitudes clave a la hora de comparar la familia Jetson con 
 
 \begin{figure}[tbp]
     \centering
-    \includegraphics[width=1\linewidth]{imagenes/memcpy.png}
+    \includegraphics[width=0.75\linewidth]{imagenes/memcpy.png}
     \caption{Arquitectura de interconexión de una \acrshort{gpu} discreta y una \acrshort{gpu} integrada. Figura extraída de \cite{zerocpy}}
     \label{fig:memcpy}
 \end{figure}
@@ -111,7 +111,7 @@ Las diferencias y similitudes clave a la hora de comparar la familia Jetson con 
 \section{Hardware}
 \label{sec:hw}
 
-\subsection{Cámaras RGBD}
+\subsection{Cámaras \acrshort{rgbd}}
 Para nutrir al sistema de imágenes se cuenta con las cámaras Kinect de Microsoft. Dichas cámaras otorgan una imagen \acrfull{rgb} más una imagen de profundidad (depth).
 
 Para este proyecto, se cuenta con dos de estas cámaras, cada una con una cobertura de visión de 57º, lo que otorga un rango total de 117º, asumiendo que no existen solapes entre las cámaras.
@@ -135,7 +135,7 @@ Cualquier entorno de desarrollo de \acrshort{ros} está compuesto por \textbf{pa
 
 \begin{figure}[tbp]
     \centering
-    \includegraphics[width=0.5\linewidth]{imagenes/mastel.png}
+    \includegraphics[width=0.75\linewidth]{imagenes/mastel.png}
     \caption{Arquitectura maestro-esclavo, figura extraída de \cite{mastel}}
     \label{fig:mastel}
 \end{figure}
@@ -143,10 +143,6 @@ Cualquier entorno de desarrollo de \acrshort{ros} está compuesto por \textbf{pa
 En \acrshort{ros} 1, se sigue una arquitectura \textbf{maestro-esclavo}. El maestro (denominado \acrshort{ros}\_MASTER) registra a todos los publicadores/subscriptores de la red, de forma que si un nodo quiere suscribirse/publicar un tópico, este se comunica con el maestro para registrar/conocer la manera de conectarse a dicho tópico \cite{mastel}. El principal inconveniente es que el nodo central es un \textbf{punto único de fallo} (si el maestro deja de estar disponible, todo el sistema falla). \acrshort{ros} 2 presciende de un nodo maestro, por lo que no sufre de dicha limitación. La figura \ref{fig:mastel} describe el comportamiento descrito.
 
 Existe una amplia variedad de distribuciones de este software según la versión del \acrshort{so}. Para este proyecto, se han empleado las distribuciones Noetic, Humble y Rolling, para Ubuntu 20.04, 22.04 y 24.04 respectivamente, el Summit\_XL tiene la distribución Melodic, ya que tiene la versión 18.04 de Ubuntu. Melodic y Noetic corresponden a \acrshort{ros} 1 (descontinuado), mientras que Humble y Rolling pertenecen a \acrshort{ros} 2.
-
-\subsubsection{Rosbag}
-
-Existe una herramienta del ecosistema \acrshort{ros} que graba y reproduce los datos capturados de la ejecución de un sistema \acrshort{ros} en un momento concreto en el tiempo. Los \glspl{dataset} creados en \cite{andrew} se construyeron partiendo de un fichero rosbag, que contiene toda la información generada por los diferentes sensores. En este proyecto se emplearán dichos ficheros rosbag para reproducir las pruebas en tiempo real.
 
 \subsection{Librerías de Python}
 Se procede a comentar las librerías de Python más importantes a la hora de desarrollar el código del proyecto (todas las librerías descritas son de \textbf{código abierto}):
