@@ -89,7 +89,7 @@ Es importante destacar que los \glspl{rt} de OpenVINO y TensorRT soportan precis
 
 \input{contenido/tables/tests/tabequips}
 
-En la tabla \ref{tab:equips} se muestran los resultados de latencia (en milisegundos) y de la métrica \textit{F1\_score} para los modelos de detección y \textit{precision} para los modelos de reconocimiento (ver métricas en el apéndice \ref{sec:modeleval}). Cada resultado refleja la media y la desviación típica de \textbf{5 ejecuciones}, se ejecuta un test previo a modo de calentamiento para cada modelo.
+En la tabla \ref{tab:equips} se muestran los resultados de latencia (en milisegundos) y de la métrica \textbf{\textit{F1\_score}} para los modelos de detección y \textbf{\textit{precision}} para los modelos de reconocimiento (ver métricas en el apéndice \ref{sec:modeleval}). Cada resultado refleja la media y la desviación típica de \textbf{5 ejecuciones}, se ejecuta un test previo a modo de calentamiento para cada modelo.
 
 En el caso del modelo YOLO, los 2 equipos de sobremesa y la Jetson AGX Thor se quedan por debajo de 30 ms en la versión de OpenVINO, mientras que la latencia en el resto de dispositivos es significativamente mayor. Es interesante como entre el portátil y el PC del laboratorio hay \textbf{8 milisegundos de diferencia} a favor del último, siendo ambas \acrshort{cpu}s de la misma generación (Intel Core i7).
 

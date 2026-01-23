@@ -30,7 +30,7 @@ Se inicializa el sistema con el nodo integración de sensores, el nodo \acrshort
 \begin{itemize}
     \item \textit{\textbf{Det precision} (det\_p)}: es la proporción de personas detectadas en la posición correcta (campo \textit{position} del \gls{dataset}) respecto al total de personas detectadas.
     \item \textit{\textbf{Det recall} (det\_r)}: representa la proporción de personas detectadas en la posición correcta respecto al total de personas en el \gls{dataset}.
-    \item \textit{\textbf{Ident F1 score} (idf1)}: corresponde con el \textit{F1\_score} global de los modelos de reconocimiento.
+    \item \textit{\textbf{Ident F1 score} (idf1)}: corresponde con el \textit{F1\_score} global de los modelos de reconocimiento (ver apéndice \ref{subsec:recon} para más información).
     \item \textit{\textbf{Ident precision} (idp)}: corresponde con la precisión global de los modelos de reconocimiento.
 \end{itemize}
 
@@ -73,7 +73,7 @@ Debido a que el rosbag solo contiene los datos de 2 cámaras, para realizar la p
 
 La tabla \ref{tab:scaleperf} muestra los resultados de los dispositivos en función del número de cámaras del sistema en \textbf{\acrshort{ros} 1}. La columna \textit{Reference} muestra los resultados obtenidos en \cite{andrew}, en el que solo se registraron datos del sistema funcionando con 2 cámaras.
 
-Atendiendo a los datos de precisión en detección y reconocimiento, el \textit{recall} indica que el número de positivos ha aumentado en los equipos de sobremesa respecto a la referencia y al mismo tiempo el número de negativos, como indica la ligera caída de la precisión en contra de los dispositivos del proyecto.
+Atendiendo a los datos de precisión en detección y reconocimiento, el \textit{det\_r} indica que el número de positivos ha aumentado en los equipos de sobremesa respecto a la referencia y al mismo tiempo el número de negativos, como indica la ligera caída de la precisión en contra de los dispositivos del proyecto.
 
 %La subida en el \textit{recall} demuestra que el sistema tiene una mayor capacidad de procesamiento, en cierta medida influida por la potencia de los procesadores Intel Core i7 respecto a Core i5 (equipo de referencia).
 
@@ -81,9 +81,9 @@ La precisión en la detección empeora al aumentar el número de cámaras,
 
 %a que el nodo integrador debe de fusionar los datos procedentes de todos los sensores, al aumentar su número también se aumenta la cantidad de procesamiento. Por lo tanto, más tiempo se demorará en devolver una predicción, que se emparejará con el frame del \gls{dataset} con el mismo \gls{timestamp}, que corresponde a un instante real \textbf{anterior}.
 
-El recall también empeora al aumentar la cantidad de cámaras, debido a la alta demanda de cómputo del sistema (para 10 cámaras, se deben de procesar un total de 40 redes neuronales en 100 milisegundos) lo que hace que se pierdan los frames que no tengan espacio en la cola. Sin embargo, la caída de rendimiento en ambos dispositivos \textbf{no es crítica} y permite atender a la mayoría de las peticiones, aunque los resultados reflejan una clara congestión en los nodos.
+El \textit{det\_r} también empeora al aumentar la cantidad de cámaras, debido a la alta demanda de cómputo del sistema (para 10 cámaras, se deben de procesar un total de 40 redes neuronales en 100 milisegundos) lo que hace que se pierdan los frames que no tengan espacio en la cola. Sin embargo, la caída de rendimiento en ambos dispositivos \textbf{no es crítica} y permite atender a la mayoría de las peticiones, aunque los resultados reflejan una clara congestión en los nodos.
 
-La precisión de los reconocimientos no baja del \textbf{80\%} en todos los casos, lo que demuestra que los modelos de reconocimiento funcionan de manera eficaz ante un enorme estrés del sistema. El \textit{idf1} depende del \textit{recall} de detección, por lo que es de esperar un valor bajo, compensado en cierta medida por la precisión en el reconocimiento.
+La precisión de los reconocimientos no baja del \textbf{80\%} en todos los casos, lo que demuestra que los modelos de reconocimiento funcionan de manera eficaz ante un enorme estrés del sistema. El \textit{idf1} depende del \textit{det\_r}, por lo que es de esperar un valor bajo, compensado en cierta medida por la precisión en el reconocimiento.
 
 \input{contenido/tables/tests/scaleresources.tex}
 
@@ -91,7 +91,7 @@ La tabla \ref{tab:scaleresources} muestra el uso de recursos durante la prueba p
 
 Los recursos de la \acrshort{gpu} se llevan al límite con 10 cámaras. La gráfica del portátil (Ampere) frente a la del PC del laboratorio (Turing) es capaz de gestionar mejor la memoria (debido a TODO: \dots). Por otro lado, la \acrshort{gpu} Ampere es capaz de lidiar mejor con la carga, debido a TODO: el número de \glspl{sm} seguramente.
 
-El uso elevado de recursos explica, junto a otros factores, la bajada en el recall cuando se ejecutan 10 nodos cámara simultáneamente, más el nodo \acrshort{lidar} y el integrador.
+El uso elevado de recursos explica, junto a otros factores, la bajada en el \textit{det\_r} cuando se ejecutan 10 nodos cámara simultáneamente, más el nodo \acrshort{lidar} y el integrador.
 
 \input{contenido/tables/tests/scaleros2.tex}
 
@@ -99,9 +99,9 @@ En la tabla \ref{tab:scaleros2} se muestra el rendimiento del sistema en \textbf
 
 En estos dispositivos no es posible instalar \acrshort{ros} Noetic, al menos para poder contar con las últimas versiones de las librerías. Por los motivos comentados en la sección \ref{subsec:ROS2}, el sistema en \acrshort{ros} 2 no puede ejecutar el nodo \acrshort{lidar}, por lo que los resultados mostrados solo tienen en cuenta los nodos cámara.
 
-El recall de las detecciones se muestra claramente inferior respecto a los anteriores resultados, ya que el \acrshort{lidar} otorgaba cobertura completa a la reducida visión de las cámaras de aproximadamente 117º. Las 3 Jetson logran superar el valor de referencia en esta métrica, lo que demuestra el excelente rendimiento de las \acrshort{gpu}, capaces de compensar las limitaciones de una \acrshort{cpu} de \acrshort{arm} respecto a un Intel Core i5 (procesador del equipo de referencia).
+El \textit{det\_r} se muestra claramente inferior respecto a los anteriores resultados, ya que el \acrshort{lidar} otorgaba cobertura completa a la reducida visión de las cámaras de aproximadamente 117º. Las 3 Jetson logran superar el valor de referencia en esta métrica, lo que demuestra el excelente rendimiento de las \acrshort{gpu}, capaces de compensar las limitaciones de una \acrshort{cpu} de \acrshort{arm} respecto a un Intel Core i5 (procesador del equipo de referencia).
 
-La precisión en la detección empeora en los dispositivos Jetson respecto a los de sobremesa cuando se ejecutan 5 cámaras simultáneamente. Debido a la menor capacidad de procesamiento de la Jetson Orin Nano, es de esperar que muchos de los mensajes procesados por los nodos cámara llegan tarde al nodo integrador, que devuelve una posición desactualizada respecto al frame de referencia, por lo tanto, se asume la detección como \textbf{errónea}. TODO: y en la Jetson AGX Thor?, a pesar de la notable caída en la precisión, que es de la misma magnitud que en los dispositivos de sobremesa, el \textit{recall} se mantiene constante e incluso mejora con 5 cámaras (TODO: querrá decir que va sobrada).
+La precisión en la detección empeora en los dispositivos Jetson respecto a los de sobremesa cuando se ejecutan 5 cámaras simultáneamente. Debido a la menor capacidad de procesamiento de la Jetson Orin Nano, es de esperar que muchos de los mensajes procesados por los nodos cámara llegan tarde al nodo integrador, que devuelve una posición desactualizada respecto al frame de referencia, por lo tanto, se asume la detección como \textbf{errónea}. TODO: y en la Jetson AGX Thor?, a pesar de la notable caída en la precisión, que es de la misma magnitud que en los dispositivos de sobremesa, el \textit{det\_r} se mantiene constante e incluso mejora con 5 cámaras (TODO: querrá decir que va sobrada).
 
 \input{contenido/tables/tests/scaleresourcesros2.tex}
 

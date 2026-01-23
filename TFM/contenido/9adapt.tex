@@ -26,7 +26,7 @@ Las pruebas siguen el mismo procedimiento que el expuesto en la sección \ref{se
 
 \begin{itemize}
     \item Los frames se procesan \textbf{por bloques}, de forma que se agrupan las \glspl{bbox} según el individuo mediante la técnica de procesamiento de video (sección \ref{sec:video}), se obtienen los \glspl{embedding} por medio de ArcFace y se aplica el reconocimiento adaptativo para reconocer a las personas de la secuencia.
-    \item Se devuelven las métricas de \textbf{\textit{precision}, \textit{recall}} y \textbf{\textit{F1\_score}}, en vez de únicamente la métrica \textit{precision} para evaluar los reconocimientos.
+    \item Se devuelven las métricas de \textbf{\textit{precision}, \textit{recall}} y \textbf{\textit{F1\_score}}, en vez de únicamente la métrica \textit{precision} para evaluar los reconocimientos. En el apéndice \ref{subsec:recon} se explican estas métricas en detalle.
 \end{itemize}
 
 \section{Ajuste de parámetros del aprendizaje y reconocimiento}
@@ -85,14 +85,26 @@ En cuanto al parámetro \textbf{\textit{max\_svm}}, los resultados conducen a la
 %TODO:\textbf{Umbral de actualización}: valor que se compara frente a la fusión de scores de una secuencia. El rango probado es (0.1 0.3)
 
 \subsection{Discusión}
+\label{sec:discusparamtunning}
 
-Los resultados de precisión en el modo \textit{Open-World} son claramente \textbf{inferiores} al modo \textit{Open-Set}. El principal factor de esta caída es la existencia de \textbf{comités duplicados} para un individuo, lo que aumenta las probabilidades de otorgar un reconocimiento \textbf{desconocido}. Para colmo, cabe la posibilidad de que las \acrshort{svm} que pertenecen a los comités duplicados se entrenen con muestras del \textbf{mismo individuo} en los conjuntos \textbf{positivo y negativo}, lo que podría \textbf{anular el poder discriminatorio} de dichas \acrshort{svm}, lo que implica en una \textbf{pérdida de precisión}.
+Los resultados de precisión en el modo \textit{Open-World} son claramente \textbf{inferiores} al modo \textit{Open-Set}.
+
+%TODO: no lo creo, sino como se explica la subida en el recall???? Creo q el sistema es capaz de crear comités que se ajusten mejor a las situaciones concretas del individuo que con el comité original no sucede (ejemplo: una determinada orientación de la cara), esto quiere decir que . El principal factor de esta caída es la existencia de \textbf{comités duplicados} para un individuo, lo que aumenta las probabilidades de otorgar un reconocimiento \textbf{desconocido}. Para colmo, cabe la posibilidad de que las \acrshort{svm} que pertenecen a los comités duplicados se entrenen con muestras del \textbf{mismo individuo} en los conjuntos \textbf{positivo y negativo}, lo que podría \textbf{anular el poder discriminatorio} de dichas \acrshort{svm}, lo que implica en una \textbf{pérdida de precisión}. Por otro lado, el \textit{recall} aumenta, precisamente por la creación de nuevos comités, que a.
 
 Por los motivos ya comentados, es necesario implementar un método que permita \textbf{asociar comités duplicados} y/o mejorar el reconocimiento por medio del \acrfull{evt}.
 
 El valor del parámetro \textbf{\textit{Tw}} es \textbf{clave} para el correcto funcionamiento del sistema, mientras que en el modo \textit{Open-Set} un valor bajo de este parámetro resulta en un balance muy favorable para la precisión y el \textit{recall}, en el modo \textit{Open-World} es \textbf{perjudicial} para ambas métricas, debido a que fomenta la creación de comités duplicados. En cambio, un \textbf{valor alto} de este parámetro en el modo \textbf{\textit{Open-World}}, aunque a priori sea negativo para la precisión, es la \textbf{mejor opción} para reducir la creación de comités duplicados.
 
 Uno de los objetivos del sistema es obtener la \textbf{mayor diversidad intra-comité} y la \textbf{mayor especificidad inter-comité}, de esta forma, el comité responde a la mayor variedad de situaciones de su entidad, mientras que no se activa ante otros individuos. En este sistema las \acrshort{svm} creadas \textbf{son muy parecidas entre sí}, dando lugar a poca información nueva del individuo, esto se debe principalmente al \textbf{\textit{step\_size}} introducido en las pruebas, que hace que se incluyan los mismos frames entre \acrshort{svm}s. Esto podría explicar el valor de 3 en el parámetro \textbf{\textit{max\_svm}} en la tabla \ref{tab:owparams}.
+
+Finalmente, acorde a los resultados obtenidos en esta sección, se establecen los siguientes valores de parámetros que aplican para el resto de pruebas de este capítulo:
+\begin{itemize}
+    \item \textbf{\textit{max\_svm}}: 10
+    \item \textbf{\textit{percent}}: 0.25
+    \item \textbf{\textit{nneg}}: 50
+\end{itemize}
+
+Debido a la influencia del parámetro \textbf{\textit{Tw}} en los resultados, se seguirán realizando pruebas con diferentes valores del mismo.
 
 %Un \textbf{percentil alto} encajaría si las SVM son \textbf{específicas} entre sí (la mayoría de las SVM devuelven match). En cambio, un \textbf{bajo percentil} funcionaría con unas SVM \textbf{más diversas} (se espera que la minoría de las SVM den un resultado coincidente).
 
@@ -105,53 +117,62 @@ La calidad de la función de reconocimiento viene determinada por el número de 
 
 \section{Métodos de inicialización del sistema}
 
-La selección de los frames que conforman un nuevo comité es un factor crítico para el correcto funcionamiento del sistema. En esta sección se evalúa el sistema en los modos \textit{Open-Set} y \textit{Open-World} en las 2 técnicas de inicialización vistas en la sección \ref{sec:initieing}, más una adicional que se exponen a continuación:
+La selección de los frames que conforman los comités iniciales es un factor \textbf{crítico} para el correcto funcionamiento del sistema (como se demuestra en \cite{5samples}). En esta sección se evalúa el sistema en los modos \textit{Open-Set} y \textit{Open-World} en las 2 técnicas de inicialización vistas en la sección \ref{sec:initieing}, más una adicional que se exponen a continuación:
 
 \begin{itemize}
-    \item \textbf{Semisupervisada}: los comités se inicializan con muestras (recortes faciales) seleccionadas de antemano por el operador. Es el modo utilizado en las pruebas de la sección \ref{seq:paramtunning}.
-    \item \textbf{No supervisada}: se escoge un momento del video en el que aparece un mínimo de personas simultáneamente y se delega el agrupamiento al módulo de procesamiento de video implementado (ver sección \ref{sec:video}). Para los individuos que no hayan aparecido en ese instante, se ejecuta la prueba y se incluyen en el momento que se reconoce un desconocido (se apoya en la información del \gls{dataset} para asignarle la etiqueta que corresponde).
-    \item \textbf{No supervisada con apoyo del \gls{dataset}}: se escoge un momento del video en el que aparece un mínimo de personas simultáneamente y se agrupan las muestras por individuo con la información del \gls{dataset}. Para los individuos que no hayan aparecido en ese instante, se inicializan sus comités por medio de la técnica semisupervisada. El objetivo de probar esta técnica es establecer una \textbf{línea base} en la que medir el funcionamiento del procesamiento de video y de la inclusión de nuevos usuarios de la técnica no supervisada.
+    \item \textbf{Semisupervisada}: los comités se inicializan con muestras (recortes faciales o \glspl{bbox}) seleccionadas de antemano por el operador. Es el modo utilizado en las pruebas de la sección \ref{seq:paramtunning}.
+    \item \textbf{No supervisada}: se escoge un momento del video en el que aparece un mínimo de personas simultáneamente y se delega el agrupamiento de muestras al \textbf{módulo de procesamiento de video} implementado (ver sección \ref{sec:video}). Para los individuos que no hayan aparecido en ese instante, se ejecuta la prueba y se incluyen durante la operación del sistema (se apoya en la información del \gls{dataset} para asignarle la etiqueta que corresponde).
+    \item \textbf{No supervisada con apoyo del \gls{dataset}}: se escoge un momento del video en el que aparece un mínimo de personas simultáneamente y se agrupan las muestras a partir de la \textbf{información del \gls{dataset}}. Para los individuos que no hayan aparecido en ese instante, se inicializan sus comités por medio de la técnica \textbf{semisupervisada}. El objetivo de probar esta técnica es establecer una \textbf{línea base} en la que medir el funcionamiento del procesamiento de video y de la inclusión de nuevos usuarios de la técnica no supervisada.
 \end{itemize}
-Para ambas técnicas no supervisadas, se tiene que cumplir que el instante del video agrupe un número mínimo de personas y que se pueda extraer un número mínimo de caras para la inicialización. Adicionalmente, las muestras recolectadas deben de cumplir las siguientes condiciones:
+Para ambas técnicas no supervisadas, se tiene que cumplir que el instante del video agrupe un \textbf{número mínimo de 5 personas} y que se pueda extraer un \textbf{mínimo de 5 muestras} de cada para la inicialización. Adicionalmente, las muestras recolectadas deben de cumplir las siguientes condiciones:
 \begin{itemize}
     \item Que la cara se encuentre enteramente dentro de la cámara.
-    \item Que el ancho del recorte no supere al alto del recorte.
+    \item Que el ancho de la \gls{bbox} no supere al alto de la \gls{bbox}.
 \end{itemize}
-La situación ideal sería encontrar un instante en el que todas las personas del video (6 en total) aparezcan. Como mínimo para que el sistema se inicialice es necesario que aparezcan 5 entidades, que equivale al número mínimo de puntos necesarios para definir la distribución de Weibull. En el \gls{dataset} de prueba solo aparece un instante de 5 individuos que cumpla con las condiciones anteriores. Por lo tanto, es necesario añadir a la entidad restante durante la inferencia en el caso de la técnica no supervisada.
+%La situación ideal sería encontrar un instante en el que todas las personas del video (6 en total) aparezcan. Como mínimo para que el sistema se inicialice es necesario que aparezcan 5 entidades, que equivale al número mínimo de puntos necesarios para definir la distribución de Weibull. En el \gls{dataset} de prueba solo aparece un instante de 5 individuos que cumpla con las condiciones anteriores. Por lo tanto, es necesario añadir a la entidad restante durante la inferencia en el caso de la técnica no supervisada.
+
+Para mostrar el notorio impacto del parámetro \textbf{\textit{Tw}} en los resultados, se han probado los valores \textbf{0.25} y \textbf{0.1} para cada una de las 3 técnicas en ambas modalidades \textit{Open-Set} y \textit{Open-World}. A continuación se muestran los resultados de las 3 técnicas para dichos modos.
 
 \subsection{Modo \textit{Open-Set}}
 
 \input{contenido/tables/tests/osinittab.tex}
 
-En la tabla \ref{tab:osinittab} se muestran los resultados para los 3 tipos de inicialización. El modo semisupervisado se sitúa en el primer caso para las entidades de las que no se han encontrado muestras en el video, mientras que el resto de entidades se recogen igual que en el modo no supervisado (caso de la izquierda).
-
-Se puede apreciar como claramente el modo supervisado es el que mejor funciona, lo que es lógico, ya que los recortes de caras pudieron ser seleccionados minuciosamente.
-
-TODO: semisupervisado
-
-Por último, el modo no supervisado refleja el peor rendimiento. La caída en la precisión y la excesiva desviación en las métricas se debe al individuo que se incluye durante la operación del sistema, a diferencia de los anteriores modos. También se depende de que el desconocido detectado sea realmente el individuo en cuestión, en caso contrario se crea un comité que se adueña de la identidad del sujeto, agregando así ruido a los reconocimientos. TODO: comentar diferencias respecto al umbral de Weibull.
+En la tabla \ref{tab:osinittab} se muestran los resultados para los 3 tipos de inicialización.
 
 \begin{figure}[tbp]
     \centering
-    \begin{subfigure}[t]{0.2\textwidth}
+    \begin{subfigure}[t]{0.3\textwidth}
         \includegraphics[width=\textwidth]{imagenes/supervised.jpg}
+        \caption{modo semisupervisado/\\no supervisado + \gls{dataset}}
     \end{subfigure}
-    \subcaption{modo semisupervisado/\\no supervisado + \gls{dataset}}
-    \begin{subfigure}[t]{0.2\textwidth}
+    \begin{subfigure}[t]{0.3\textwidth}
         \includegraphics[width=\textwidth]{imagenes/nosupervised.jpg}
+        \caption{modo no supervisado/\\no supervisado + \gls{dataset}}
     \end{subfigure}
-    \subcaption{modo no supervisado/\\no supervisado + \gls{dataset}}
     \caption{Conjuntos de muestras según la inicialización}
     \label{fig:inits}
 \end{figure}
 
-La figura \ref{fig:inits} expone un ejemplo de las muestras recogidas por los distintos métodos. En la izquierda, puede verse que las muestras apenas poseen borrosidad, contienen la suficiente luminosidad, son todas caras frontales y son de una mayor resolución, a diferencia de las de la derecha. Debido a que el método no supervisado utiliza el procesamiento de video, es esperable que las muestras no varíen entre sí, puesto que así ocurre en frames consecutivos.
+La figura \ref{fig:inits} expone un ejemplo de las muestras recogidas según la técnica. En la izquierda, puede verse que las muestras tienen una buena resolución, apenas poseen borrosidad, contienen suficiente luminosidad y son todas caras frontales, justo lo contrario que las muestras de la derecha.
+
+Las muestras del modo semisupervisado permiten al sistema responder a mayor variedad de condiciones del individuo, por lo tanto es el que mejores resultados arroja.
+
+Atendiendo a los modos no supervisados, se puede ver una pérdida clara en el rendimiento, que se debe principalmente a la selección de las muestras.
+
+%Debido a que el método no supervisado utiliza el procesamiento de video, es esperable que las muestras no varíen entre sí, puesto que así ocurre en frames consecutivos.
+
+Por último, el modo no supervisado refleja el peor rendimiento. La caída en la precisión y la excesiva desviación en las métricas se debe al individuo que se incluye durante la operación del sistema, a diferencia de los anteriores modos. También se depende de que el desconocido detectado sea realmente el individuo en cuestión, en caso contrario se crea un comité que se adueña de la identidad del sujeto, agregando así ruido a los reconocimientos. TODO: comentar diferencias respecto al umbral de Weibull.
 
 \subsection{Modo \textit{Open-World}}
 
 \input{contenido/tables/tests/owinittab.tex}
 
-En la tabla \ref{tab:owinittab} se muestran los resultados esta vez para \textit{Open-World}. Salvo en el modo no supervisado, se obtienen mejores resultados con un \textit{Tw} de 0.25 respecto a 0.1, esto puede deberse a que el sistema es menos propenso a crear comités que puedan adueñarse de las entidades existentes, por lo tanto, se genera una menor confusión y equivocación. TODO: analizar porque el \textit{Tw} da mejor en 0.1. El número de comités aumenta en el modo no supervisado, ya que al contar con muestras de peor calidad (generalmente) la confusión inter-comité aumenta.
+En la tabla \ref{tab:owinittab} se muestran los resultados esta vez para \textit{Open-World}.
+
+Se puede apreciar una caída en la precisión en las técnicas no supervisadas, mayor que en el modo \textit{Open-Set}. Al contar con muestras de peor calidad respecto a la técnica semisupervisada, es más difícil que los comités se activen ante nuevas muestras de su individuo, lo que genera confusión en el sistema y por tanto un mayor número de desconocidos (TODO: pero el recall es espectacular)
+%El número de comités aumenta en el modo no supervisado, ya que al contar con muestras de peor calidad (generalmente) la confusión inter-comité aumenta.
+
+Como se comentó en la discusión de las pruebas de parámetros (sección \ref{sec:discusparamtunning}), el valor de 0.25 del parámetro \textit{Tw} otorga los mejores resultados en \textit{Open-World}, debido a que con 0.1 se crea casi el \textbf{doble de comités} en los casos no supervisados, cuya mayoría son duplicados que añaden incertidumbre al sistema. Se puede apreciar en el modo semisupervisado como se reduce tanto el número de comités creados como la desviación en su número, ya que TODO.
 
 \section{TODO: Evolución del sistema en el tiempo}
 \subsection{Modo \textit{Open-Set}}
