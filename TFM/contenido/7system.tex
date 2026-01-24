@@ -20,7 +20,7 @@ Se inicializa el sistema con el nodo integración de sensores, el nodo \acrshort
     \item \textit{\textbf{Ident precision} (idp)}: corresponde con la precisión global de los modelos de reconocimiento.
 \end{itemize}
 
-La prueba del sistema da una detección como positiva si la posición predicha es igual a la del \gls{dataset} dentro de una holgura de 40 cm.
+La prueba del sistema da una detección como positiva si la posición predicha es igual a la del \gls{dataset} dentro de una holgura de \textbf{40 centímetros}.
 
 Siendo \textit{det\_tp} una posición predicha correctamente, \textit{det\_fp} una posición predicha incorrectamente, \textit{n\_gt} el número total de detecciones del \gls{dataset}, \textit{id\_tp} una predicción correcta de la identidad y \textit{id\_fp} una predicción incorrecta de la identidad, se definen las siguientes métricas:
 \begin{itemize}
@@ -30,7 +30,16 @@ Siendo \textit{det\_tp} una posición predicha correctamente, \textit{det\_fp} u
     \item $idp = \frac{id\_tp}{(id\_tp + id\_fp)}$
 \end{itemize}
 
-Los modelos de todas las pruebas realizadas en esta sección se han ejecutado en el \gls{rt} de \textbf{TensorRT} (salvo YuNet, que utiliza CUDA por medio de OpenCV).
+Los modelos de todas las pruebas realizadas en este capítulo se han ejecutado en el \gls{rt} de \textbf{TensorRT} (salvo YuNet, que utiliza CUDA por medio de OpenCV).
+
+Para cada prueba, también se mostrará la proporción de los recursos utilizados del dispositivo durante la ejecución del sistema (las pruebas se han realizado \textbf{sin el entorno gráfico}). En dispositivos Jetson, el comando \textbf{tegrastats} devuelve toda la información necesaria, en cambio, para el resto de dispositivos se obtienen de la siguiente forma:
+\begin{itemize}
+    \item Carga de la \acrshort{cpu}: media de las mediciones devueltas por el comando \textbf{sar -u}.
+    \item Ocupación de la memoria de la \acrshort{cpu}: media de las mediciones devueltas por el comando \textbf{sar -r}.
+    \item Carga de la \acrshort{gpu}: media de las mediciones devueltas por el comando \textbf{nvidia-smi}.
+    \item Ocupación de la memoria de la \acrshort{gpu}: media de las mediciones devueltas por el comando \textbf{nvidia-smi}.
+    \item Ancho de banda de la transferencia de datos por la red: media de las mediciones devueltas por el comando \textbf{ifstat}.
+\end{itemize}
 
 \section{Entorno de las pruebas}
 
@@ -45,31 +54,30 @@ La comunicación con la fuente externa se realiza a través de una red \acrshort
     \label{fig:systesting}
 \end{figure}
 
-La figura \ref{fig:systesting} ilustra el proceso de transmisión de los datos por la red \acrshort{lan}.
-
-Para reducir el ancho de banda necesario para la transmisión, se ha optado por desplegar nodos encargados de comprimir la imagen \acrshort{rgb} desde el equipo en el que se reproduce el \gls{rosbag} (\textit{remote side} en la figura \ref{fig:systesting}). La compresión se realiza por medio del paquete \textit{image\_transport} de \acrshort{ros}, que logra reducir hasta 10 veces el tamaño de la imagen \acrshort{rgb} (resultando en 4 \acrshort{mb}/s). Los nodos cámara (\textit{host side} en la figura \ref{fig:systesting}) se suscriben al tópico generado por el nodo que descomprime la imagen (\textit{image\_transport} \textit{decompress} en el \textit{host side}).
+La figura \ref{fig:systesting} ilustra el proceso de transmisión de los datos por la red \acrshort{lan}. Para reducir el ancho de banda necesario para la transmisión, se ha optado por desplegar nodos encargados de comprimir la imagen \acrshort{rgb} desde el equipo en el que se reproduce el \gls{rosbag} (\textit{remote side} en la figura \ref{fig:systesting}). La compresión se realiza por medio del paquete \textit{image\_transport} de \acrshort{ros}, que logra reducir hasta 10 veces el tamaño de la imagen \acrshort{rgb} (resultando en 4 \acrshort{mb}/s). Los nodos cámara (\textit{host side} en la figura \ref{fig:systesting}) se suscriben al tópico generado por el nodo que descomprime la imagen (\textit{image\_transport} \textit{decompress} en el \textit{host side}).
 
 En el caso de la imagen de distancias, en sí no es un objeto pesado, por lo que no necesita compresión. Sin embargo, la frecuencia elevada de transmisión (30 Hz), hace que se requiera de un mayor ancho de banda. Como el resto de los sensores funcionan a 10 Hz, la tasa de la imagen de distancias puede reducirse a dicha frecuencia, de forma que el sistema no percibe el cambio y se logra reducir el ancho de banda. Con reducir la tasa de envío del nodo de \acrshort{ros} encargado de publicar la imagen sería suficiente, pero debido a que en el \gls{rosbag} dicho nodo se grabó a 30 Hz, se ha optado por ejecutar el paquete \textit{topic\_tools} de \acrshort{ros}, que permite publicar una réplica de un tópico a una menor frecuencia.
 
 Debido a que el \gls{rosbag} solo contiene los datos de 2 cámaras, para realizar la prueba de escalabilidad con un mayor número de cámaras, ha sido necesario \textbf{replicar} los tópicos de las imágenes mediante el paquete de \acrshort{ros} \textit{topic\_tools} (figura \ref{fig:systesting}), de forma que los nuevos nodos se pueden suscribir a dichos tópicos.
 
 \section{Resultados}
+\label{sec:scaleresults}
 
 \input{contenido/tables/tests/scaleperf.tex}
 
-La tabla \ref{tab:scaleperf} muestra los resultados de los dispositivos en función del número de cámaras del sistema en \textbf{\acrshort{ros} 1}. La columna \textit{Reference} muestra los resultados obtenidos en \cite{andrew}, en el que solo se registraron datos del sistema funcionando con 2 cámaras.
+La tabla \ref{tab:scaleperf} muestra los resultados de los dispositivos en función del número de cámaras del sistema en \textbf{\acrshort{ros} 1}. La columna \textit{Reference} muestra los resultados obtenidos en el dispositivo de pruebas utilizado en \cite{andrew}, en el que solo se registraron datos del sistema funcionando con un máximo de 2 cámaras.
 
-Atendiendo a los datos de precisión en detección y reconocimiento, el \textit{det\_r} indica que el número de positivos ha aumentado en los equipos de sobremesa respecto a la referencia y al mismo tiempo el número de negativos, como indica la ligera caída de la precisión en contra de los dispositivos del proyecto.
+La principal mejora respecto al equipo de referencia se ve en el \textit{recall}, que demuestra que el sistema tiene una mayor capacidad de procesamiento, en cierta medida influida por la potencia de los procesadores Intel Core i7 respecto a Core i5 (este último viniendo del equipo de referencia).
 
-%La subida en el \textit{recall} demuestra que el sistema tiene una mayor capacidad de procesamiento, en cierta medida influida por la potencia de los procesadores Intel Core i7 respecto a Core i5 (equipo de referencia).
-
-La precisión en la detección empeora al aumentar el número de cámaras,
+Por otro lado, se aprecia una bajada en el \textit{det\_p} de los 2 dispositivos de sobremesa respecto al de referencia, esto puede deberse a que se acepta la llegada de los mensajes de las cámaras con un máximo de \textbf{500 milisegundos} de retardo respecto a los \textbf{200 milisegundos} configurados en la prueba de referencia, lo que hace que se devuelvan predicciones con posiciones más atrasadas y, por lo tanto, que superen la holgura de 40 centímetros para asumirlas correctas. En cuanto a la métrica \textit{idp} todos los sistemas se encuentran relativamente a la par.
 
 %a que el nodo integrador debe de fusionar los datos procedentes de todos los sensores, al aumentar su número también se aumenta la cantidad de procesamiento. Por lo tanto, más tiempo se demorará en devolver una predicción, que se emparejará con el frame del \gls{dataset} con el mismo \gls{timestamp}, que corresponde a un instante real \textbf{anterior}.
 
-El \textit{det\_r} también empeora al aumentar la cantidad de cámaras, debido a la alta demanda de cómputo del sistema (para 10 cámaras, se deben de procesar un total de 40 redes neuronales en 100 milisegundos) lo que hace que se pierdan los frames que no tengan espacio en la cola. Sin embargo, la caída de rendimiento en ambos dispositivos \textbf{no es crítica} y permite atender a la mayoría de las peticiones, aunque los resultados reflejan una clara congestión en los nodos.
+En la métrica \textit{det\_r} se aprecia una ligera bajada, no muy clara en el portátil, al aumentar la cantidad de cámaras. . Sin embargo, la caída de rendimiento en ambos dispositivos \textbf{no es crítica} y permite atender a la mayoría de las peticiones, aunque los resultados reflejan una clara congestión en los nodos.
 
-La precisión de los reconocimientos no baja del \textbf{80\%} en todos los casos, lo que demuestra que los modelos de reconocimiento funcionan de manera eficaz ante un enorme estrés del sistema. El \textit{idf1} depende del \textit{det\_r}, por lo que es de esperar un valor bajo, compensado en cierta medida por la precisión en el reconocimiento.
+TODO: realizar pruebas aumentando el tamaño de la cola... debido a la alta demanda de cómputo del sistema (para 10 cámaras, se deben de procesar un total de 40 redes neuronales en 100 milisegundos) lo que hace que se pierdan los frames que no tengan espacio en la cola
+
+La precisión en los reconocimientos (métrica \textit{idp}) no experimenta caídas notorias (excepto por la situación de las 5 cámaras en el portátil, que sorprendente se recupera al subir a las 10 cámaras) al aumentar la cantidad de cámaras, lo que demuestra que los modelos de reconocimiento siguen funcionando correctamente ante un enorme estrés del sistema. El \textit{idf1} depende en cierta medida del \textit{det\_r}, por lo que es de esperar que dicho valor descienda junto al \textit{det\_r}, que en cierto modo es compensado por el \textit{idp}.
 
 \input{contenido/tables/tests/scaleresources.tex}
 
@@ -91,11 +99,13 @@ La precisión en la detección empeora en los dispositivos Jetson respecto a los
 
 \input{contenido/tables/tests/scaleresourcesros2.tex}
 
-En la tabla \ref{tab:scaleresourcesros2} se muestra la proporción de recursos utilizados en las pruebas del sistema en \acrshort{ros} 2. TODO: Como en la tabla \ref{tab:scaleresources}, se expone la mediana de todas las lecturas de recursos en una ejecución completa del sistema. Se emplea la mediana, ya que es robusta frente a los picos de uso de recursos.
+En la tabla \ref{tab:scaleresourcesros2} se muestra la proporción de recursos utilizados en las pruebas del sistema en \acrshort{ros} 2. TODO: se expone la mediana de todas las lecturas de recursos en una ejecución completa del sistema. Se emplea la mediana, ya que es robusta frente a los picos de uso de recursos.
 
 Ambos dispositivos pueden ejecutar holgadamente el sistema usando 2 cámaras, en el caso de las 5 cámaras es cuando se empiezan a dislumbrar las limitaciones de la Jetson Orin Nano, principalmente en términos de memoria, lo que explica la caída en la precisión de las detecciones, que no permite a los modelos reservar memoria para varias de las inferencias.
 
 Los 8 GB de memoria rápidamente se quedan escasos, debido a todos los recursos necesarios a reservar, como contextos de CUDA, el modelo deserializado, \glspl{stream} de CUDA, entre otros, que pesan en torno a cientos de \acrshort{mb}, que se multiplican por 4 modelos y a su vez por 5 cámaras. Debido al excesivo uso de memoria, se han aplicado ciertas optimizaciones de los códigos de Python, que han permitido ahorrar hasta \textbf{400 \acrshort{mb}} en la inicialización del sistema, y que se citan en el apéndice \ref{chap:optimus}.
+
+La Jetson AGX Thor sufre una caída en el \textit{det\_p} cuando se ejecutan 10 cámaras simultáneamente, atendiendo a la tabla \ref{tab:scaleresourcesros2} el principal problema puede deberse a la carga excesiva de la \acrshort{gpu}, que supone el cuello de botella de la ejecución del sistema.
 
 \section{Discusión}
 
@@ -104,3 +114,5 @@ En varios equipos, se ha logrado escalar el sistema hasta un número de cámaras
 El uso de la \acrshort{gpu} ha sido un factor clave en los resultados obtenidos, ya que, al ejecutar todo el procesamiento en la \acrshort{cpu}, no solo se saturan sus propios recursos, sino que la latencia de las inferencias aumenta y, por tanto, se devuelven predicciones en instantes de tiempo posteriores, cuya diferencia se va acumulando.
 
 Es importante destacar que las pruebas se realizaron con \textbf{6 personas registradas en la base de datos}. Aumentar este número tendría consecuencias en los modelos de reconocimiento, ya que iteran toda la base de datos para calcular las distancias del vector con cada individuo, para devolver la mejor coincidencia. Según el dispositivo, esta operación tarda menos o alrededor de 1 milisegundo, lo que podría aumentar en varios milisegundos si se añaden por ejemplo 100 personas.
+
+TODO: Acorde al uso de recursos, no da la impresión de que ninguno de los dispositivos pueda ejecutar más de 10 cámaras sin una caída en el rendimiento.

@@ -5,7 +5,7 @@
 
 \section{Optimizaciones en la reserva de memoria}
 
-Debido a las limitaciones de memoria de la Jetson Orin Nano durante la ejecución del sistema (sección \ref{sec:syscal}), se ha optado por modificar el código a modo de hacerlo más eficiente en términos de reserva de memoria. Los cambios realizados son los siguientes:
+Debido a las limitaciones de memoria de la Jetson Orin Nano durante la ejecución del sistema, se ha optado por modificar el código a modo de hacerlo más eficiente en términos de reserva de memoria. Los cambios realizados son los siguientes:
 \begin{itemize}
     \item Sustituir \textit{imports} de librerías "pesadas" (ejemplo: OpenCV o ultralytics, en torno a cientos de \acrshort{mb}) por otras más ligeras (ejemplo: numpy o scipy, en torno a decenas de \acrshort{mb}) con funciones alternativas, sin comprometer en exceso la precisión y latencia de las inferencias (ejemplo: sustituir cv2.copyMakeBorder por np.pad, o cv2.imread por PIL.Image).
     \item Uso de \textit{slots}: la variable \textit{\textunderscore \textunderscore slots\_\_} evita la creación del diccionario dinámico de Python (\textit{\_\_dict\_\_}), que almacena las variables de una \textbf{clase}. Los \textit{\_\_slots\_\_} son más rápidos y eficientes que los diccionarios dinámicos de Python, aunque también más extrictos (no se pueden crear más atributos que los especificados en \textit{\_\_slots\_\_}). Un ejemplo de uso se muestra en el código \ref{coud:slots}.
@@ -18,7 +18,7 @@ El modelo ArcFace utilizado pesa \textbf{79 \acrshort{mb}} en su versión optimi
 \section{Modificaciones en el pre y postprocesado de modelos}
 \label{chap:prepost}
 
-Los pipelines de pre y postprocesado de los modelos suponen uno de los principales retos de los dispositivos Jetson, debido a limitada capacidad de procesamiento de las \acrshort{cpu} ARM, en este capítulo se exponen las soluciones aplicadas para mitigar el impacto computacional de dichos procesos en los modelos YOLO y OSNet.
+Los pipelines de pre y postprocesado de los modelos suponen uno de los principales retos de los dispositivos Jetson, debido a limitada capacidad de procesamiento de las \acrshort{cpu} \acrshort{arm}, en este capítulo se exponen las soluciones aplicadas para mitigar el impacto computacional de dichos procesos en los modelos YOLO y OSNet.
 
 \subsection{Postprocesado YOLO}
 \label{sec:postyolo}
