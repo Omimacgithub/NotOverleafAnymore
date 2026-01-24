@@ -170,19 +170,32 @@ Se aplica el método húngaro para asociar detecciones entre el frame anterior y
 
 Al final de cada iteración del módulo, se añaden las nuevas detecciones a la lista de entidades. Los nuevos casos se corresponden con asignaciones de \gls{bbox} que no se corresponden con ninguna entidad antes registrada.
 
+\section{Reconocimiento adaptativo}
+\label{sec:archrecon}
+
+\begin{figure}[tbp]
+    \centering
+    \includegraphics[width=1\linewidth]{imagenes/ADAPTSYS.jpg}
+    \caption{Diseño del módulo de reconocimiento adaptativo}
+    \label{fig:ADAPTSYS}
+\end{figure}
+
+La figura \ref{fig:ADAPTSYS} muestra la arquitectura del módulo de reconocimiento adaptativo, que se compone de los siguientes componentes:
+\begin{itemize}
+    \item \textbf{Módulo de valoración}: cada comité asigna una puntuación a la secuencia de \glspl{embedding} (o vectores) de un individuo.
+    \item \textbf{Módulo de reconocimiento}: devuelve una decisión de reconocimiento basándose en las puntuaciones de cada comité.
+    \item \textbf{Módulo de actualización}: se encarga de crear un nuevo comité si se detecta un usuario nuevo (\textit{unknown}) o de crear una nueva \acrshort{svm} para registrar los cambios del usuario existente (\textit{drift}).
+    \item \textbf{Módulo de limitación}: reemplaza la \acrshort{svm} que menos aporta a un comité, en el caso de que este exceda el límite establecido.
+\end{itemize}
+
+Se recibe la secuencia de vectores del individuo, que son procesados por el \textbf{módulo de valoración} (módulo EDF en la figura \ref{fig:ADAPTSYS}), que devuelve las puntuaciones de cada comité, dichas puntuaciones se ordenan de menor a mayor, de forma que la primera puntuación (la mejor) se corresponde \textit{a priori} con el comité del individuo. Las puntuaciones son recibidas por el \textbf{módulo de reconocimiento} (módulo RDF en la figura \ref{fig:ADAPTSYS}), que determina, mediante el \acrfull{evt}, si el comité corresponde realmente al individuo (conocido) o no (desconocido). El \textbf{módulo de actualización} (\textit{update module} en la figura \ref{fig:ADAPTSYS}) recibe la decisión, si el individuo es conocido, se agrega una nueva \acrshort{svm} entrenada con la secuencia de \glspl{embedding} como positivos y con un extracto de las muestras del resto de individuos como negativos, en caso contrario, se crea un nuevo comité con una \acrshort{svm} entrenada con el mismo conjunto de positivos y un conjunto aleatorio de las muestras de \textbf{todos los individuos} como negativos. Finalmente, si el comité se excede en el límite fijado de \acrshort{svm}s, el \textbf{módulo de limitación} (\textit{limitation module} en la figura \ref{fig:ADAPTSYS}) determina la \acrshort{svm} que menos aporta a dicho comité, que pasa a ser \textbf{eliminada} del mismo. Sendos módulos de actualización y limitación se encargan de añadir, actualizar y eliminar las \acrshort{svm}, los comités y las muestras de los individuos a la base de datos de \textbf{personas registradas}.
+
+Los detalles del diseño de cada componente se exponen en el apéndice \ref{chap:adaptrecon}.
+
 \section{Personas registradas}
 \label{sec:initarch}
 
-Conforma la base de datos de todos los individuos registrados en el sistema. Cada entrada en este registro se compone de los siguientes objetos:
-
-\begin{itemize}
-    \item \textbf{person\_id:} etiqueta asignada al usuario (ejemplo: andres).
-    \item \textbf{ensemble:} lista con las \acrshort{svm} del usuario, inicialmente 1.
-    \item \textbf{descriptors:} lista de los vectores de características (\glspl{embedding}) del usuario de cada \acrshort{svm}. Dichos vectores se aplican como conjunto de positivos para el propio usuario y como parte del conjunto de negativos para el resto de usuarios.
-    \item \textbf{coherence:} lista de valores de coherencia obtenidos de cada \acrshort{svm}, inicializado a 0.
-\end{itemize}
-
-La base de datos de personas registradas se conforma mediante un proceso de \textbf{inicialización}, que crea las entradas de cada individuo dentro de la lista inicial de individuos. Posteriormente, dicho registro se actualiza a partir de los módulos de actualización y limitación dentro del módulo de reconocimiento adaptativo. El registro se comparte a nivel de sistema por todos los nodos.
+Conforma la base de datos de todos los individuos registrados compartida por \textbf{todo el sistema}. Dicha base de datos se compone de los comités, sus respectivas \acrshort{svm} y de las muestras de cada sujeto, que se actualiza por medio de los módulos de actualización y limitación dentro del módulo de reconocimiento adaptativo. A continuación se explican los diferentes procesos de \textbf{inicialización} propuestos, así como diferentes técnicas para compartir la información entre los nodos del sistema.
 
 \subsection{Inicialización}
 \label{sec:initieing}
@@ -226,6 +239,6 @@ En el sistema de partida (ver sección \ref{sec:partarch}), el registro inicial 
 Debido a que el sistema es distribuido (computación en nodos de cálculo distintos) y los nodos están implementados en Python, es necesario explorar otras vías diferentes a la memoria compartida entre procesos. Para este proyecto, se han propuesto 2 alternativas:
 
 \begin{itemize}
-    \item \textbf{Base de datos centralizada:} todos los nodos acceden a una base de datos de baja latencia (ejemplo: base de datos puramente en memoria), de la que reciben el registro de personas actualizado. Dicha base de datos se encontraría en la misma máquina que el nodo integración de sensores, que realizaría las peticiones de escritura. Finalmente, la base de datos propaga las modificaciones a todos los nodos conectados.
-    \item \textbf{Red \acrshort{ros}:} el nodo integración de sensores recibe los mensajes de los nodos cámara y, aprovechando la red creada por \acrshort{ros}, se difunde un mensaje con los nuevos cambios a un tópico en el que todos los nodos cámara estarán suscritos, de forma que mantienen su propia copia actualizada.
+    \item \textbf{Base de datos centralizada}: todos los nodos acceden a una base de datos de baja latencia (ejemplo: base de datos puramente en memoria), de la que reciben el registro de personas actualizado. Dicha base de datos se encontraría en la misma máquina que el nodo integración de sensores, que realizaría las peticiones de escritura. Finalmente, la base de datos propaga las modificaciones a todos los nodos conectados.
+    \item \textbf{Red \acrshort{ros}}: el nodo integración de sensores recibe los mensajes de los nodos cámara y, aprovechando la red creada por \acrshort{ros}, se difunde un mensaje con los nuevos cambios a un tópico en el que todos los nodos cámara estarán suscritos, de forma que mantienen su propia copia actualizada.
 \end{itemize}

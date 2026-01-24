@@ -20,9 +20,7 @@ El código \ref{coud:trtskel} muestra el esqueleto de dichas inferencias, cada v
 
 Dichos recursos se reservan \textbf{una sola vez}, que corresponde con el momento de creación de la instancia de la clase Python que representa al modelo.
 
-La función \textit{infer} del código \ref{coud:trtskel} se ejecuta por cada vez que se recibe una entrada a procesar, la entrada puede ser un solo frame o una secuencia de estos.
-
-Se ejecuta la función PREPROCESING con la entrada, que representa el pipeline de preprocesado específico para cada modelo. Los datos preprocesados se copian a la memoria de la \acrshort{gpu} (o \textit{device}) a través de un \textit{memcpy} y se realiza la inferencia en el \textit{\gls{stream}} de CUDA reservado. Antes de realizar la inferencia, se especifica el tamaño concreto de los datos de entrada (función \textit{set\_input\_shape}), ya que en un procesamiento en modo \gls{batch}, el conjunto de imágenes puede diferir. Finalmente, los resultados se copian de vuelta a la memoria de la \acrshort{cpu} (o \textit{host}) y se ejecuta el pipeline de postprocesado del resultado definido en la función POSTPROCESING.
+La función \textit{infer} del código \ref{coud:trtskel} se ejecuta por cada vez que se recibe una entrada a procesar, la entrada puede ser un solo frame o una secuencia de estos. Se ejecuta la función PREPROCESING con la entrada, que representa el pipeline de preprocesado específico para cada modelo. Los datos preprocesados se copian a la memoria de la \acrshort{gpu} (o \textit{device}) a través de un \textit{memcpy} y se realiza la inferencia en el \textit{\gls{stream}} de CUDA reservado. Antes de realizar la inferencia, se especifica el tamaño concreto de los datos de entrada (función \textit{set\_input\_shape}), ya que en un procesamiento en modo \gls{batch}, el conjunto de imágenes puede diferir. Finalmente, los resultados se copian de vuelta a la memoria de la \acrshort{cpu} (o \textit{host}) y se ejecuta el pipeline de postprocesado del resultado definido en la función POSTPROCESING.
 
 Las operaciones de copia de datos y la inferencia se ejecutan de forma \textbf{asíncrona}, por lo que es necesario introducir una barrera de sincronización una vez todas las operaciones se emitan, de forma que nuevos \glspl{thread} no sobrescriben la memoria de la \acrshort{gpu} mientras esta realiza inferencias.
 
@@ -34,7 +32,7 @@ Para realizar una asignación óptima del método húngaro, se utilizó la funci
 \section{Personas registradas}
 \label{sec:init}
 
-En esta sección se comentan las implementaciones de los componentes encargados de crear, mantener y compartir la base de datos de las personas registradas del sistema.
+En esta sección se comentan las implementaciones de los componentes encargados de crear la base de datos de las personas registradas del sistema.
 
 \subsection{Creación y entrenamiento de las \acrshort{svm}}
 
@@ -50,23 +48,15 @@ Como ya se explicó en la sección \ref{sec:initarch}, se parte únicamente de l
 
 Cuando se fusionan los resultados procesados por los distintos sensores (nodo integración de sensores en la figura \ref{fig:finalsys}), se requiere que todos ellos se encuentren \textbf{sincronizados} dentro de un intervalo temporal (ejemplo: 100 milisegundos), de forma que las predicciones no se realizan a partir de información desactualizada.
 
-En \cite{andrew} se utiliza una clase del paquete \textit{message\_filters} de \acrshort{ros} llamado \textit{ApproximateTimeSynchronizer}, que utiliza un algoritmo adaptativo para emparejar mensajes a partir de su \gls{timestamp} \cite{ApproximateTime}. El problema de \textit{ApproximateTimeSynchronizer} es que espera recibir datos \textbf{de todas las fuentes en todo momento}, de modo que si uno de los sensores falla, el sistema \textbf{se congela} debido a que se dejan de recibir mensajes de dicha fuente.
+En \cite{andrew} se utiliza una clase del paquete \textit{message\_filters} de \acrshort{ros} llamado \textit{ApproximateTimeSynchronizer}, que utiliza un algoritmo adaptativo para emparejar mensajes a partir de su \gls{timestamp} \cite{ApproximateTime}. El problema de \textit{ApproximateTimeSynchronizer} es que espera recibir datos \textbf{de todas las fuentes en todo momento}, de modo que si uno de los sensores falla, el sistema \textbf{se congela} debido a que se dejan de recibir mensajes de dicha fuente. Se ha decidido sustituir dicha clase por \textit{MessageFiltersCache} de la misma librería \cite{MFC}. En esta nueva implementación, cada nodo posee una caché en la que se almacenan sus mensajes, que pueden recuperarse especificando un timestamp.
 
-Se ha decidido sustituir dicha clase por \textit{MessageFiltersCache} de la misma librería \cite{MFC}. En esta nueva implementación, cada nodo posee una caché en la que se almacenan sus mensajes, que pueden recuperarse especificando un timestamp.
-
-El código \ref{coud:cash} implementa una función (\textit{process}) que recoge los datos de las cachés a una frecuencia fija (ejemplo: 10 Hz), de modo que se recuperan los últimos mensajes de los sensores que emitieron dentro del intervalo, sin esperar por sensores que hayan sufrido latencias o fallos.
-
-Se otorga una ventana de 500 ms para mensajes que llegan con cierto retardo antes de su descarte. Si un nodo no procesa y envía su mensaje antes de acabar el intervalo (ejemplo: 100ms), \textbf{se sigue aplicando el último mensaje recibido de este}, siempre y cuando no se exceda la ventana de tiempo ya comentada.
+El código \ref{coud:cash} implementa una función (\textit{process}) que recoge los datos de las cachés a una frecuencia fija (ejemplo: 10 Hz), de modo que se recuperan los últimos mensajes de los sensores que emitieron dentro del intervalo, sin esperar por sensores que hayan sufrido latencias o fallos. Se otorga una ventana de 500 ms para mensajes que llegan con cierto retardo antes de su descarte. Si un nodo no procesa y envía su mensaje antes de acabar el intervalo (ejemplo: 100ms), \textbf{se sigue aplicando el último mensaje recibido de este}, siempre y cuando no se exceda la ventana de tiempo ya comentada.
 
 \section{Migración a ROS 2}
 \label{subsec:ROS2}
 
-Con el motivo del fin de soporte de ROS 1 \cite{ROSEOL}, se ha optado por migrar el sistema para ser ejecutado en ROS 2 con el fin de mantener su continuidad.
+Con el motivo del fin de soporte de ROS 1 \cite{ROSEOL}, se ha optado por migrar el sistema para ser ejecutado en ROS 2 con el fin de mantener su continuidad. El proceso de migración se ha llevado a cabo por medio de la guía oficial de \acrshort{ros} \cite{ros2tuto}. Muchos de los problemas encontrados en este proceso están relacionados con los nuevos archivos de configuración.
 
-El proceso de migración se ha llevado a cabo por medio de la guía oficial de \acrshort{ros} \cite{ros2tuto}. Muchos de los problemas encontrados en este proceso están relacionados con los nuevos archivos de configuración.
-
-Se han migrado los nodos cámara e integrador. El proceso incluye cambiar las firmas de las funciones, sus parámetros y cambiar de paquetes. En esencia, la mayoría de paquetes de \acrshort{ros} 2 preservan las mismas funcionalidades e incluso mantienen las mismas interfaces de las funciones de \acrshort{ros} 1, lo que ha facilitado la correcta migración.
-
-La migración del nodo \acrshort{lidar} no ha sido posible, debido a que el código depende de versiones de librerías no soportadas a partir de la versión 22.04 de Ubuntu y de muchos componentes de \acrshort{ros} 1, eliminados en \acrshort{ros} 2. Sería necesario rediseñar todo el código o optar por un paquete de \acrshort{ros} 2 con las mismas funcionalidades que el paquete \textit{hdl\_people\_tracking}, utilizado en \cite{andrew} para detectar personas en nubes de puntos \acrshort{3d}.
+Se han migrado los nodos cámara e integrador. El proceso incluye cambiar las firmas de las funciones, sus parámetros y cambiar de paquetes. En esencia, la mayoría de paquetes de \acrshort{ros} 2 preservan las mismas funcionalidades e incluso mantienen las mismas interfaces de las funciones de \acrshort{ros} 1, lo que ha facilitado la correcta migración. La migración del nodo \acrshort{lidar} no ha sido posible, debido a que el código depende de versiones de librerías no soportadas a partir de la versión 22.04 de Ubuntu y de muchos componentes de \acrshort{ros} 1, eliminados en \acrshort{ros} 2. Sería necesario rediseñar todo el código o optar por un paquete de \acrshort{ros} 2 con las mismas funcionalidades que el paquete \textit{hdl\_people\_tracking}, utilizado en \cite{andrew} para detectar personas en nubes de puntos \acrshort{3d}.
 
 En ROS 2 se ha introducido la posibilidad de escribir scripts de lanzamiento en Python. El archivo de lanzamiento del sistema se ha convertido del formato \acrshort{xml} a un script de Python para aprovechar la flexibilidad que el propio lenguaje ofrece y utilizar las nuevas funcionalidades. %Ref a esto: https://docs.ros.org/en/foxy/How-To-Guides/Launch-file-different-formats.html#launch-file-examples

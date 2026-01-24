@@ -1,7 +1,7 @@
 \chapter{Análisis de rendimiento}
 \label{chap:cnn}
 
-\lettrine{E}{n} este capítulo, se comentan los modelos de redes neuronales utilizadas y se expone una discusión detallada acerca de las pruebas y de los resultados de rendimiento de los modelos en los diferentes dispositivos del proyecto.
+\lettrine{E}{n} este capítulo se comentan los modelos de redes neuronales utilizadas y se expone una discusión detallada acerca de las pruebas y de los resultados de rendimiento de los modelos en los diferentes dispositivos del proyecto.
 
 \section{Modelos de redes neuronales utilizadas}
 \label{sec:models}
@@ -22,9 +22,7 @@ En la tabla \ref{tab:modelspecs} se muestra el tamaño de la entrada, el número
 \section{Dataset de las pruebas}
 \label{sec:modset}
 
-A modo de evaluar el rendimiento en términos de precisión de los modelos de visión artificial, se parte de un \gls{dataset} compuesto de la información extraída de un fichero \gls{rosbag}, que contiene los datos generados por dos cámaras Kinect \acrshort{rgbd} y un sensor \acrshort{lidar} instalados en el Summit\_XL durante la realización de una prueba.
-
-La prueba del Rosbag se ha grabado en el laboratorio de robótica del \acrshort{citic}, en el que 6 personas caminan alrededor del Summit\_XL y se entrecruzan durante 105 segundos (aproximadamente). El robot también se desplaza, generando así imágenes borrosas y cambios impredecibles de la posición de las personas respecto del robot.
+A modo de evaluar el rendimiento en términos de precisión de los modelos de visión artificial, se parte de un \gls{dataset} compuesto de la información extraída de un fichero \gls{rosbag}, que contiene los datos generados por las cámaras Kinect \acrshort{rgbd} y el sensor \acrshort{lidar} del Summit\_XL durante la realización de una prueba en el laboratorio de robótica del \acrshort{citic}, en el que 6 personas caminan alrededor del robot y se entrecruzan durante 105 segundos (aproximadamente). El robot también se desplaza en su propio eje, generando así imágenes borrosas y cambios impredecibles en la posición de las personas.
 
 Existe un fichero \acrshort{json} con el \gls{dataset} específico para cada cámara. En el apéndice \ref{sec:datcam} se expone su composición.
 

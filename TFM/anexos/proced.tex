@@ -1,5 +1,7 @@
-\chapter{Procedimiento de optimización de redes neuronales}
+\chapter{Conversión de modelos a TensorRT}
 \label{chap:procedure}
+
+\lettrine{E}{n} este apéndice se comentan detalles acerca del procedimiento para la conversión de los modelos utilizados a TensorRT.
 
 \section{Procedimiento}
 
@@ -27,20 +29,11 @@ En \ref{coud:trtshapes} se muestran las características de un modelo transforma
 
 A la hora de compilar algunos de los modelos a partir de la herramienta \textit{trtexec}, se han aplicado los siguientes flags:
 \begin{itemize}
-    \item --\acrshort{fp}16: activa el uso de tácticas \acrshort{fp}32 y \acrshort{fp}16 en cada capa del modelo (se escoge la precisión que se ejecute más rápido). Se aplica en todos los dispositivos Jetson.
+    \item --fp16: activa el uso de tácticas \acrshort{fp}32 y \acrshort{fp}16 en cada capa del modelo (se escoge la precisión que se ejecute más rápido). Se aplica en todos los dispositivos Jetson.
     \item --sparsity: activa la aceleración de operaciones de matrices dispersas, a partir de la arquitectura Ampere.
     \item --tacticSources=+CUBLAS,+CUDNN: emplea el uso de tácticas de las librerías cuBLAS y cuDNN. Se aplica en todos los dispositivos Jetson.
     \item --builderOptimizationLevel: por defecto utiliza el valor 3, este valor se mantiene en todas las Jetson salvo en un caso de la Jetson AGX Thor (ver sección \ref{sec:discuss}).
 \end{itemize}
-
-\subsection{Características de los modelos}
-Hablar de los 4 modelos que usamos
-
-\subsection{Compilación de OpenCV con soporte para CUDA}
-
-En \cite{andrew} se utiliza una versión del modelo YuNet otorgada por la librería OpenCV, esta versión abstrae al programador de implementar las fases de pre y postprocesado de dicho modelo, que para este caso resultan muy complejas de implementar. Como ya se comentó en la sección \ref{sec:sw}, OpenCV dispone de soporte para CUDA, aunque es necesario compilar el programa desde el fuente. El proceso de compilación seguido es el mismo que en \cite{OpenCVCUDA}.
-
-TODO: algo más.
 
 \section{Exportación de YOLO con ultralytics}
 \label{sec:exports}
