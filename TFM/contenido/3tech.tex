@@ -7,7 +7,7 @@
 
 Según la arquitectura de la \acrshort{gpu} de NVIDIA, se agregan nuevas características que maximizan el rendimiento de la inferencia de los modelos (se ahondará en este tema en el capítulo \ref{chap:cnn}). Las arquitecturas que se muestran a continuación están ordenadas de menor a mayor generación.
 
-Un aspecto a tener en cuenta es que todas las arquitecturas que se exponen permiten el entrenamiento e inferencia de modelos en \textbf{precisión mixta}, es decir, escoger la precisión apropiada entre una lista de precisiones (ejemplo: \acrshort{fp}32+\acrshort{fp}16) para cada capa del modelo.
+Todas las arquitecturas que se exponen permiten el entrenamiento e inferencia de modelos en \textbf{precisión mixta}, es decir, escoger la precisión apropiada entre una lista de precisiones (ejemplo: \acrshort{fp}32+\acrshort{fp}16) para cada capa del modelo.
 
 \subsubsection{Volta y Turing}
 En la arquitectura Volta \cite{volta} (2017), se introducen los \textbf{tensor cores}, que son cores destinados a acelerar multiplicaciones y sumas de matrices (conocido también como MMA).
@@ -111,15 +111,33 @@ Las diferencias y similitudes clave a la hora de comparar la familia Jetson con 
 \section{Hardware}
 \label{sec:hw}
 
-\subsection{Cámaras \acrshort{rgbd}}
-Para nutrir al sistema de imágenes se cuenta con las cámaras Kinect de Microsoft. Dichas cámaras otorgan una imagen \acrfull{rgb} más una imagen de profundidad (depth).
-
-Para este proyecto, se cuenta con dos de estas cámaras, cada una con una cobertura de visión de 57º, lo que otorga un rango total de 117º, asumiendo que no existen solapes entre las cámaras.
-
 \subsection{Summit\_XL}
 \label{sec:summit}
 
-El sistema que se expondrá se ha construido para funcionar en el robot móvil Summit\_XL. Dicho robot es de tipo diferencial (permite el movimiento en todas las direcciones excepto en los laterales) y cuenta con 4 ruedas de goma, de gran utilidad para moverse en entornos de exteriores. Entre sus componentes, tiene instalado un sensor Velodyne \acrshort{lidar} que otorga nubes de puntos \acrshort{3d} del entorno y dos cámaras Kinect instaladas en los laterales.
+\begin{figure}[tbp]
+    \centering
+    \begin{subfigure}[t]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{imagenes/KINECT.png}
+        \caption{Cámara Microsoft Kinect}
+        \label{fig:kin1}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{imagenes/SUMKINECTS.png}
+        \caption{Cámaras Kinect instaladas}
+        \label{fig:kin2}
+    \end{subfigure}
+    \caption{Summit\_XL con los sensores instalados}
+\end{figure}
+
+El sistema del proyecto se ha construido para funcionar en el robot móvil Summit\_XL \cite{rb}. Dicho robot es de tipo \textbf{diferencial} (es decir, permite el movimiento en todas las direcciones excepto en sus laterales) y dispone de 4 ruedas de goma para su movilidad en una amplia variedad de entornos. Entre sus componentes, tiene instalado un sensor Velodyne \acrshort{lidar} \cite{lidar} (sensor circular de la figura \ref{fig:kin2}) que otorga nubes de puntos \acrshort{3d} del entorno y 1 cámara \acrshort{rgb} frontal, que no se ha empleado en este proyecto debido a su baja calidad de imagen. A mayores, se instalaron \textbf{2 cámaras Kinect \acrshort{rgbd}} en los laterales (figura \ref{fig:kin2}).
+
+El Summit\_XL utiliza una arquitectura basada en el \textbf{\textit{middleware} \acrshort{ros}} \cite{ROS}, que permite la fácil interacción e integración de múltiples sensores. Este cuenta con soporte para las versiones de \acrshort{ros} 2, sin embargo, el modelo adquirido por el \acrshort{citic} emplea \acrshort{ros} 1, que a fecha de esta memoria ya ha alcanzado su \textbf{final de vida} \cite{ROSEOL}.
+
+\subsection{Cámaras \acrshort{rgbd}}
+
+Para nutrir al sistema de imágenes se cuenta con las cámaras \acrshort{rgbd} Kinect de Microsoft \cite{kinect} (figura \ref{fig:kin1}). Dichas cámaras capturan la información del entorno en forma de imágenes \acrfull{rgb} y realiza reconstrucciones \acrshort{3d} en tiempo real, que otorga en forma de imágenes de profundidad o de distancias (depth).
+
+Para este proyecto, se cuenta con 2 de estas cámaras, cada una con una cobertura de visión de 57º. Dichas cámaras se disponen de forma que \textbf{no existan solapes} (en los laterales del robot, como se muestra en la figura \ref{fig:kin2}), lo que otorga un rango de visión total de 117º.
 
 \section{Software específico}
 \label{sec:sw}
@@ -127,7 +145,7 @@ El sistema que se expondrá se ha construido para funcionar en el robot móvil S
 \subsection{ROS}
 \label{sec:ros}
 
-\acrfull{ros} es un middleware de \textbf{código abierto} que incorpora las herramientas necesarias para la interacción y desarrollo de software en robots. Cuenta con una amplia biblioteca de distribuciones y librerías.
+\acrfull{ros} \cite{ROS} es un \textit{middleware} de \textbf{código abierto} que incorpora las herramientas necesarias para la interacción y desarrollo de software en robots. Cuenta con una amplia biblioteca de distribuciones y librerías.
 
 Cualquier entorno de desarrollo de \acrshort{ros} está compuesto por \textbf{paquetes}, los paquetes son las unidades funcionales del entorno de \acrshort{ros} y estas contienen el código, archivos de configuración y de lanzamiento de los nodos, entre otros componentes.
 
@@ -146,27 +164,28 @@ Existe una amplia variedad de distribuciones de este software según la versión
 
 \subsection{Librerías de Python}
 Se procede a comentar las librerías de Python más importantes a la hora de desarrollar el código del proyecto (todas las librerías descritas son de \textbf{código abierto}):
-\begin{itemize}
-    \item \textbf{PyCUDA} \cite{pycuda}: es un \gls{wrapper} que interacciona con el driver de CUDA. \textbf{CUDA (\textit{Compute Unified Device Architecture})} es un conjunto de herramientas, que incluye un compilador para compilar código en lenguaje CUDA, que es una variante del lenguaje C. Dicho código permite la ejecución de algoritmos en \acrshort{gpu}s de propósito general de NVIDIA. Se ha utilizado principalmente para generar los contextos y reservar la memoria en la \acrshort{gpu}, con el propósito de realizar las inferencias de los modelos.
-    \item \textbf{NumPy}: se ha empleado en este proyecto para representar las imágenes y la información generada por los modelos en forma de vectores y matrices multidimensionales. Estos elementos pueden manipularse por medio de una amplia cantidad de funciones matemáticas que dicha librería ofrece.
-    \item \textbf{Scipy}: implementa numerosos algoritmos relacionados con la computación científica. En este proyecto se ha usado para aplicar el método húngaro, hallar los parámetros que modelan una distribución de Weibull, calcular distancias coseno, entre otras aplicaciones relacionadas con cálculos científicos.
-    \item \textbf{OpenCV}: es la librería por excelencia para visión por computadora de código abierto. Se ha utilizado para la obtención y procesado de las imágenes. La librería contiene un módulo de redes neuronales profundas (dnn), el cual se ha utilizado para realizar operaciones de procesamiento de las entradas y salidas de las redes neuronales (ejemplo: aplicar \gls{nms} a las \glspl{bbox} de salida de un modelo de detección de objetos).
-\end{itemize}
+\begin{description}
+    \item[PyCUDA] \cite{pycuda} Es un \gls{wrapper} que interacciona con el driver de CUDA. \textbf{CUDA (\textit{Compute Unified Device Architecture})} es un conjunto de herramientas, que incluye un compilador para compilar código en lenguaje CUDA, que es una variante del lenguaje C. Dicho código permite la ejecución de algoritmos en \acrshort{gpu}s de propósito general de NVIDIA. Se ha utilizado principalmente para generar los contextos y reservar la memoria en la \acrshort{gpu}, con el propósito de realizar las inferencias de los modelos.
+    \item[NumPy] \cite{np} Es una librería que incluye estructuras de datos y funciones para operar con matrices multidimensionales. Se ha empleado en este proyecto para representar las imágenes y la información generada por los modelos en forma de vectores y matrices multidimensionales. Estos elementos pueden manipularse por medio de una amplia cantidad de funciones matemáticas que dicha librería ofrece.
+    \item[Scipy] \cite{scipy} Implementa numerosos algoritmos relacionados con la computación científica. En este proyecto se ha usado para aplicar el método húngaro, hallar los parámetros que modelan una distribución de Weibull, calcular distancias coseno, entre otras aplicaciones relacionadas con cálculos científicos.
+    \item[OpenCV] \cite{cv2} Es la librería por excelencia para visión por computadora de código abierto. Se ha utilizado para la obtención y procesado de las imágenes. La librería contiene un módulo de redes neuronales profundas (dnn), el cual se ha utilizado para realizar operaciones de procesamiento de las entradas y salidas de las redes neuronales (ejemplo: aplicar \gls{nms} a las \glspl{bbox} de salida de un modelo de detección de objetos).
+\end{description}
 
 
 \subsection{Optimizadores y runtimes de inferencias}
 
 Es el software encargado de optimizar la implementación de los modelos y ejecutar sus inferencias. En este proyecto se han utilizado los siguientes (todos son de \textbf{código abierto}):
-\begin{itemize}
-    \item \textbf{TensorRT} \cite{x36}: es un ecosistema de herramientas (con \acrshort{api} de Python incluida) para la optimización de inferencias de modelos de inteligencia artificial en aceleradoras de NVIDIA. Permite ejecutar modelos entrenados en \textit{frameworks} como Pytorch o TensorFlow, aunque se aconseja exportarlos al formato \acrfull{onnx} previamente, para aprovechar al completo las funcionalidades de este software. Se ha empleado en este proyecto para optimizar y ejecutar inferencias de la mayoría de modelos \acrshort{cnn} tanto en equipos \acrshort{arm} como x86.
+\begin{description}
+    \item[TensorRT] \cite{x36} Es un ecosistema de herramientas (con \acrshort{api} de Python incluida) para la optimización de inferencias de modelos de inteligencia artificial en aceleradoras de NVIDIA. Permite ejecutar modelos entrenados en \textit{frameworks} como Pytorch o TensorFlow, aunque se aconseja exportarlos al formato \acrfull{onnx} previamente, para aprovechar al completo las funcionalidades de este software. Se ha empleado en este proyecto para optimizar y ejecutar inferencias de la mayoría de modelos \acrshort{cnn} tanto en equipos \acrshort{arm} como x86.
 
-          La versión 10 de TensorRT está disponible para las aceleradoras de NVIDIA con un \textit{compute capability} igual o superior a 7.5. En el caso de querer usar el software con una \textit{compute capability} inferior (ejemplo: Jetson Xavier NX), es necesario instalar la versión 8 u otra anterior. El código de la \acrshort{api} generado en la versión 8 \textbf{no es compatible} con la versión 10.
-    \item \textbf{OpenVINO} \cite{OpenVINO}: desarrollado por Intel para la optimización de inferencias en \acrshort{cpu}s (ARM,x86) y en aceleradoras de Intel (\acrshort{gpu},\acrshort{npu}). Permite la conversión directa de modelos entrenados en frameworks como Tensorflow y Pytorch a ficheros XML, que son versiones optimizadas de las \acrshort{cnn} y que se utilizan para realizar las inferencias. Se ha empleado para optimizar y ejecutar las inferencias de los modelos a la hora de ejecutarlos en \acrshort{cpu}.
-    \item \textbf{OpenCV} \cite{OpenCVCUDA}: el módulo de redes neuronales profundas (dnn) incluye modelos ya entrenados y un \gls{rt} para realizar inferencias. Dicho módulo puede ejecutarse en \textbf{CUDA}, solo si se compila el código fuente. En este proyecto se ha utilizado un modelo de detección de caras ofrecido por dicha librería.
-\end{itemize}
+        La versión 10 de TensorRT está disponible para las aceleradoras de NVIDIA con un \textit{compute capability} igual o superior a 7.5. En el caso de querer usar el software con una \textit{compute capability} inferior (ejemplo: Jetson Xavier NX), es necesario instalar la versión 8 u otra anterior. El código de la \acrshort{api} generado en la versión 8 \textbf{no es compatible} con la versión 10.
+    \item[OpenVINO] \cite{OpenVINO} Desarrollado por Intel para la optimización de inferencias en \acrshort{cpu}s (ARM,x86) y en aceleradoras de Intel (\acrshort{gpu},\acrshort{npu}). Permite la conversión directa de modelos entrenados en frameworks como Tensorflow y Pytorch a ficheros XML, que son versiones optimizadas de las \acrshort{cnn} y que se utilizan para realizar las inferencias. Se ha empleado para optimizar y ejecutar las inferencias de los modelos a la hora de ejecutarlos en \acrshort{cpu}.
+
+        \item[OpenCV]\cite{OpenCVCUDA} El módulo de redes neuronales profundas (dnn) incluye modelos ya entrenados y un \gls{rt} para realizar inferencias. Dicho módulo puede ejecutarse en \textbf{CUDA}, solo si se compila el código fuente. En este proyecto se ha utilizado un modelo de detección de caras ofrecido por dicha librería.
+\end{description}
 
 \subsection{Docker}
-Es un software de virtualización de \textbf{código abierto}. Permite realizar despliegues automatizados mediante ficheros de configuración, el software se ejecuta en un entorno aislado del sistema operativo llamado \textbf{contenedor}, dichos contenedores proporcionan seguridad y portabilidad. Esta herramienta ha sido de gran utilidad para desplegar el software del proyecto en los diferentes dispositivos.
+Docker \cite{docker} es un software de \textbf{virtualización} de \textbf{código abierto}, que permite realizar despliegues automatizados mediante ficheros de configuración. El software se ejecuta en un entorno aislado del sistema operativo llamado \textbf{contenedor}, dichos contenedores proporcionan seguridad y portabilidad. Esta herramienta ha sido de gran utilidad para desplegar el software del proyecto en los diferentes dispositivos.
 
 \section{TODO: Software general}
 \subsection{VS Code}
