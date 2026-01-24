@@ -34,12 +34,14 @@ Para facilitar su despliegue y mantenimiento, el sistema se empaquetará en cont
 
 \section{Trabajo relacionado}
 
+Este trabajo persigue la ejecución eficiente de un sistema compuesto por múltiples redes neuronales convolucionales, que amplían su conocimiento a partir de la información del entorno. Para lograr dichos objetivos, se han explorado múltiples campos de investigación que se exponen a continuación.
+
 \subsection{Aprendizaje incremental con adaptación a los cambios}
 \label{sec:incrlearning}
 
 En el contexto de este proyecto (detección y reconocimiento de personas en tiempo real), no es posible preparar un \gls{dataset} de entrenamiento compuesto por una gran multitud de etiquetas, debido a la naturaleza cambiante de los datos en el mundo visual \cite{Erik}, tampoco sería posible debido a la ley de protección de datos, que restringe la capacidad de recolección de estos datos. Por lo que es necesario adoptar un método que permita a los modelos de redes neuronales aprender, partiendo de un conjunto de datos muy escaso.
 
-En este proyecto se explora la implementación de un algoritmo de aprendizaje incremental, que permite a los modelos poder integrar nueva información sin necesidad de reentrenar desde 0. Los algoritmos desarrollados en este campo de estudio se reúnen bajo los conceptos de \textbf{\textit{Open-Set}} y \textbf{\textit{Open-World}} \cite{rudd2017extreme, Erik, CESAR}. Mientras que el primero se limita a distinguir las clases conocidas de las desconocidas, el segundo permite incluir conocimiento al modelo a partir de las entradas, de forma que se logra adaptar a los múltiples factores cambiantes que entraña el mundo real.
+En este proyecto se explora la implementación de un algoritmo de aprendizaje incremental, que permite a los modelos poder integrar nuevo conocimiento sin necesidad de un reentrenamiento desde 0. Los algoritmos desarrollados en este campo de estudio se reúnen bajo los conceptos de \textbf{\textit{Open-Set}} y \textbf{\textit{Open-World}} \cite{rudd2017extreme, Erik, CESAR}. Mientras que el primero se limita a distinguir las clases conocidas de las desconocidas, el segundo permite incluir conocimiento al modelo a partir de las entradas, de forma que se logra adaptar a los múltiples factores cambiantes que entraña el mundo real.
 
 El aprendizaje incremental se ha enfocado en dos vías, cada una con sus propios desafíos. Por un lado, se realizan predicciones, sin ningún aprendizaje previo, a partir de un \gls{batch} de datos, que se itera una y otra vez (\textit{batch learning}) \cite{Erik, rodeo, rodeo1}. Esta actualización resulta lenta de ejecutar para cada entrada e inoperativa para aplicaciones de sistemas embebidos en tiempo real \cite{rodeo}. Por el otro lado, se agrega el conocimiento de forma gradual a partir de pequeñas muestras de datos (\textit{streaming learning}), que permite un aprendizaje rápido y adaptable a los cambios en tiempo real \cite{Erik, rodeo, streaming2}.
 

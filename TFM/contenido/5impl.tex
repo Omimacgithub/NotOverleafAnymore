@@ -27,9 +27,7 @@ Se ejecuta la función PREPROCESING con la entrada, que representa el pipeline d
 Las operaciones de copia de datos y la inferencia se ejecutan de forma \textbf{asíncrona}, por lo que es necesario introducir una barrera de sincronización una vez todas las operaciones se emitan, de forma que nuevos \glspl{thread} no sobrescriben la memoria de la \acrshort{gpu} mientras esta realiza inferencias.
 
 \section{Procesamiento de video}
-La implementación sigue el flujo expuesto en la sección \ref{sec:tracker}.
-
-El cálculo del \acrshort{iou} es sencillo y no entraña apenas complejidad computacional. Previo al \acrshort{iou}, se obtiene el área a partir de las coordenadas de las \glspl{bbox} y se calcula la intersección y la unión. La distancia euclidiana se calcula como se expone en la sección \ref{subsec:reiden} y tampoco entraña mayor dificultad.
+La implementación sigue el flujo expuesto en la sección \ref{sec:tracker}. El cálculo del \acrshort{iou} es sencillo y no entraña apenas complejidad computacional. Previo al \acrshort{iou}, se obtiene el área a partir de las coordenadas de las \glspl{bbox} y se calcula la intersección y la unión. La distancia euclidiana se calcula como se expone en la sección \ref{subsec:reiden} y tampoco entraña mayor dificultad.
 
 Para realizar una asignación óptima del método húngaro, se utilizó la función \textit{linear\_sum\_assignment} otorgada por el módulo \textit{optimize} de la librería SciPy \cite{lsa}. Dicha librería implementa el algoritmo Jonker-Volgenan, que es una variante del método húngaro con complejidad computacional $O(n^{3})$ \cite{lsa, o3}. Atendiendo a la elevada complejidad computacional, este algoritmo se volvería impracticable con matrices de cientos de filas y columnas (ejemplo: detección de 100 personas de una cámara en un frame y su anterior) \cite{325}. Sin embargo, como en los videos de prueba una cámara llega a detectar como máximo 4 personas a la vez, la ejecución del algoritmo no supone apenas algún coste.
 
@@ -40,13 +38,11 @@ En esta sección se comentan las implementaciones de los componentes encargados 
 
 \subsection{Creación y entrenamiento de las \acrshort{svm}}
 
-El código \ref{coud:training} corresponde al proceso seguido a la hora de crear y entrenar nuevas \acrshort{svm}. Si el individuo es un desconocido, entonces todas las muestras de la base de datos sirven como datos \textbf{negativos}, de lo contrario, es necesario \textbf{excluir las muestras del propio sujeto} del conjunto negativo, si no se estaría perdiendo el poder discriminativo de las \acrshort{svm}.
-
-Tras obtener las muestras negativas, se extrae un subconjunto aleatorio de estas (función \textit{random\_pick}), que normalmente será una cantidad fija prefijada antes de lanzar el sistema.
+El código \ref{coud:training} corresponde al proceso seguido a la hora de crear y entrenar nuevas \acrshort{svm}. Si el individuo es un desconocido, entonces todas las muestras de la base de datos sirven como datos \textbf{negativos}. En el caso de determinar una entidad conocida, es necesario \textbf{excluir las muestras del propio sujeto} del conjunto negativo, de lo contrario se estaría perdiendo el poder discriminativo de las \acrshort{svm}.
 
 A la hora de entrenar las \acrshort{svm}, se asigna la etiqueta 1 (variable \textit{plabels}) para las muestras positivas (variable \textit{d1}) y -1 (variable \textit{labels}) para las negativas (variable \textit{samplesNegative}). OpenCV asigna los signos a las clases según el orden de los signos y las etiquetas que se presentan en el entrenamiento. En el caso de presentar primero las muestras negativas con -1 y las positivas con +1, entonces la \acrshort{svm} devuelve como máximo -1 cuando una muestra pertenece a la clase positiva, siendo -1 la distancia al hiperplano desde la clase positiva, en caso contrario se devolverá como máximo un +1 para las clases negativas. Se ha aplicado este comportamiento para que la fusión de puntuaciones mediante la mediana \textbf{funcione} (ya que ordena los valores de menor a mayor), pero la \acrshort{svm} podría entrenarse para causar el efecto contrario, solo es necesario cambiar el orden de aparición de las etiquetas y los signos en el entrenamiento.
 
-\subsection{Método de inicialización no supervisado}
+\subsection{TODO: Método de inicialización no supervisado}
 
 Como ya se explicó en la sección \ref{sec:initarch}, se parte únicamente de la información de las cámaras en el momento de ejecución del sistema, en el caso de las pruebas realizadas se utilizan los frames de los videos grabados. Para la implementación del algoritmo de la figura \ref{fig:init} se ha podido aprovechar el módulo de procesamiento de video para la fase de recolección de \glspl{bbox}. El resto de detalles de implementación no entrañan nada destacable.
 

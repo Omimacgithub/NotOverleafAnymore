@@ -5,6 +5,7 @@ def def_svm(samples, idx, d1, unk):
 # idx: index that points to the entity ensemble in the database
 # d1: positive samples 
 # unk: flag to mark if d1 samples belong to an unknown entity
+# nneg: number of samples that make up the set of negatives.
     samplesNegative = deepcopy(samples)
     if not unk:
         samplesNegative.pop(idx)
