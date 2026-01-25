@@ -4,6 +4,7 @@
 \section{Dispositivos de altas prestaciones}
 
 \subsection{Arquitecturas de GPU}
+\label{sec:gpuses}
 
 Según la arquitectura de la \acrshort{gpu} de NVIDIA, se agregan nuevas características que maximizan el rendimiento de la inferencia de los modelos (se ahondará en este tema en el capítulo \ref{chap:cnn}). Las arquitecturas que se muestran a continuación están ordenadas de menor a mayor generación.
 
@@ -29,15 +30,7 @@ Turing tiene el código 7.0 como compute capability y es empleada por la \textbf
 
 Con la arquitectura Ampere \cite{ampere} (2020) se incorporan los tensor cores de tercera generación, que incluye los formatos de precisión \textbf{TF32} (Tensor Float 32). TF32 es un tipo optimizado para los \textbf{tensor cores}, híbrido entre \acrshort{fp}32 y \acrshort{fp}16, ya que de rango o exponente tiene los mismos bits que \acrshort{fp}32 y de mantisa o precisión tiene los mismos bits que \acrshort{fp}16 (como se muestra en la figura \ref{fig:types}). Debido a que TF32 acepta una entrada de tipo \acrshort{fp}32 y una salida también de tipo \acrshort{fp}32, dicho formato puede aplicarse sin realizar ningún cambio en el código.
 
-Se introduce la funcionalidad \acrfull{mig}, que permite la partición \textbf{física} de \acrshort{gpu}s para correr aplicaciones de CUDA. A la hora de asignar particiones, es necesario comprender los siguientes conceptos \cite{migconcepts}:
-\begin{itemize}
-    \item \textbf{\acrshort{gpu} Engine}: es la parte de la \acrshort{gpu} que ejecuta el trabajo. Un ejemplo es el copy engine, que se encarga de realizar las operaciones relacionadas con la memoria (direct memory access, memcpy...).
-    \item \textbf{\acrshort{gpu} Memory Slice}: porción de los controladores de memoria y caché de la \acrshort{gpu}.
-    \item \textbf{\acrshort{gpu} SM Slice}: porción de los \glspl{sm} de la \acrshort{gpu}.
-    \item \textbf{\acrshort{gpu} Slice}: porción de la \acrshort{gpu} que combina un único \textbf{\acrshort{gpu} Memory Slice} y un único \textbf{\acrshort{gpu} SM Slice}.
-    \item \textbf{\acrshort{gpu} Instance}: conjunto de \textbf{\acrshort{gpu} slices} y \textbf{\acrshort{gpu} engines}.
-    \item \textbf{Compute Instance}: una o múltiples instancias que pertenecen a una \textbf{\acrshort{gpu} Instance}. Entre ellas se comparten las \textbf{\acrshort{gpu} Memory Slices} y los \textbf{\acrshort{gpu} Engines}, mientras que los \textbf{\acrshort{gpu} SM Slices} se \textbf{particionan}.
-\end{itemize}
+Se introduce la funcionalidad \acrfull{mig}, que permite la partición \textbf{física} de \acrshort{gpu}s para correr aplicaciones de CUDA. En el apéndice \ref{chap:mig} se muestran algunos detalles de la funcionalidad en el caso de la Jetson AGX Thor.
 
 Se añade aceleración en las operaciones con matrices \textbf{dispersas} (\textit{sparsity}), que son matrices con una gran proporción de ceros entre sus valores.
 
@@ -63,25 +56,6 @@ Es una familia de \textbf{\glspl{embsystem}} pensados para aplicaciones de intel
 
 Actualmente existe una amplia variedad en la potencia y precio de estos dispositivos \cite{jason}. Para este proyecto, se han empleado cuatro modelos diferentes que se exponen en la tabla \ref{tab:jetsons} (se encuentran ordenados de menores a mayores prestaciones).
 
-La Jetson AGX Thor soporta \acrshort{mig}, que como ya se ha comentado, divide la \acrshort{gpu} en varias particiones físicas, de forma que se puede asignar un conjunto de recursos exclusivos a una aplicación de CUDA, sin interferencias de otras aplicaciones. La Jetson AGX Thor tiene la siguiente configuración (información extraída de los comandos \textbf{nvidia-smi mig}):
-\begin{itemize}
-    \item 1 \textbf{\acrshort{gpu} Instance}: denominada \textbf{3g.0gb} (tiene un total de 18 \gls{sm}), donde 0gb indica el tamaño de la memoria compartida en \acrshort{gb}s (TODO: debido a que la memoria de la \acrshort{gpu} es compartida con la \acrshort{cpu}, la \acrshort{gpu} no la particiona), y 3g, que indica 3 \acrshort{gpu} SM Slices (TODO: que equivalen a 3 \gls{sm}). Está compuesta por las siguientes \textbf{Compute Instances}:
-          \begin{itemize}
-              \item \textbf{1c.3g.0gb}:
-                    \begin{itemize}
-                        \item Instancias disponibles: 2 (TODO: 2 instancias de 3 \glspl{sm} cada una)
-                        \item \gls{sm} dedicados: 6
-                    \end{itemize}
-              \item \textbf{2c.3g.0gb}:
-                    \begin{itemize}
-                        \item Instancias disponibles: 1 (TODO: 1 instancia de 6 \glspl{sm} cada una)
-                        \item \gls{sm} dedicados: 6
-                    \end{itemize}
-          \end{itemize}
-\end{itemize}
-
-Desafortunadamente, el software que controla el \acrshort{mig} en la Jetson no funciona adecuadamente, ya que no permite la reserva de las \textbf{Compute Instances}. Este error está relacionado con Jetpack 7.0 \cite{notworking}, por lo que instalar Jetpack 7.1 \textbf{podría} habilitar el \acrshort{mig} en la Jetson AGX Thor.
-
 \subsection{Familia Intel}
 
 \input{contenido/tables/x86.tex}
@@ -93,19 +67,8 @@ Las diferencias y similitudes clave a la hora de comparar la familia Jetson con 
 \begin{itemize}
     \item La familia Intel posee \acrshort{gpu}s y \acrshort{cpu}s de \textbf{alta frecuencia} respecto a la familia Jetson.
     \item Las \acrshort{gpu}s de la familia Intel \textbf{no poseen tensor cores}.
-    \item Las \acrshort{gpu}s de la familia Intel son \textbf{discretas}, es decir, tienen su propia memoria (\acrshort{dram}) separada de la \acrshort{cpu}, con la que se comunica mediante PCIe. Por otro lado, las \acrshort{gpu}s de la familia Jetson se encuentran \textbf{integradas con la \acrshort{cpu}}, es decir, ambas comparten la memoria del sistema.
-
-          Las \acrshort{gpu}s integradas pueden beneficiarse de la \textbf{memoria fijada mapeada} (o pinned mapped memory) de CUDA. La memoria fijada es una región de memoria que no puede ser paginada de vuelta a disco, de forma que siempre se mantiene en \acrshort{dram}, lo que acelera las transferencias de datos. Si la \acrshort{gpu} es integrada, entonces el acceso a la memoria entre el \textit{host} (o \acrshort{cpu}) y el \textit{device} (o \acrshort{gpu}) es \textbf{directo} (se pueden mapear directamente las direcciones de memoria ente el \textit{host} y el \textit{device}), de este modo, se \textbf{evitan copias de memoria} (cudaMemcpy), lo que permite ahorrar la latencia asociada a estas operaciones \cite{leimao}.
-
-          La figura \ref{fig:memcpy} muestra un esquema de interconexión de una \acrshort{gpu} discreta (familia Intel) y una \acrshort{gpu} integrada (familia Jetson), en la que la primera requiere un cudaMemcpy para poder disponer de los datos en la \acrshort{gpu} y la segunda aplica la técnica \textbf{zero-copy}, que mediante la memoria fijada mapeada evita realizar transferencias.
+    \item Las \acrshort{gpu}s de la familia Intel son \textbf{discretas}, es decir, tienen su propia memoria (\acrshort{dram}) separada de la \acrshort{cpu}, con la que se comunica mediante PCIe. Por otro lado, las \acrshort{gpu}s de la familia Jetson se encuentran \textbf{integradas con la \acrshort{cpu}}, es decir, ambas comparten la memoria del sistema. Las \acrshort{gpu}s integradas pueden beneficiarse de la compartición de la \acrshort{dram} con la \acrshort{cpu}, evitando así operaciones de transferencia de datos como los \textbf{cudaMemcpy}. En el apéndice \ref{sec:pmm} se explican más detalles al respecto.
 \end{itemize}
-
-\begin{figure}[tbp]
-    \centering
-    \includegraphics[width=0.75\linewidth]{imagenes/memcpy.png}
-    \caption{Arquitectura de interconexión de una \acrshort{gpu} discreta y una \acrshort{gpu} integrada. Figura extraída de \cite{zerocpy}}
-    \label{fig:memcpy}
-\end{figure}
 
 \section{Hardware}
 \label{sec:hw}

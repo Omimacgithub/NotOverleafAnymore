@@ -1,0 +1,47 @@
+\chapter{\acrlong{mig} en Jetson AGX Thor}
+\label{chap:mig}
+
+\lettrine{E}{n} este apéndice se exponen los componentes que forman parte de un sistema \acrfull{mig} y se presenta el caso concreto de la Jetson AGX Thor.
+
+Como ya se mencionó en la sección \ref{sec:gpuses}, la funcionalidad \acrshort{mig} permite la asignación de particiones físicas de la \acrshort{gpu} a procesos de CUDA, de forma que se ejecutan con recursos dedicados, es decir, sin interferencias de otras aplicaciones. A la hora de gestionar las particiones de la \acrshort{gpu}, se aplica la siguiente terminología \cite{migconcepts}:
+\begin{itemize}
+    \item \textbf{\acrshort{gpu} Engine}: es la parte de la \acrshort{gpu} que ejecuta el trabajo. Un ejemplo es el copy engine, que se encarga de realizar las operaciones relacionadas con la memoria (direct memory access, memcpy, entre otros).
+    \item \textbf{\acrshort{gpu} Memory Slice}: porción de los controladores de memoria y de la caché de la \acrshort{gpu}.
+    \item \textbf{\acrshort{gpu} SM Slice}: porción de los \glspl{sm} de la \acrshort{gpu}.
+    \item \textbf{\acrshort{gpu} Slice}: porción de la \acrshort{gpu} que combina un único \textbf{\acrshort{gpu} Memory Slice} y un único \textbf{\acrshort{gpu} SM Slice}.
+    \item \textbf{\acrshort{gpu} Instance}: conjunto de \textbf{\acrshort{gpu} Slices} y \textbf{\acrshort{gpu} Engines}.
+    \item \textbf{Compute Instance}: una o múltiples instancias que pertenecen a una \textbf{\acrshort{gpu} Instance}. Entre ellas se comparten las \textbf{\acrshort{gpu} Memory Slices} y los \textbf{\acrshort{gpu} Engines}, mientras que los \textbf{\acrshort{gpu} SM Slices} se \textbf{particionan}.
+\end{itemize}
+
+\begin{figure}[tbp]
+    \centering
+    \includegraphics[width=0.75\linewidth]{imagenes/MIGPARTITIONING.png}
+    \caption{Estructura de una \acrshort{gpu} Instance. Figura extraída de \cite{migconcepts}}
+    \label{fig:MIGPARTITIONING}
+\end{figure}
+
+Las \textbf{\acrshort{gpu} Instances} son la unidad más grande de particionado y siguen el esquema \textbf{xc.yg.zgb}, donde \textbf{yg} indica el número de \textbf{Compute Slices} que se reservan, que no son más que un conjunto de \textbf{\acrshort{gpu} SM Slices} y \textbf{\acrshort{gpu} Engines} (estos últimos compartidos por todas las \textbf{Compute Instances}). \textbf{zgb} indica la memoria total asignada a la \textbf{\acrshort{gpu} Instance} y \textbf{xc} indica el número de \textbf{Compute Slices} asignadas a cada \textbf{Compute Instance}. La figura \ref{fig:MIGPARTITIONING} muestra la \textbf{\acrshort{gpu} Instance} \textbf{1c.4g.20gb} de la que se pueden crear \textbf{Compute Instances}, cada \textbf{Compute Instance} obtendrá 1/4 de \textbf{Compute Slices} y 20 \acrshort{gb}s de memoria compartida entre todas las \textbf{Compute Instances}.
+
+La Jetson AGX Thor soporta \acrshort{mig}, cuya configuración se encuentra estructurada de la siguiente forma (información extraída de los comandos \textbf{nvidia-smi mig}):
+\begin{itemize}
+    \item 1 \textbf{\acrshort{gpu} Instance}: denominada \textbf{3g.0gb}, con 3 \textbf{Compute Slices}, que suman un total de 18 \glspl{sm} y 0 \acrshort{gb}s de memoria compartida (la Jetson AGX Thor puede que no ofrezca particionado de dicha memoria debido a que es compartida con la \acrshort{cpu}). De dicha \textbf{\acrshort{gpu} Instance} se pueden crear las siguientes \textbf{Compute Instances} \footnote{La información devuelta por el comando \textbf{nvidia-smi mig -lcip} presenta ciertas incoherencias, por lo que los siguientes datos pueden no ser correctos.}:
+          \begin{itemize}
+              \item \textbf{1c.3g.0gb}:
+                    \begin{itemize}
+                        \item \textbf{Compute Instances} disponibles: 2
+                        \item \glspl{sm} de cada \textbf{Compute Instance}: 6
+                    \end{itemize}
+              \item \textbf{2c.3g.0gb}:
+                    \begin{itemize}
+                        \item \textbf{Compute Instances} disponibles: 1
+                        \item \glspl{sm} de cada \textbf{Compute Instances}: 12
+                    \end{itemize}
+              \item \textbf{3g.0gb}:
+                    \begin{itemize}
+                        \item \textbf{Compute Instances} disponibles: 1
+                        \item \glspl{sm} de cada \textbf{Compute Instances}: 18
+                    \end{itemize}
+          \end{itemize}
+\end{itemize}
+
+Desafortunadamente, el software que controla el \acrshort{mig} en la Jetson AGX Thor no funciona adecuadamente, ya que no permite la reserva de las \textbf{Compute Instances}. A fecha de esta memoria, dicha funcionalidad estará soportada en futuras versiones de JetPack \cite{notworking}.

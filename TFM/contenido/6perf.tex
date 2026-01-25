@@ -65,11 +65,11 @@ OSNet\_x1, en comparación con ArcFace, no representa muchas variaciones en la l
 \section{Discusión}
 \label{sec:discuss}
 
-Las \acrshort{gpu}s de los equipos de sobremesa rinden de una forma excelente, consiguiendo un salto de mejora equiparable al de los dispositivos Jetson, cuyas \acrshort{gpu}s poseen los tensor cores, más potentes que los núcleos de CUDA y la memoria unificada, que evita el uso de operaciones cudaMemcpy.
+Las \acrshort{gpu}s de los equipos de sobremesa rinden de una forma excelente, consiguiendo un salto de mejora equiparable al de los dispositivos Jetson, cuyas \acrshort{gpu}s poseen los tensor cores, más potentes que los núcleos de CUDA.
 
-Los resultados tan bajos de latencia en los equipos de sobremesa son especialmente sorprendentes, teniendo en cuenta de que las operaciones de copia de memoria y sincronización deberían de añadir una sobrecarga notoria en las inferencias.
+%Los resultados tan bajos de latencia en los equipos de sobremesa son especialmente sorprendentes, teniendo en cuenta de que las operaciones de copia de memoria y sincronización deberían de añadir una sobrecarga notoria en las inferencias.
 
-El uso de memoria fijada mapeada en los dispositivos Jetson supone una ligera reducción en la latencia (en torno a 1 milisegundo según las pruebas), que no compensa la latencia de procesamiento. De todos modos, se consiguen ahorrar las llamadas a cudaMemcpy en los sistemas con \acrshort{gpu}s integradas, lo que ayuda a reducir la congestión de la cola de operaciones de un \gls{stream} en la \acrshort{gpu}.
+%El uso de memoria fijada mapeada en los dispositivos Jetson supone una ligera reducción en la latencia (en torno a 1 milisegundo según las pruebas), que no compensa la latencia de procesamiento. De todos modos, se consiguen ahorrar las llamadas a cudaMemcpy en los sistemas con \acrshort{gpu}s integradas, lo que ayuda a reducir la congestión de la cola de operaciones de un \gls{stream} en la \acrshort{gpu}.
 
 La Jetson AGX Orin, a pesar de doblar los recursos computacionales de la Orin Nano, apenas consigue una mejora en cuanto a reducción de latencia, al mismo tiempo que se queda atrás de los resultados logrados en la AGX Thor. Un ejemplo es la ejecución de YOLO11n en TensorRT, cuya diferencia entre ambas AGX es de \textbf{15 milisegundos} a favor de la AGX Thor, que es una diferencia enormemente significativa (TODO: porqué?).
 

@@ -86,11 +86,13 @@ Por otro lado, se aprecia una bajada en el \textit{det\_p} de los 2 dispositivos
 
 En la métrica \textit{det\_r} se aprecia una bajada, no muy clara en el portátil, al aumentar la cantidad de cámaras. Dicha bajada implica que el sistema empieza a perder mensajes de los nodos, aunque \textbf{no es crítica} y permite atender a la mayoría de las peticiones.
 
-%TODO: la cola puede albergar hasta 100 mensajes, si acaso será que los resultados llegan con demasiado retraso debido a la alta demanda de cómputo del sistema (para 10 cámaras, se deben de procesar un total de 40 redes neuronales en 100 milisegundos) lo que hace que se pierdan los frames que no tengan espacio en la cola
+%PRECISION DE FAMILIA INTEL: la caida en la precision no se debe al slope ni al tamaño de la cola. El problema debe de estar en el nodo LiDAR.
+
+%PRECISIÓN AL AUMENTAR EL Nº DE CÁMARAS: creo q el nodo integrador incluye detecciones repetidas (con las mismas posiciones exactas) cuando no se conoce la identidad (la etiqueta como unk), ya que con entidades desconocidas no se guardan duplicados. Esto produce una proliferación de det_fps, ya que al haber puntos repetidos, hay más detecciones pero menos matches, por lo tanto aumentan los unmatches y así los det_fps.
 
 La precisión en los reconocimientos (métrica \textit{idp}) no experimenta caídas notorias (excepto por la situación de las 5 cámaras en el portátil, que sorprendente se recupera al subir a las 10 cámaras) al aumentar la cantidad de cámaras, lo que demuestra que los modelos de reconocimiento siguen funcionando correctamente ante un enorme estrés del sistema. El \textit{idf1} depende en cierta medida del \textit{det\_r}, por lo que es de esperar que dicho valor descienda junto al \textit{det\_r}, que en cierto modo es compensado por el \textit{idp}.
 
-La métrica \textit{det\_p} sufre la mayor caída a medida que se escala en el número de cámaras...
+La métrica \textit{det\_p} sufre la mayor caída a medida que se escala en el número de cámaras... Por otra parte, los resultados del \textit{det\_p} se muestran similares entre el PC del laboratorio y el portátil, lo que demuestra la baja latencia de la red Ethernet utilizada para las pruebas del portátil.
 
 \input{contenido/tables/tests/scaleresources.tex}
 
@@ -108,11 +110,15 @@ En el caso del portátil, gracias a las herramientas de \acrshort{ros} y a la ar
 
 En la tabla \ref{tab:scaleros2} se muestra el rendimiento del sistema en \textbf{\acrshort{ros} 2} para los equipos Jetson Orin Nano y Jetson AGX Thor. En estos dispositivos no es posible instalar \acrshort{ros} Noetic, al menos para poder contar con las últimas versiones de las librerías. Por los motivos comentados en la sección \ref{subsec:ROS2}, el sistema en \acrshort{ros} 2 no puede ejecutar el nodo \acrshort{lidar}, por lo que los resultados mostrados solo tienen en cuenta los nodos cámara junto al integrador.
 
-El \textit{det\_r} se muestra claramente inferior respecto a los resultados de la familia Intel, ya que el \acrshort{lidar} otorgaba cobertura completa a la reducida visión de las cámaras. Ambas Jetson logran superar el valor de referencia en esta métrica, lo que demuestra el excelente rendimiento de las \acrshort{gpu}, capaces de compensar las limitaciones de una \acrshort{cpu} de \acrshort{arm} respecto a un Intel Core i5 (procesador del equipo de referencia).
+El \textit{det\_r} se muestra claramente inferior respecto a los resultados de la familia Intel, ya que el \acrshort{lidar} otorgaba cobertura completa a la reducida visión de las cámaras. Ambas Jetson logran superar el valor del equipo de referencia en esta métrica, lo que demuestra el excelente rendimiento de las \acrshort{gpu}s que integran, capaces de compensar las limitaciones de una \acrshort{cpu} de \acrshort{arm} respecto a un Intel Core i5 (procesador del equipo de referencia).
 
-La precisión en la detección (\textit{det\_p}) empeora en la Jetson Orin Nano cuando se ejecutan 5 cámaras simultáneamente. Debido a la menor capacidad de procesamiento de este dispositivo, es de esperar que muchos de los mensajes procesados por los nodos cámara lleguen tarde al nodo integrador, que devuelve una posición desactualizada respecto al frame de referencia. En cambio, el \textit{det\_r} se mantiene constante. En el caso de la Jetson AGX Thor, los resultados se mantienen en la línea de la familia Intel, sin contar el bajo \textit{det\_r} causado por la ausencia del \acrshort{lidar}.
+La precisión en la detección (\textit{det\_p}) empeora en la Jetson Orin Nano cuando se ejecutan 5 cámaras simultáneamente. Acorde a la tabla \ref{tab:scaleresourcesros2}, los recursos del dispositivo se encuentran al límite de procesamiento, lo que genera retardos en los resultados de los nodos. Adicionalmente, los 8 \acrshort{gb}s de memoria se vuelven insuficientes, debido a todos los recursos necesarios a reservar, que pesan en torno a cientos de \acrshort{mb}s, que se multiplican por 4 modelos y a su vez por 5 cámaras, lo que deriva en errores de ejecución por falta de memoria necesaria para realizar las inferencias. Para reducir el impacto de este problema, se han aplicado ciertas optimizaciones de los códigos de Python, que han permitido ahorrar hasta \textbf{400 \acrshort{mb}s} en la inicialización del sistema, y que se citan en el apéndice \ref{chap:optimus}.
+
+TODO: En cambio, el \textit{det\_r} se mantiene constante. En el caso de la Jetson AGX Thor, los resultados se mantienen en la línea de la familia Intel, sin contar el bajo \textit{det\_r} causado por la ausencia del \acrshort{lidar}.
 
 %En la Orin Nano la precision baja en casi 30 puntos mientras q el recall solo baja 1 punto... porque?? <- hay q recordar q YuNet me daba fallos de memoria
+
+% RECALL: En la Thor con 2 y 5 cámaras el n_gt se mantiene encima de los 6000 mientras q con 10 cams baja a 4300, REFLEJAR ESTO EN LA MEMORIA.
 
 La Jetson AGX Thor sufre una caída en el \textit{det\_p} al procesar 10 cámaras, ligeramente superior a la familia Intel. Debido al uso excesivo de \acrshort{gpu} (88\% según las pruebas), se ha trasladado la ejecución del modelo YuNet a la \acrshort{cpu}, ya que la reducción en la latencia no es tan beneficiosa al ejecutarse en CUDA (ver tabla \ref{tab:equips}). Gracias a este cambio se ha conseguido balancear la carga entre \acrshort{cpu} y \acrshort{gpu} como se muestra en la tabla \ref{tab:scaleresourcesros2} y, por consiguiente, se ha mejorado la métrica \textit{det\_p} en 5 puntos (respecto a los 57.7 de ejecutar YuNet en CUDA).
 
@@ -121,8 +127,6 @@ La Jetson AGX Thor sufre una caída en el \textit{det\_p} al procesar 10 cámara
 En la tabla \ref{tab:scaleresourcesros2} se muestra la proporción de recursos utilizados en las pruebas del sistema en \acrshort{ros} 2. Se expone la mediana de todas las lecturas de recursos en una ejecución completa del sistema. Se emplea la mediana, ya que es robusta frente a los picos de uso de recursos.
 
 Ambos dispositivos pueden ejecutar holgadamente el sistema usando 2 cámaras, en el caso de las 5 cámaras es cuando se empiezan a dislumbrar las limitaciones de la Jetson Orin Nano, principalmente en términos de memoria, lo que explica la caída en la precisión de las detecciones, que no permite a los modelos reservar memoria para varias de las inferencias.
-
-Los 8 GB de memoria rápidamente se quedan escasos, debido a todos los recursos necesarios a reservar, como contextos de CUDA, el modelo deserializado, \glspl{stream} de CUDA, entre otros, que pesan en torno a cientos de \acrshort{mb}, que se multiplican por 4 modelos y a su vez por 5 cámaras. Debido al excesivo uso de memoria, se han aplicado ciertas optimizaciones de los códigos de Python, que han permitido ahorrar hasta \textbf{400 \acrshort{mb}} en la inicialización del sistema, y que se citan en el apéndice \ref{chap:optimus}.
 
 \section{Discusión}
 
