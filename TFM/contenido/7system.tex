@@ -45,7 +45,12 @@ Para cada prueba, también se mostrará la proporción de los recursos utilizado
 
 Debido a que el \gls{rosbag} utilizado es un archivo pesado (41 \acrshort{gb}), en ciertas situaciones ha sido necesario reproducir dicho fichero desde una \textbf{fuente externa} al no disponer de almacenamiento local suficiente.
 
-La comunicación con la fuente externa se realiza a través de una red \acrshort{lan} \textbf{Gigabit Ethernet}, que posee un ancho de banda limitado para la transmisión de imágenes \acrshort{rgbd} (máximo teórico de 125 \acrshort{mb}/s). La fuente externa debe de enviar $(|imagen\_RGB| + |imagen\_profundidad)*nºcams + |nube\_de\_puntos\_LiDAR|$ megabytes de datos cada 100 ms (que es la frecuencia a la que trabaja el sistema), siendo $|imagen\_RGB| = 40 \acrshort{mb}/s$, $|imagen\_profundidad| = 20 \acrshort{mb}/s$ y $|nube\_de\_puntos\_LiDAR| = 5 \acrshort{mb}/s$, lo que supera el ancho de banda máximo (125 \acrshort{mb}/s) utilizando únicamente dos cámaras (\textit{ncams}=2).
+\begin{equation}
+    (|imagen\_RGB| + |imagen\_profundidad|)*ncams + |nube\_de\_puntos\_LiDAR|
+\end{equation}
+\label{eq:transmision}
+
+La comunicación con la fuente externa se realiza a través de una red \acrshort{lan} \textbf{Gigabit Ethernet}, que posee un ancho de banda limitado para la transmisión de imágenes \acrshort{rgbd} (máximo teórico de 125 \acrshort{mb}/s). La fórmula \ref{eq:transmision} muestra el tamaño de los datos que debe transmitir la fuente externa cada 100 ms (que es la frecuencia a la que trabaja el sistema). Siendo $|imagen\_RGB| = 40 \acrshort{mb}/s$, $|imagen\_profundidad| = 20 \acrshort{mb}/s$ y $|nube\_de\_puntos\_LiDAR| = 5 \acrshort{mb}/s$ (los datos se han tomado del comando \textbf{rostopic bw}), el ancho de banda necesario es de \textbf{125 \acrshort{mb}/s} para dos cámaras (\textit{ncams}=2), lo que ya \textbf{equivale} al ancho de banda máximo teórico.
 
 \begin{figure}
     \centering
@@ -63,49 +68,61 @@ Debido a que el \gls{rosbag} solo contiene los datos de 2 cámaras, para realiza
 \section{Resultados}
 \label{sec:scaleresults}
 
+A continuación se exponen los resultados de las pruebas de escalabilidad ejecutadas en la familia Intel (equipos de sobremesa) y en 2 dispositivos de la familia Jetson (Jetson Orin Nano y Jetson AGX Thor). Los resultados marcados con guion indican ausencia del dato por imposibilidad de realizar la prueba.
+
+\subsection{Familia Intel}
+
 \input{contenido/tables/tests/scaleperf.tex}
 
-La tabla \ref{tab:scaleperf} muestra los resultados de los dispositivos en función del número de cámaras del sistema en \textbf{\acrshort{ros} 1}. La columna \textit{Reference} muestra los resultados obtenidos en el dispositivo de pruebas utilizado en \cite{andrew}, en el que solo se registraron datos del sistema funcionando con un máximo de 2 cámaras.
+La tabla \ref{tab:scaleperf} muestra los resultados de la familia Intel en función del número de cámaras del sistema en \textbf{\acrshort{ros} 1}. La columna \textit{Reference} muestra los resultados obtenidos en el dispositivo de pruebas utilizado en \cite{andrew}, en el que solo se registraron datos del sistema funcionando con un máximo de 2 cámaras.
 
-La principal mejora respecto al equipo de referencia se ve en el \textit{recall}, que demuestra que el sistema tiene una mayor capacidad de procesamiento, en cierta medida influida por la potencia de los procesadores Intel Core i7 respecto a Core i5 (este último viniendo del equipo de referencia).
+La principal mejora respecto al equipo de referencia se ve en el \textit{det\_r}, que demuestra que el sistema tiene una mayor capacidad de procesamiento, en cierta medida influida por la potencia de los procesadores Intel Core i7 respecto a Core i5 (este último viniendo del equipo de referencia).
 
-Por otro lado, se aprecia una bajada en el \textit{det\_p} de los 2 dispositivos de sobremesa respecto al de referencia, esto puede deberse a que se acepta la llegada de los mensajes de las cámaras con un máximo de \textbf{500 milisegundos} de retardo respecto a los \textbf{200 milisegundos} configurados en la prueba de referencia, lo que hace que se devuelvan predicciones con posiciones más atrasadas y, por lo tanto, que superen la holgura de 40 centímetros para asumirlas correctas. En cuanto a la métrica \textit{idp} todos los sistemas se encuentran relativamente a la par.
+Por otro lado, se aprecia una bajada en el \textit{det\_p} de los 2 dispositivos de sobremesa respecto al de referencia,
+
+% ESTO NO ES CIERTO, al reducir el intervalo a 200 ms baja el recall (a 47, que es MENOS que la referencia) pero no sube la precisión, esto puede deberse a que se acepta la llegada de los mensajes de las cámaras con un máximo de \textbf{500 milisegundos} de retardo respecto a los \textbf{200 milisegundos} configurados en la prueba de referencia, lo que hace que se devuelvan predicciones con posiciones más atrasadas y, por lo tanto, que superen la holgura de 40 centímetros para asumirlas correctas. En cuanto a la métrica \textit{idp} todos los sistemas se encuentran relativamente a la par.
 
 %a que el nodo integrador debe de fusionar los datos procedentes de todos los sensores, al aumentar su número también se aumenta la cantidad de procesamiento. Por lo tanto, más tiempo se demorará en devolver una predicción, que se emparejará con el frame del \gls{dataset} con el mismo \gls{timestamp}, que corresponde a un instante real \textbf{anterior}.
 
-En la métrica \textit{det\_r} se aprecia una ligera bajada, no muy clara en el portátil, al aumentar la cantidad de cámaras. . Sin embargo, la caída de rendimiento en ambos dispositivos \textbf{no es crítica} y permite atender a la mayoría de las peticiones, aunque los resultados reflejan una clara congestión en los nodos.
+En la métrica \textit{det\_r} se aprecia una bajada, no muy clara en el portátil, al aumentar la cantidad de cámaras. Dicha bajada implica que el sistema empieza a perder mensajes de los nodos, aunque \textbf{no es crítica} y permite atender a la mayoría de las peticiones.
 
-TODO: realizar pruebas aumentando el tamaño de la cola... debido a la alta demanda de cómputo del sistema (para 10 cámaras, se deben de procesar un total de 40 redes neuronales en 100 milisegundos) lo que hace que se pierdan los frames que no tengan espacio en la cola
+%TODO: la cola puede albergar hasta 100 mensajes, si acaso será que los resultados llegan con demasiado retraso debido a la alta demanda de cómputo del sistema (para 10 cámaras, se deben de procesar un total de 40 redes neuronales en 100 milisegundos) lo que hace que se pierdan los frames que no tengan espacio en la cola
 
 La precisión en los reconocimientos (métrica \textit{idp}) no experimenta caídas notorias (excepto por la situación de las 5 cámaras en el portátil, que sorprendente se recupera al subir a las 10 cámaras) al aumentar la cantidad de cámaras, lo que demuestra que los modelos de reconocimiento siguen funcionando correctamente ante un enorme estrés del sistema. El \textit{idf1} depende en cierta medida del \textit{det\_r}, por lo que es de esperar que dicho valor descienda junto al \textit{det\_r}, que en cierto modo es compensado por el \textit{idp}.
 
+La métrica \textit{det\_p} sufre la mayor caída a medida que se escala en el número de cámaras...
+
 \input{contenido/tables/tests/scaleresources.tex}
 
-La tabla \ref{tab:scaleresources} muestra el uso de recursos durante la prueba para los equipos de sobremesa. Se puede apreciar que, hasta las 10 cámaras, el sistema se desempeña de forma fluida, con una media de poco más de la mitad de recursos utilizados.
+La tabla \ref{tab:scaleresources} muestra el uso de recursos durante la prueba para los equipos de sobremesa. Se puede apreciar que, hasta las 10 cámaras, el sistema se desempeña de forma fluida, con máximos de poco más de la mitad de recursos utilizados.
 
-Los recursos de la \acrshort{gpu} se llevan al límite con 10 cámaras. La gráfica del portátil (Ampere) frente a la del PC del laboratorio (Turing) es capaz de gestionar mejor la memoria (debido a TODO: \dots). Por otro lado, la \acrshort{gpu} Ampere es capaz de lidiar mejor con la carga, debido a TODO: el número de \glspl{sm} seguramente.
+(TODO: El portátil ha registrado su mayor recall en 10 cámaras, entonces se puede decir que la GPU está al límite???) Los recursos de la \acrshort{gpu} se llevan al límite con 10 cámaras. La gráfica del portátil (Ampere) frente a la del PC del laboratorio (Turing) es capaz de gestionar mejor la memoria (debido a TODO: \dots). Por otro lado, un mayor número de \glspl{sm} en la \acrshort{gpu} Ampere (20, respecto a los 14 de la Turing) le permite lidiar mejor con la carga respecto a la \acrshort{gpu} del PC del laboratorio.
 
 El uso elevado de recursos explica, junto a otros factores, la bajada en el \textit{det\_r} cuando se ejecutan 10 nodos cámara simultáneamente, más el nodo \acrshort{lidar} y el integrador.
 
+En el caso del portátil, gracias a las herramientas de \acrshort{ros} y a la arquitectura de transmisión de los datos, se ha conseguido reducir significativamente el ancho de banda de transmisión de imágenes \acrshort{rgbd}, permitiendo el tráfico de estos datos en tiempo real.
+
+\subsection{Familia Jetson}
+
 \input{contenido/tables/tests/scaleros2.tex}
 
-En la tabla \ref{tab:scaleros2} se muestra el rendimiento del sistema en \textbf{\acrshort{ros} 2} para los equipos Jetson Orin Nano y Jetson AGX Thor. Los resultados marcados con guion indican ausencia del dato cuando se realizó la prueba o imposibilidad de realizar dicha prueba (es el caso de la Jetson Orin Nano con 10 cámaras).
+En la tabla \ref{tab:scaleros2} se muestra el rendimiento del sistema en \textbf{\acrshort{ros} 2} para los equipos Jetson Orin Nano y Jetson AGX Thor. En estos dispositivos no es posible instalar \acrshort{ros} Noetic, al menos para poder contar con las últimas versiones de las librerías. Por los motivos comentados en la sección \ref{subsec:ROS2}, el sistema en \acrshort{ros} 2 no puede ejecutar el nodo \acrshort{lidar}, por lo que los resultados mostrados solo tienen en cuenta los nodos cámara junto al integrador.
 
-En estos dispositivos no es posible instalar \acrshort{ros} Noetic, al menos para poder contar con las últimas versiones de las librerías. Por los motivos comentados en la sección \ref{subsec:ROS2}, el sistema en \acrshort{ros} 2 no puede ejecutar el nodo \acrshort{lidar}, por lo que los resultados mostrados solo tienen en cuenta los nodos cámara.
+El \textit{det\_r} se muestra claramente inferior respecto a los resultados de la familia Intel, ya que el \acrshort{lidar} otorgaba cobertura completa a la reducida visión de las cámaras. Ambas Jetson logran superar el valor de referencia en esta métrica, lo que demuestra el excelente rendimiento de las \acrshort{gpu}, capaces de compensar las limitaciones de una \acrshort{cpu} de \acrshort{arm} respecto a un Intel Core i5 (procesador del equipo de referencia).
 
-El \textit{det\_r} se muestra claramente inferior respecto a los anteriores resultados, ya que el \acrshort{lidar} otorgaba cobertura completa a la reducida visión de las cámaras de aproximadamente 117º. Las 3 Jetson logran superar el valor de referencia en esta métrica, lo que demuestra el excelente rendimiento de las \acrshort{gpu}, capaces de compensar las limitaciones de una \acrshort{cpu} de \acrshort{arm} respecto a un Intel Core i5 (procesador del equipo de referencia).
+La precisión en la detección (\textit{det\_p}) empeora en la Jetson Orin Nano cuando se ejecutan 5 cámaras simultáneamente. Debido a la menor capacidad de procesamiento de este dispositivo, es de esperar que muchos de los mensajes procesados por los nodos cámara lleguen tarde al nodo integrador, que devuelve una posición desactualizada respecto al frame de referencia. En cambio, el \textit{det\_r} se mantiene constante. En el caso de la Jetson AGX Thor, los resultados se mantienen en la línea de la familia Intel, sin contar el bajo \textit{det\_r} causado por la ausencia del \acrshort{lidar}.
 
-La precisión en la detección empeora en los dispositivos Jetson respecto a los de sobremesa cuando se ejecutan 5 cámaras simultáneamente. Debido a la menor capacidad de procesamiento de la Jetson Orin Nano, es de esperar que muchos de los mensajes procesados por los nodos cámara llegan tarde al nodo integrador, que devuelve una posición desactualizada respecto al frame de referencia, por lo tanto, se asume la detección como \textbf{errónea}. TODO: y en la Jetson AGX Thor?, a pesar de la notable caída en la precisión, que es de la misma magnitud que en los dispositivos de sobremesa, el \textit{det\_r} se mantiene constante e incluso mejora con 5 cámaras (TODO: querrá decir que va sobrada).
+%En la Orin Nano la precision baja en casi 30 puntos mientras q el recall solo baja 1 punto... porque?? <- hay q recordar q YuNet me daba fallos de memoria
+
+La Jetson AGX Thor sufre una caída en el \textit{det\_p} al procesar 10 cámaras, ligeramente superior a la familia Intel. Debido al uso excesivo de \acrshort{gpu} (88\% según las pruebas), se ha trasladado la ejecución del modelo YuNet a la \acrshort{cpu}, ya que la reducción en la latencia no es tan beneficiosa al ejecutarse en CUDA (ver tabla \ref{tab:equips}). Gracias a este cambio se ha conseguido balancear la carga entre \acrshort{cpu} y \acrshort{gpu} como se muestra en la tabla \ref{tab:scaleresourcesros2} y, por consiguiente, se ha mejorado la métrica \textit{det\_p} en 5 puntos (respecto a los 57.7 de ejecutar YuNet en CUDA).
 
 \input{contenido/tables/tests/scaleresourcesros2.tex}
 
-En la tabla \ref{tab:scaleresourcesros2} se muestra la proporción de recursos utilizados en las pruebas del sistema en \acrshort{ros} 2. TODO: se expone la mediana de todas las lecturas de recursos en una ejecución completa del sistema. Se emplea la mediana, ya que es robusta frente a los picos de uso de recursos.
+En la tabla \ref{tab:scaleresourcesros2} se muestra la proporción de recursos utilizados en las pruebas del sistema en \acrshort{ros} 2. Se expone la mediana de todas las lecturas de recursos en una ejecución completa del sistema. Se emplea la mediana, ya que es robusta frente a los picos de uso de recursos.
 
 Ambos dispositivos pueden ejecutar holgadamente el sistema usando 2 cámaras, en el caso de las 5 cámaras es cuando se empiezan a dislumbrar las limitaciones de la Jetson Orin Nano, principalmente en términos de memoria, lo que explica la caída en la precisión de las detecciones, que no permite a los modelos reservar memoria para varias de las inferencias.
 
 Los 8 GB de memoria rápidamente se quedan escasos, debido a todos los recursos necesarios a reservar, como contextos de CUDA, el modelo deserializado, \glspl{stream} de CUDA, entre otros, que pesan en torno a cientos de \acrshort{mb}, que se multiplican por 4 modelos y a su vez por 5 cámaras. Debido al excesivo uso de memoria, se han aplicado ciertas optimizaciones de los códigos de Python, que han permitido ahorrar hasta \textbf{400 \acrshort{mb}} en la inicialización del sistema, y que se citan en el apéndice \ref{chap:optimus}.
-
-La Jetson AGX Thor sufre una caída en el \textit{det\_p} cuando se ejecutan 10 cámaras simultáneamente, atendiendo a la tabla \ref{tab:scaleresourcesros2} el principal problema puede deberse a la carga excesiva de la \acrshort{gpu}, que supone el cuello de botella de la ejecución del sistema.
 
 \section{Discusión}
 

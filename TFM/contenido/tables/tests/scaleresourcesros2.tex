@@ -1,5 +1,3 @@
-% Please add the following required packages to your document preamble:
-% \usepackage{multirow}
 \begin{table}[]
     \begin{tabular}{cc|cccc}
         \hline
@@ -10,9 +8,10 @@
         \multicolumn{1}{c|}{}                                                                                      & \%mem                                                & \multicolumn{2}{c|}{51.9}             & \multicolumn{2}{c}{8.2}                                 \\ \hline
         \multicolumn{1}{c|}{\multirow{2}{*}{\begin{tabular}[c]{@{}c@{}}5\\ cameras\end{tabular}}}                  & \textit{\%load}                                      & 87.8                                  & \multicolumn{1}{c|}{71.0}         & 18.5         & 33.0 \\ \cline{2-2}
         \multicolumn{1}{c|}{}                                                                                      & \textit{\%mem}                                       & \multicolumn{2}{c|}{91.1}             & \multicolumn{2}{c}{10.5}                                \\ \hline
-        \multicolumn{1}{c|}{\multirow{2}{*}{\begin{tabular}[c]{@{}c@{}}10\\ cameras\end{tabular}}}                 & \textit{\%load}                                      & -                                     & \multicolumn{1}{c|}{-}            & 45.0         & 88.0 \\ \cline{2-2}
-        \multicolumn{1}{c|}{}                                                                                      & \textit{\%mem}                                       & \multicolumn{2}{c|}{-}                & \multicolumn{2}{c}{15.2}                                \\ \hline
+        \multicolumn{1}{c|}{\multirow{2}{*}{\begin{tabular}[c]{@{}c@{}}10\\ cameras \footnotemark\end{tabular}}}   & \textit{\%load}                                      & -                                     & \multicolumn{1}{c|}{-}            & 67.0         & 66.0 \\ \cline{2-2}
+        \multicolumn{1}{c|}{}                                                                                      & \textit{\%mem}                                       & \multicolumn{2}{c|}{-}                & \multicolumn{2}{c}{9.5}                                 \\ \hline
     \end{tabular}
-    \caption{Recursos utilizados del sistema al escalar múltiples cámaras (solo cámaras en \acrshort{ros} 2)}
+    \caption{Recursos utilizados por los dispositivos Jetson en la ejecución del sistema (solo cámaras en \acrshort{ros} 2)}
 \end{table}
 \label{tab:scaleresourcesros2}
+\footnotetext{YuNet se ejecuta en el \textit{runtime} de OpenCV en \acrshort{cpu}}
