@@ -1,12 +1,12 @@
 \begin{table}[]
-    \begin{tabular}{c|c|c|c}
+    \begin{tabular}{c|c|c}
         \hline
-        \textbf{Models}                                    & \textbf{Input size} & \textbf{Params(M)} & \textbf{Latency (ms)}                                        \\ \hline
-        \textit{YuNet \textbackslash{}cite\{wu2023yunet\}} & 640x480x3           & 0.076              & 9.6\textbackslash{}footnote\{tested on Intel i7-12700k CPU\} \\ \cline{1-1}
-        \textit{ArcFace}                                   & 112x112x3           &                    &                                                              \\ \cline{1-1}
-        \textit{YOLO11n}                                   & 640x640x3           & 2.6                & 1.5                                                          \\ \cline{1-1}
-        \textit{YOLOv8n}                                   & 640x640x3           & 3.2                &                                                              \\ \cline{1-1}
-        \textit{OSNet}                                     & 258x126x3           &                    &                                                              \\ \hline
+        \textbf{Models}                                                                             & \textbf{Input size} & \textbf{Params(M)} \\ \hline
+        \textit{YuNet \cite{wu2023yunet}}                                                           & 640x640x3           & 0.053              \\ \cline{1-1}
+        \textit{\begin{tabular}[c]{@{}c@{}}ArcFace (ResNet100) \cite{deng2019arcface}\end{tabular}} & 112x112x3           & \textbf{40.3}      \\ \cline{1-1}
+        \textit{\begin{tabular}[c]{@{}c@{}}YOLO11n \cite{redmon2016you}\end{tabular}}               & 640x640x3           & 2.6                \\ \cline{1-1}
+        \textit{\begin{tabular}[c]{@{}c@{}}YOLOv8n \cite{redmon2016you}\end{tabular}}               & 640x640x3           & 3.2                \\ \cline{1-1}
+        \textit{\begin{tabular}[c]{@{}c@{}}OSNet \cite{zhou2019omni}\end{tabular}}                  & 258x126x3           & 2.2                \\ \hline
     \end{tabular}
     \caption{Propiedades de los modelos utilizados}
     \label{tab:modelspecs}

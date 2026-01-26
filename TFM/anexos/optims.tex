@@ -5,15 +5,19 @@
 
 \section{Optimizaciones en la reserva de memoria}
 
+\input{contenido/codes/slots.tex}
+
 Debido a las limitaciones de memoria de la Jetson Orin Nano durante la ejecución del sistema, se ha optado por modificar el código a modo de hacerlo más eficiente en términos de reserva de memoria. Los cambios realizados son los siguientes:
 \begin{itemize}
     \item Sustituir \textit{imports} de librerías "pesadas" (ejemplo: OpenCV o ultralytics, en torno a cientos de \acrshort{mb}) por otras más ligeras (ejemplo: numpy o scipy, en torno a decenas de \acrshort{mb}) con funciones alternativas, sin comprometer en exceso la precisión y latencia de las inferencias (ejemplo: sustituir cv2.copyMakeBorder por np.pad, o cv2.imread por PIL.Image).
     \item Uso de \textit{slots}: la variable \textit{\textunderscore \textunderscore slots\_\_} evita la creación del diccionario dinámico de Python (\textit{\_\_dict\_\_}), que almacena las variables de una \textbf{clase}. Los \textit{\_\_slots\_\_} son más rápidos y eficientes que los diccionarios dinámicos de Python, aunque también más extrictos (no se pueden crear más atributos que los especificados en \textit{\_\_slots\_\_}). Un ejemplo de uso se muestra en el código \ref{coud:slots}.
 \end{itemize}
 
-\input{contenido/codes/slots.tex}
+\input{contenido/tables/modelspecs.tex}
 
-El modelo ArcFace utilizado pesa \textbf{79 \acrshort{mb}} en su versión optimizada para TensorRT (en el formato \acrshort{onnx}, pesa \textbf{152 \acrshort{mb}}), 10 veces más que cualquiera de los otros modelos empleados (el tamaño es en torno a 8 \acrshort{mb}). Utilizando un modelo ArcFace más pequeño podría reducir en torno a cientos de \acrshort{mb} la ejecución del sistema.
+El \textbf{tamaño de un modelo} viene determinado principalmente por el tipo de \textbf{precisión} utilizado (ejemplo: capas en \acrshort{fp}16 o \acrshort{fp}32) y el número de \textbf{parámetros}. En la tabla \ref{tab:modelspecs} se muestra el tamaño de la entrada y el número de parámetros de cada modelo (extraídos directamente del modelo \acrshort{onnx}). Cada valor de la columna \textit{input size} se compone de la resolución de la imagen de entrada (ejemplo: 112x112) multiplicado por el número de canales de entrada (en este caso 3, que se corresponde con los canales \textit{Red, Green} y \textit{Blue} de una imagen \acrshort{rgb}). El modelo \acrshort{onnx} de YuNet pesa únicamente \textbf{0.2 \acrshort{mb}s}, esto se refleja en el reducido número de parámetros que lo compone. Le siguen los modelos YOLO y OSNet con 2 millones de parámetros y que pesan en torno a los \textbf{8 \acrshort{mb}s}. Finalmente, el modelo ArcFace (montado sobre el modelo ResNet100) es el que más parámetros contiene con amplia diferencia, que también se refleja en su tamaño de \textbf{152 \acrshort{mb}s}.
+
+La versión optimizada en TensorRT del modelo ArcFace pesa \textbf{79 \acrshort{mb}}, recortando casi a la mitad el peso del modelo \acrshort{onnx}, que en mayor medida se debe al uso de la precisión \acrshort{fp}16. Aun así, utilizar otro modelo o una versión de ArcFace más reducida podría reducir en torno a \textbf{cientos de \acrshort{mb}} la ejecución del sistema.
 
 \section{Modificaciones en el pre y postprocesado de modelos}
 \label{chap:prepost}

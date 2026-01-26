@@ -15,10 +15,6 @@ A continuación se exponen las \acrshort{cnn} utilizadas en los nodos cámara, q
     \item[OSNet] \textit{Omni-Scale Network} (OSNet) es un modelo de reidentificación de personas que emplea características de diferentes tamaños (\textit{omni-scale features}) para la clasificación. Destaca por ser extremadamente ligero y por su elevada precisión \cite{zhou2019omni}. Se realizó una exportación a partir del modelo implementado en Pytorch (\cite{andrew}).
 \end{description}
 
-\input{contenido/tables/modelspecs.tex}
-
-En la tabla \ref{tab:modelspecs} se muestra el tamaño de la entrada, el número de parámetros y la latencia de cada modelo. Cada valor de la columna \textit{input size} se compone de la resolución de la imagen de entrada (ejemplo: 112x112) multiplicado por el número de canales de entrada (en este caso 3, que se corresponde con los canales \textit{Red, Green} y \textit{Blue} de una imagen \acrshort{rgb}). Los modelos OSNet y ArcFace utilizan una resolución fija de 256x128 y 112x112 respectivamente de los frames de entrada, mientras que YOLO y YuNet permiten un ajuste dinámico de dicha resolución en tiempo de ejecución. Para obtener el mejor balance entre precisión y latencia, se ha optado por establecer una resolución fija de 640x640 y 480x480 respectivamente.
-
 \section{Dataset de las pruebas}
 \label{sec:modset}
 

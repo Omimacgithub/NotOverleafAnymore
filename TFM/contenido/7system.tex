@@ -118,7 +118,12 @@ TODO: En cambio, el \textit{det\_r} se mantiene constante. En el caso de la Jets
 
 %En la Orin Nano la precision baja en casi 30 puntos mientras q el recall solo baja 1 punto... porque?? <- hay q recordar q YuNet me daba fallos de memoria
 
-% RECALL: En la Thor con 2 y 5 cámaras el n_gt se mantiene encima de los 6000 mientras q con 10 cams baja a 4300, REFLEJAR ESTO EN LA MEMORIA.
+% RECALL: En la Thor con 2 y 5 cámaras el n_gt se mantiene encima de los 6000 mientras q con 10 cams baja a 4300. Creo q el recall debe ser: det_fp/6259 y 6259 es el número de detecciones totales del ground truth, sin recortar nada.
+
+%Decir que las pruebas del PC lab:
+%  - Utilizan un slope de 0.5
+%  - El nodo integrador no detecta duplicados a partir de la misma posición
+%  - El tamaño de cola es de 100 (como todas las pruebas excepto las de la Orin Nano), por lo que no tiene problema de pérdida de mensajes
 
 La Jetson AGX Thor sufre una caída en el \textit{det\_p} al procesar 10 cámaras, ligeramente superior a la familia Intel. Debido al uso excesivo de \acrshort{gpu} (88\% según las pruebas), se ha trasladado la ejecución del modelo YuNet a la \acrshort{cpu}, ya que la reducción en la latencia no es tan beneficiosa al ejecutarse en CUDA (ver tabla \ref{tab:equips}). Gracias a este cambio se ha conseguido balancear la carga entre \acrshort{cpu} y \acrshort{gpu} como se muestra en la tabla \ref{tab:scaleresourcesros2} y, por consiguiente, se ha mejorado la métrica \textit{det\_p} en 5 puntos (respecto a los 57.7 de ejecutar YuNet en CUDA).
 
