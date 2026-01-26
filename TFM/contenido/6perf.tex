@@ -37,10 +37,10 @@ Para la ejecución de inferencias, se han empleado los \glspl{rt} de OpenVINO, T
 
 Es importante destacar que los \glspl{rt} de OpenVINO y TensorRT soportan precisión mixta, es decir, se ejecutan las capas de un modelo en la precisión que menor latencia reporte dentro de una lista de precisiones (ejemplo: \acrshort{fp}16 o \acrshort{fp}32) \cite{mixed}. Esta funcionalidad puede emplearse siempre que la arquitectura de los dispositivos la implemente. Las últimas versiones de OpenCV también implementan soporte para ambas precisiones \acrshort{fp}32 y \acrshort{fp}16. Los modelos del proyecto se han compilado para utilizar la precisión mixta en \acrshort{fp}16 o \acrshort{fp}32.
 
+\input{contenido/tables/tests/tabequips}
+
 \section{Resultados}
 \label{sec:modelic}
-
-\input{contenido/tables/tests/tabequips}
 
 En la tabla \ref{tab:equips} se muestran los resultados de latencia (en milisegundos) y de la métrica \textbf{\textit{F1\_score}} para los modelos de detección y \textbf{\textit{precision}} para los modelos de reconocimiento (ver métricas en el apéndice \ref{sec:modeleval}). Cada resultado refleja la media y la desviación típica de \textbf{5 ejecuciones}, se ejecuta un test previo a modo de calentamiento para cada modelo.
 

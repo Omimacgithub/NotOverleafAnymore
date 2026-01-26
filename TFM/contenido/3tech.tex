@@ -142,7 +142,7 @@ Es el software encargado de optimizar la implementación de los modelos y ejecut
 
         La versión 10 de TensorRT está disponible para las aceleradoras de NVIDIA con un \textit{compute capability} igual o superior a 7.5. En el caso de querer usar el software con una \textit{compute capability} inferior (ejemplo: Jetson Xavier NX), es necesario instalar la versión 8 u otra anterior. El código de la \acrshort{api} generado en la versión 8 \textbf{no es compatible} con la versión 10.
 
-    \item[OpenVINO] \cite{OpenVINO} Desarrollado por Intel para la optimización de inferencias en \acrshort{cpu}s (\acrshort{arm},x86) y en aceleradoras de Intel (\acrshort{gpu},\acrshort{npu}). Permite la conversión directa de modelos entrenados en frameworks como Tensorflow y Pytorch a ficheros XML, que son versiones optimizadas de las \acrshort{cnn} y que se utilizan para realizar las inferencias. Se ha empleado para optimizar y ejecutar las inferencias de los modelos a la hora de ejecutarlos en \acrshort{cpu}.
+    \item[OpenVINO] \cite{OpenVINO} Desarrollado por Intel para la optimización de inferencias en \acrshort{cpu}s (\acrshort{arm} y x86) y en aceleradoras de Intel (\acrshort{gpu} y \acrshort{npu}). Permite la conversión directa de modelos entrenados en frameworks como Tensorflow y Pytorch a ficheros XML, que son versiones optimizadas de las \acrshort{cnn} y que se utilizan para realizar las inferencias. Se ha empleado para optimizar y ejecutar las inferencias de los modelos a la hora de ejecutarlos en \acrshort{cpu}.
 
     \item[OpenCV] \cite{cv2} El módulo de redes neuronales profundas (dnn) incluye modelos ya entrenados y un \gls{rt} para realizar inferencias. En este proyecto se ha utilizado un modelo de detección de caras ofrecido por dicha librería. Dicho módulo puede ejecutarse en \textbf{CUDA}, aunque solo si se \textbf{compila el código fuente}. El proceso seguido para compilar OpenCV es el mismo que en \cite{OpenCVCUDA}.
 \end{description}
@@ -150,8 +150,17 @@ Es el software encargado de optimizar la implementación de los modelos y ejecut
 \subsection{Docker}
 Docker \cite{docker} es un software de \textbf{virtualización} de \textbf{código abierto}, que permite realizar despliegues automatizados mediante ficheros de configuración. El software se ejecuta en un entorno aislado del sistema operativo llamado \textbf{contenedor}, dichos contenedores proporcionan seguridad y portabilidad. Esta herramienta ha sido de gran utilidad para desplegar el software del proyecto en los diferentes dispositivos.
 
-\section{TODO: Software general}
-\subsection{VS Code}
+\section{Software general}
 \subsection{Git}
+Git \cite{git} es un sistema de control de versiones de \textbf{código abierto} que permite mantener un historial de las versiones de un proyecto, de forma que se mantiene la trazabilidad del mismo. GitHub es una plataforma en la nube para alojar y compartir proyectos de Git. El código y la memoria de este proyecto se ha subido a esta plataforma para su fácil acceso desde múltiples dispositivos.
+
+\subsection{VS Code}
+Visual Studio Code \cite{vscode} es un entorno de desarrollo integrado (IDE) de \textbf{código abierto}. Dicha herramienta contiene una amplia variedad de funciones integradas, como un cliente de git que facilita el control de las versiones del software y una extensión para manejar contenedores de Docker (Dev Containers), entre las funciones más usadas en este proyecto.
+
+VS Code también cuenta con una extensión de LaTeX (LaTeX Workshop) altamente configurable, que permite el autocompletado de código LaTeX y su compilación de una forma muy sencilla similar a Overleaf \cite{overleaf}. Se ha optado por utilizar VS Code + LaTeX Workshop para escribir la memoria en sustitución de Overleaf, debido a las limitaciones en la compilación de la versión gratuita de esta última herramienta.
+
 \subsection{Trello}
+Trello \cite{trallao} es un programa online para la gestión de proyectos Kanban, en el que cada proyecto es un tablero con distintas listas de tarjetas que representan a las tareas. Se ha empleado para llevar un seguimiento de las tareas del proyecto en sus diferentes fases del desarrollo.
+
 \subsection{Draw.io}
+Draw.io \cite{drawio} es una herramienta online para la creación de todo tipo de diagramas, pertenece a la suite de aplicaciones de Google, lo que permite guardar y administrar los proyectos en Google Drive. Se ha utilizado para crear la mayoría de diagramas y figuras de la memoria de este proyecto.

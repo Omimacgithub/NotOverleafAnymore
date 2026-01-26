@@ -16,7 +16,7 @@ Toda la arquitectura se ejecuta en el \textit{framework} \acrshort{ros} \cite{RO
 \begin{figure}[tbp]
     \centering
     \includegraphics[width=0.6\linewidth]{imagenes/SYSARCH.png}
-    \caption{Arquitectura del sistema de partida. Figura extraída de \cite{andrew}}
+    \caption{Arquitectura del sistema de partida, figura extraída de \cite{andrew}}
     \label{fig:sysarch}
 \end{figure}
 
@@ -36,7 +36,7 @@ Finalmente, mediante los datos de todos los nodos, el uso de la coherencia espac
 \begin{figure}[tbp]
     \centering
     \includegraphics[width=0.8\linewidth]{imagenes/CAMNOD.jpg}
-    \caption{Nodo cámara. Figura extraída de \cite{andrew}}
+    \caption{Arquitectura del nodo cámara, figura extraída de \cite{andrew}}
     \label{fig:camnod}
 \end{figure}
 
@@ -95,22 +95,20 @@ En casos como los del \textit{\gls{dataset}} FACE COX \cite{cox}, donde en los v
 \begin{figure}
     \centering
     \includegraphics[width=1\linewidth]{imagenes/Seq.jpg}
-    \caption{Funcionamiento del método húngaro para el seguimiento de personas, como salida se obtiene una lista de recortes agrupados por entidad}
+    \caption{Aplicación del método húngaro para el seguimiento de personas.}
     \label{fig:seq}
 \end{figure}
 
 El \textbf{método húngaro} es un algoritmo que resuelve el problema de la asignación óptima. Dada una matriz de costes en el que cada fila establece una correlación con cada columna, dicho algoritmo buscará la \textbf{asignación óptima}, es decir, de menor coste entre elementos, en este caso, dos frames adyacentes \cite{Hungarian}.
 
-Se genera la matriz de costes, donde las \glspl{bbox} (o recortes) del frame anterior se encuentran en las filas y las \glspl{bbox} del frame actual en las columnas. Para cada par de \glspl{bbox} de la matriz, se calcula el \textbf{\acrfull{iou}} \cite{iou}. Finalmente, el método húngaro devuelve los pares de menor coste, es decir, de mayor valor de \acrshort{iou} (el resultado se invierte restándole un 1).
-
-Tras repetir el proceso en toda la secuencia, se obtiene la lista de recortes de cada persona según el rastro generado por el algoritmo. La figura \ref{fig:seq} muestra el funcionamiento ya comentado.
+Se genera la matriz de costes, donde las \glspl{bbox} (o recortes) del frame anterior se encuentran en las filas y las \glspl{bbox} del frame actual en las columnas. Para cada par de \glspl{bbox} de la matriz, se calcula el \textbf{\acrfull{iou}} \cite{iou}. Finalmente, el método húngaro devuelve los pares de menor coste, es decir, de mayor valor de \acrshort{iou} (el resultado se invierte restándole un 1). Tras repetir el proceso en toda la secuencia, se obtiene la lista de recortes de cada persona según el rastro generado por el algoritmo. La figura \ref{fig:seq} muestra el funcionamiento ya comentado.
 
 La métrica \acrshort{iou} devuelve el porcentaje de solapamiento y similitud entre \glspl{bbox} (como se muestra en la figura \ref{fig:iou}), de forma que recortes de diferente tamaño (cuando más cerca esté el sujeto de la cámara, más grande será el recorte) den un valor bajo al solaparse (ejemplo: personas que coinciden en la imagen en diferentes distancias). Dadas dos \glspl{bbox} A y B, el \acrshort{iou} se calcula como sigue en la ecuación \ref{eq:iou}.
 
 \begin{figure}
     \centering
     \includegraphics[width=0.5\linewidth]{imagenes/iou.png}
-    \caption{Intersection over Union, imagen extraída de \cite{iou}}
+    \caption{Intersection over Union, figura extraída de \cite{iou}}
     \label{fig:iou}
 \end{figure}
 
