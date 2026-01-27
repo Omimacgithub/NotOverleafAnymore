@@ -2,17 +2,16 @@
     \centering
     \begin{tabular}{cc|cccc}
         \hline
-        \multicolumn{2}{c|}{\multirow{3}{*}{\textit{\begin{tabular}[c]{@{}c@{}}Number of\\ cameras\end{tabular}}}} & \multicolumn{4}{c}{\textit{Jetson embedded systems}}                                                                                                   \\
-        \multicolumn{2}{c|}{}                                                                                      & \multicolumn{2}{c}{\textbf{Orin Nano}}               & \multicolumn{2}{c}{\textbf{AGX Thor}}                                                           \\ \cline{3-6}
-        \multicolumn{2}{c|}{}                                                                                      & \multicolumn{1}{c|}{\textit{CPU}}                    & \multicolumn{1}{c|}{\textit{GPU}}     & \multicolumn{1}{c|}{\textit{CPU}} & \textit{GPU}        \\ \hline
-        \multicolumn{1}{c|}{\multirow{2}{*}{\begin{tabular}[c]{@{}c@{}}2\\ cameras\end{tabular}}}                  & \%load                                               & 48.2                                  & \multicolumn{1}{c|}{56.5}         & 9.6          & 12.0 \\ \cline{2-2}
-        \multicolumn{1}{c|}{}                                                                                      & \%mem                                                & \multicolumn{2}{c|}{51.9}             & \multicolumn{2}{c}{8.2}                                 \\ \hline
-        \multicolumn{1}{c|}{\multirow{2}{*}{\begin{tabular}[c]{@{}c@{}}5\\ cameras\end{tabular}}}                  & \textit{\%load}                                      & 87.8                                  & \multicolumn{1}{c|}{71.0}         & 18.5         & 33.0 \\ \cline{2-2}
-        \multicolumn{1}{c|}{}                                                                                      & \textit{\%mem}                                       & \multicolumn{2}{c|}{91.1}             & \multicolumn{2}{c}{10.5}                                \\ \hline
-        \multicolumn{1}{c|}{\multirow{2}{*}{\begin{tabular}[c]{@{}c@{}}10\\ cameras \footnotemark\end{tabular}}}   & \textit{\%load}                                      & -                                     & \multicolumn{1}{c|}{-}            & 67.0         & 66.0 \\ \cline{2-2}
-        \multicolumn{1}{c|}{}                                                                                      & \textit{\%mem}                                       & \multicolumn{2}{c|}{-}                & \multicolumn{2}{c}{9.5}                                 \\ \hline
+        \multicolumn{2}{c|}{\multirow{3}{*}{\textit{\begin{tabular}[c]{@{}c@{}}Number of\\ cameras\end{tabular}}}}  & \multicolumn{4}{c}{\textit{Jetson embedded systems}}                                                                                                   \\
+        \multicolumn{2}{c|}{}                                                                                       & \multicolumn{2}{c}{\textbf{Orin Nano}}               & \multicolumn{2}{c}{\textbf{AGX Thor}}                                                           \\ \cline{3-6}
+        \multicolumn{2}{c|}{}                                                                                       & \multicolumn{1}{c|}{\textit{CPU}}                    & \multicolumn{1}{c|}{\textit{GPU}}     & \multicolumn{1}{c|}{\textit{CPU}} & \textit{GPU}        \\ \hline
+        \multicolumn{1}{c|}{\multirow{2}{*}{\begin{tabular}[c]{@{}c@{}}2\\ cameras\end{tabular}}}                   & \%load                                               & 48.2                                  & \multicolumn{1}{c|}{56.5}         & 9.6          & 12.0 \\ \cline{2-2}
+        \multicolumn{1}{c|}{}                                                                                       & \%mem                                                & \multicolumn{2}{c|}{51.9}             & \multicolumn{2}{c}{8.2}                                 \\ \hline
+        \multicolumn{1}{c|}{\multirow{2}{*}{\begin{tabular}[c]{@{}c@{}}5\\ cameras\end{tabular}}}                   & \textit{\%load}                                      & 87.8                                  & \multicolumn{1}{c|}{71.0}         & 18.5         & 33.0 \\ \cline{2-2}
+        \multicolumn{1}{c|}{}                                                                                       & \textit{\%mem}                                       & \multicolumn{2}{c|}{91.1}             & \multicolumn{2}{c}{10.5}                                \\ \hline
+        \multicolumn{1}{c|}{\multirow{2}{*}{\begin{tabular}[c]{@{}c@{}}10\\ cameras \footnotemark[4]\end{tabular}}} & \textit{\%load}                                      & -                                     & \multicolumn{1}{c|}{-}            & 67.0         & 66.0 \\ \cline{2-2}
+        \multicolumn{1}{c|}{}                                                                                       & \textit{\%mem}                                       & \multicolumn{2}{c|}{-}                & \multicolumn{2}{c}{9.5}                                 \\ \hline
     \end{tabular}
     \caption{Recursos utilizados por los dispositivos Jetson en la ejecución del sistema (solo cámaras en \acrshort{ros} 2)}
+    \label{tab:scaleresourcesros2}
 \end{table}
-\label{tab:scaleresourcesros2}
-\footnotetext{YuNet se ejecuta en el \textit{runtime} de OpenCV en \acrshort{cpu}}

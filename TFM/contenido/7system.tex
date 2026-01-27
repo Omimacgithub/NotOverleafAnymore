@@ -32,7 +32,7 @@ Siendo \textit{det\_tp} una posición predicha correctamente, \textit{det\_fp} u
 
 Los modelos de todas las pruebas realizadas en este capítulo se han ejecutado en el \gls{rt} de \textbf{TensorRT} (salvo YuNet, que utiliza CUDA por medio de OpenCV).
 
-Para cada prueba, también se mostrará la proporción de los recursos utilizados del dispositivo durante la ejecución del sistema (las pruebas se han realizado \textbf{sin el entorno gráfico}). En dispositivos Jetson, el comando \textbf{tegrastats} devuelve toda la información necesaria, en cambio, para el resto de dispositivos se obtienen de la siguiente forma:
+Para cada prueba, también se mostrará la proporción de los recursos utilizados del dispositivo durante la ejecución del sistema (las pruebas se han realizado \textbf{sin el entorno gráfico}). Se empleará la mediana de todas las lecturas de recursos en una ejecución completa del sistema, ya que es robusta frente a los picos de uso de recursos. En dispositivos Jetson, el comando \textbf{tegrastats} devuelve toda la información necesaria, en cambio, para el resto de dispositivos se obtienen de la siguiente forma:
 \begin{itemize}
     \item Carga de la \acrshort{cpu}: media de las mediciones devueltas por el comando \textbf{sar -u}.
     \item Ocupación de la memoria de la \acrshort{cpu}: media de las mediciones devueltas por el comando \textbf{sar -r}.
@@ -108,15 +108,13 @@ En el caso del portátil, gracias a las herramientas de \acrshort{ros} y a la ar
 
 \input{contenido/tables/tests/scaleros2.tex}
 
+\input{contenido/tables/tests/scaleresourcesros2.tex}
+
 En la tabla \ref{tab:scaleros2} se muestra el rendimiento del sistema en \textbf{\acrshort{ros} 2} para los equipos Jetson Orin Nano y Jetson AGX Thor. En estos dispositivos no es posible instalar \acrshort{ros} Noetic, al menos para poder contar con las últimas versiones de las librerías. Por los motivos comentados en la sección \ref{subsec:ROS2}, el sistema en \acrshort{ros} 2 no puede ejecutar el nodo \acrshort{lidar}, por lo que los resultados mostrados solo tienen en cuenta los nodos cámara junto al integrador.
 
-El \textit{det\_r} se muestra claramente inferior respecto a los resultados de la familia Intel, ya que el \acrshort{lidar} otorgaba cobertura completa a la reducida visión de las cámaras. Ambas Jetson logran superar el valor del equipo de referencia en esta métrica, lo que demuestra el excelente rendimiento de las \acrshort{gpu}s que integran, capaces de compensar las limitaciones de una \acrshort{cpu} de \acrshort{arm} respecto a un Intel Core i5 (procesador del equipo de referencia).
+El \textit{det\_r} se muestra claramente inferior respecto a los resultados de la familia Intel, ya que el \acrshort{lidar} otorgaba cobertura completa a la reducida visión de las cámaras. La Jetson AGX Thor logra superar el valor del equipo de referencia en esta métrica, mientras que la Jetson Orin Nano se queda a 3 puntos de superarlo. Los resultados de precisión (\textit{det\_p} e \textit{idp}) se mantienen entre todos los dispositivos. Estos datos demuestran el excelente rendimiento de las \acrshort{gpu}s de las Jetson, capaces de compensar las limitaciones de una \acrshort{cpu} de \acrshort{arm} respecto a un Intel Core i5 (procesador del equipo de referencia). También es importante recordar que el cálculo del \textit{det\_r} se ha modificado respecto a \cite{andrew}, por lo que se muestra un \textit{recall} ligeramente inflado en la referencia.
 
-La precisión en la detección (\textit{det\_p}) empeora en la Jetson Orin Nano cuando se ejecutan 5 cámaras simultáneamente. Acorde a la tabla \ref{tab:scaleresourcesros2}, los recursos del dispositivo se encuentran al límite de procesamiento, lo que genera retardos en los resultados de los nodos. Adicionalmente, los 8 \acrshort{gb}s de memoria se vuelven insuficientes, debido a todos los recursos necesarios a reservar, que pesan en torno a cientos de \acrshort{mb}s, que se multiplican por 4 modelos y a su vez por 5 cámaras, lo que deriva en errores de ejecución por falta de memoria necesaria para realizar las inferencias. Para reducir el impacto de este problema, se han aplicado ciertas optimizaciones de los códigos de Python, que han permitido ahorrar hasta \textbf{400 \acrshort{mb}s} en la inicialización del sistema, y que se citan en el apéndice \ref{chap:optimus}.
-
-TODO: En cambio, el \textit{det\_r} se mantiene constante. En el caso de la Jetson AGX Thor, los resultados se mantienen en la línea de la familia Intel, sin contar el bajo \textit{det\_r} causado por la ausencia del \acrshort{lidar}.
-
-%En la Orin Nano la precision baja en casi 30 puntos mientras q el recall solo baja 1 punto... porque?? <- hay q recordar q YuNet me daba fallos de memoria
+Se experimenta una ligera caída en el \textit{det\_p} al aumentar a 5 cámaras en la Jetson AGX Thor, ya que se generan más resultados, por lo que aumenta la probabilidad de fusionar información de distintos instantes temporales en el nodo integrador. El \textit{det\_r} se mantiene constante, lo que significa que el dispositivo tolera sin problema la carga introducida (el bajo uso de recursos en la tabla \ref{tab:scaleresourcesros2} lo abala). Sin embargo, en la Jetson Orin Nano el \textit{det\_r} cae drásticamente debido a la saturación de los recursos (acorde a la tabla \ref{tab:scaleresourcesros2}), tanto de memoria, lo que impide la realización de las inferencias, como de procesamiento, lo que implica en un retardo de las respuestas y, por consiguiente, a que se consideren resultados desactualizados que conducen a una pérdida en la precisión.
 
 % RECALL: En la Thor con 2 y 5 cámaras el n_gt se mantiene encima de los 6000 mientras q con 10 cams baja a 4300. Creo q el recall debe ser: det_fp/6259 y 6259 es el número de detecciones totales del ground truth, sin recortar nada.
 
@@ -125,13 +123,7 @@ TODO: En cambio, el \textit{det\_r} se mantiene constante. En el caso de la Jets
 %  - El nodo integrador no detecta duplicados a partir de la misma posición
 %  - El tamaño de cola es de 100 (como todas las pruebas excepto las de la Orin Nano), por lo que no tiene problema de pérdida de mensajes
 
-La Jetson AGX Thor sufre una caída en el \textit{det\_p} al procesar 10 cámaras, ligeramente superior a la familia Intel. Debido al uso excesivo de \acrshort{gpu} (88\% según las pruebas), se ha trasladado la ejecución del modelo YuNet a la \acrshort{cpu}, ya que la reducción en la latencia no es tan beneficiosa al ejecutarse en CUDA (ver tabla \ref{tab:equips}). Gracias a este cambio se ha conseguido balancear la carga entre \acrshort{cpu} y \acrshort{gpu} como se muestra en la tabla \ref{tab:scaleresourcesros2} y, por consiguiente, se ha mejorado la métrica \textit{det\_p} en 5 puntos (respecto a los 57.7 de ejecutar YuNet en CUDA).
-
-\input{contenido/tables/tests/scaleresourcesros2.tex}
-
-En la tabla \ref{tab:scaleresourcesros2} se muestra la proporción de recursos utilizados en las pruebas del sistema en \acrshort{ros} 2. Se expone la mediana de todas las lecturas de recursos en una ejecución completa del sistema. Se emplea la mediana, ya que es robusta frente a los picos de uso de recursos.
-
-Ambos dispositivos pueden ejecutar holgadamente el sistema usando 2 cámaras, en el caso de las 5 cámaras es cuando se empiezan a dislumbrar las limitaciones de la Jetson Orin Nano, principalmente en términos de memoria, lo que explica la caída en la precisión de las detecciones, que no permite a los modelos reservar memoria para varias de las inferencias.
+La Jetson AGX Thor sufre una caída en el \textit{det\_p}, pero sobretodo en el \textit{det\_r} al procesar 10 cámaras. Esto se debe a la elevada utilización de la \acrshort{gpu} (como se muestra en la tabla \ref{tab:scaleresourcesros2}), que provoca una reducción en el número de detecciones totales, además de su precisión. Este hecho lo demuestra la ejecución del modelo YuNet en la \acrshort{cpu}, que ha logrado aumentar el \textit{det\_p} en 4 puntos respecto a ejecutarlo en \acrshort{gpu}. Se ha escogido YuNet, debido a que la reducción en la latencia mediante CUDA no es tan efectiva como en TensorRT y a que la gestión de la memoria realizada por OpenCV es mucho menos eficiente (en la tabla \ref{tab:scaleresourcesros2} se puede ver como el uso de memoria con 10 cámaras y YuNet en \acrshort{cpu} es \textbf{menor} que con 5 cámaras y YuNet en \acrshort{gpu}).
 
 \section{Discusión}
 
@@ -141,4 +133,10 @@ El uso de la \acrshort{gpu} ha sido un factor clave en los resultados obtenidos,
 
 Es importante destacar que las pruebas se realizaron con \textbf{6 personas registradas en la base de datos}. Aumentar este número tendría consecuencias en los modelos de reconocimiento, ya que iteran toda la base de datos para calcular las distancias del vector con cada individuo, para devolver la mejor coincidencia. Según el dispositivo, esta operación tarda menos o alrededor de 1 milisegundo, lo que podría aumentar en varios milisegundos si se añaden por ejemplo 100 personas.
 
+Los 8 \acrshort{gb}s de memoria de la Jetson Orin Nano se vuelven insuficientes, debido a todos los recursos necesarios a reservar, que pesan en torno a cientos de \acrshort{mb}s, que se multiplican por 4 modelos y a su vez por 5 cámaras. Para reducir el impacto de este problema, se han aplicado ciertas optimizaciones de los códigos de Python, que han permitido ahorrar hasta \textbf{400 \acrshort{mb}s} en la inicialización del sistema, y que se citan en el apéndice \ref{chap:optimus}. De todos modos, es necesario recortar también el elevado coste de procesamiento que impide al \textit{det\_r} despegar.
+
 TODO: Acorde al uso de recursos, no da la impresión de que ninguno de los dispositivos pueda ejecutar más de 10 cámaras sin una caída en el rendimiento.
+
+Aunque la ejecución de YuNet en la \acrshort{gpu} sea beneficioso, en una situación de estrés en la \acrshort{gpu} impide ...
+
+%el uso ineficiente de la memoria de OpenCV con CUDA respecto a TensorRT impide 
