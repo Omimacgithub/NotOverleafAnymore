@@ -24,8 +24,10 @@ La versión optimizada en TensorRT del modelo ArcFace pesa \textbf{79 \acrshort{
 
 Los pipelines de pre y postprocesado de los modelos suponen uno de los principales retos de los dispositivos Jetson, debido a limitada capacidad de procesamiento de las \acrshort{cpu} \acrshort{arm}, en este capítulo se exponen las soluciones aplicadas para mitigar el impacto computacional de dichos procesos en los modelos YOLO y OSNet.
 
-\subsection{Postprocesado YOLO}
+\subsection{TODO: Postprocesado YOLO}
 \label{sec:postyolo}
+
+Respecto al postprocesado, se ha optimizado para aprovechar los arrays y operaciones de NumPy, de esta forma ha sido posible recortar varios milisegundos en todos los equipos.
 
 \subsection{Preprocesado OSNet}
 \label{sec:preosnet}

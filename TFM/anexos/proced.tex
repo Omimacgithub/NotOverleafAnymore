@@ -42,15 +42,15 @@ Los archivos \textit{engine} de TensorRT (extensión .trt o .engine) representan
 En \ref{coud:trtshapes} se muestran las características de un modelo transformado en un \textit{engine} de TensorRT. La aparición de un -1 en la primera dimensión de los tensores indica que el modelo soporta \textit{\glspl{batch}} de tamaño dinámico.
 
 \subsection{Flags de \textit{trtexec}}
+\label{seq:execflags}
 
 A la hora de compilar algunos de los modelos a partir de la herramienta \textit{trtexec}, se han aplicado los siguientes flags:
 \begin{itemize}
     \item --fp16: activa el uso de tácticas \acrshort{fp}32 y \acrshort{fp}16 en cada capa del modelo (se escoge la precisión que se ejecute más rápido). Se aplica en todos los dispositivos Jetson.
     \item --sparsity: activa la aceleración de operaciones de matrices dispersas, a partir de la arquitectura Ampere.
     \item --tacticSources=+CUBLAS,+CUDNN: emplea el uso de tácticas de las librerías cuBLAS y cuDNN. Se aplica en todos los dispositivos Jetson.
-    \item --builderOptimizationLevel: por defecto utiliza el valor 3, este valor se mantiene en todas las Jetson salvo en un caso de la Jetson AGX Thor (ver sección \ref{sec:discuss}).
+    \item --builderOptimizationLevel: por defecto utiliza el valor 3. El valor 0 implica desactivar la selección de \glspl{kernel} y escoger el primero que funcione. Aumentar el valor hasta 5 indica aumentar la variedad de \glspl{kernel} a probar para quedarse con el más rápido (ejemplo: probar el kernel en distintas precisiones y/o tamaños de bloque), lo que implica un mayor tiempo de compilación.
 \end{itemize}
-
 \section{Exportación de YOLO con ultralytics}
 \label{sec:exports}
 

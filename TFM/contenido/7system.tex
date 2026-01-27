@@ -50,7 +50,7 @@ Debido a que el \gls{rosbag} utilizado es un archivo pesado (41 \acrshort{gb}), 
 \end{equation}
 \label{eq:transmision}
 
-La comunicación con la fuente externa se realiza a través de una red \acrshort{lan} \textbf{Gigabit Ethernet}, que posee un ancho de banda limitado para la transmisión de imágenes \acrshort{rgbd} (máximo teórico de 125 \acrshort{mb}/s). La fórmula \ref{eq:transmision} muestra el tamaño de los datos que debe transmitir la fuente externa cada 100 ms (que es la frecuencia a la que trabaja el sistema). Siendo $|imagen\_RGB| = 40 \acrshort{mb}/s$, $|imagen\_profundidad| = 20 \acrshort{mb}/s$ y $|nube\_de\_puntos\_LiDAR| = 5 \acrshort{mb}/s$ (los datos se han tomado del comando \textbf{rostopic bw}), el ancho de banda necesario es de \textbf{125 \acrshort{mb}/s} para dos cámaras (\textit{ncams}=2), lo que ya \textbf{equivale} al ancho de banda máximo teórico.
+La comunicación con la fuente externa se realiza a través de una red \acrshort{lan} \textbf{Gigabit Ethernet}, que posee un ancho de banda limitado para la transmisión de imágenes \acrshort{rgbd} (máximo teórico de 125 \acrshort{mb}/s). La fórmula \ref{eq:transmision} muestra el tamaño de los datos que debe transmitir la fuente externa cada 100 ms (que es la frecuencia a la que trabaja el sistema). Siendo $|imagen\_RGB| = 40 \acrshort{mb}/s$ (resolución de 1280x1024), $|imagen\_profundidad| = 20 \acrshort{mb}/s$ (resolución de 640x480) y $|nube\_de\_puntos\_LiDAR| = 5 \acrshort{mb}/s$ (los datos se han tomado del comando \textbf{rostopic bw}), el ancho de banda necesario es de \textbf{125 \acrshort{mb}/s} para dos cámaras (\textit{ncams}=2), lo que ya \textbf{equivale} al ancho de banda máximo teórico.
 
 \begin{figure}
     \centering
@@ -125,7 +125,7 @@ Se experimenta una ligera caída en el \textit{det\_p} al aumentar a 5 cámaras 
 
 La Jetson AGX Thor sufre una caída en el \textit{det\_p}, pero sobretodo en el \textit{det\_r} al procesar 10 cámaras. Esto se debe a la elevada utilización de la \acrshort{gpu} (como se muestra en la tabla \ref{tab:scaleresourcesros2}), que provoca una reducción en el número de detecciones totales, además de su precisión. Este hecho lo demuestra la ejecución del modelo YuNet en la \acrshort{cpu}, que ha logrado aumentar el \textit{det\_p} en 4 puntos respecto a ejecutarlo en \acrshort{gpu}. Se ha escogido YuNet, debido a que la reducción en la latencia mediante CUDA no es tan efectiva como en TensorRT y a que la gestión de la memoria realizada por OpenCV es mucho menos eficiente (en la tabla \ref{tab:scaleresourcesros2} se puede ver como el uso de memoria con 10 cámaras y YuNet en \acrshort{cpu} es \textbf{menor} que con 5 cámaras y YuNet en \acrshort{gpu}).
 
-\section{Discusión}
+\section{Discusiones}
 
 En varios equipos, se ha logrado escalar el sistema hasta un número de cámaras más que suficiente para el caso de uso de este proyecto (10 cámaras sobran para cubrir un espacio de 360º), al menos para ser procesado por un solo dispositivo. La \textbf{Jetson Orin Nano} ha superado los resultados de \textbf{\textit{det\_r}} y el \textbf{\textit{idp}} para 2 cámaras respecto al equipo de referencia y ha conseguido mantener resultados aceptables hasta las 5 cámaras. Esto es especialmente interesante, debido a que este equipo es de muy bajo consumo y peso, lo que permite su fácil integración en un robot móvil.
 

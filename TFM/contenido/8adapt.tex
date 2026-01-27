@@ -10,8 +10,6 @@ En esta sección se introducen las pruebas escogidas para medir las capacidades 
 \begin{itemize}
     \item \textbf{Ajuste de parámetros:} se realiza un conjunto de pruebas con diferentes valores de parámetros para evaluar su impacto y por qué generan los resultados expuestos.
     \item \textbf{Inicialización de personas registradas:} se ha estudiado varios métodos de inicialización de la base de datos, desde un método semisupervisado hasta uno totalmente controlado por el propio sistema (no supervisado). Se han comparado los resultados entre las diferentes inicializaciones TODO: y se ha realizado una discusión.
-    \item \textbf{Número de usuarios implicados:} se demuestra por qué el número de usuarios registrados es un factor crítico en el rendimiento del sistema.
-    \item \textbf{TODO: Evolución del sistema:} debido a que el sistema se adapta a lo largo del tiempo, se han realizado pruebas que midan la consistencia del sistema a lo largo de varias repeticiones del video, para averiguar si este sufre de una caída repentina en el rendimiento por algún fallo del software.
 \end{itemize}
 
 Todas las pruebas mencionadas se ejecutan en las modalidades \textbf{\textit{Open-Set}}, que en este caso \textbf{detecta desconocidos y actualiza las entidades existentes}\footnote{en un sistema tipo \textit{Open-Set}, no se aplica la actualización de las entidades existentes} y \textbf{\textit{Open-World}}, que realiza las mismas funciones que \textit{Open-Set}, pero con la capacidad de \textbf{registrar a los desconocidos en el sistema}.
@@ -82,7 +80,7 @@ En cuanto al parámetro \textbf{\textit{max\_svm}}, los resultados conducen a la
 
 %TODO:\textbf{Umbral de actualización}: valor que se compara frente a la fusión de scores de una secuencia. El rango probado es (0.1 0.3)
 
-\subsection{Discusión}
+\subsection{Discusiones}
 \label{sec:discusparamtunning}
 
 Los resultados de precisión en el modo \textit{Open-World} son claramente \textbf{inferiores} al modo \textit{Open-Set}.

@@ -6,18 +6,15 @@
 \subsection{Arquitecturas de GPU}
 \label{sec:gpuses}
 
-Según la arquitectura de la \acrshort{gpu} de NVIDIA, se agregan nuevas características que maximizan el rendimiento de la inferencia de los modelos (se ahondará en este tema en el capítulo \ref{chap:cnn}). Las arquitecturas que se muestran a continuación están ordenadas de menor a mayor generación.
+Según la arquitectura de la \acrshort{gpu} de NVIDIA, se agregan nuevas características que maximizan el rendimiento de la inferencia de los modelos (se ahondará en este tema en el capítulo \ref{chap:cnn}). A continuación se detallan las características de las arquitecturas de \acrshort{gpu} que se tratarán en esta memoria, junto con sus compute capabilities, que no son más que códigos que definen las características hardware e instrucciones soportadas. Las arquitecturas se encuentran ordenadas de menor a mayor generación.
 
 Todas las arquitecturas que se exponen permiten el entrenamiento e inferencia de modelos en \textbf{precisión mixta}, es decir, escoger la precisión apropiada entre una lista de precisiones (ejemplo: \acrshort{fp}32+\acrshort{fp}16) para cada capa del modelo.
 
 \subsubsection{Volta y Turing}
-En la arquitectura Volta \cite{volta} (2017), se introducen los \textbf{tensor cores}, que son cores destinados a acelerar multiplicaciones y sumas de matrices (conocido también como MMA).
 
-Volta tiene el código 7.0 como compute capability y es empleada por la \textbf{Jetson Xavier NX}.
+En la arquitectura Volta (2017) \cite{volta}, se introducen los \textbf{tensor cores}, que son componentes destinados a acelerar multiplicaciones y sumas de matrices (también conocido como MAC), ampliamente utilizas para implementar capas de convoluciones en redes neuronales. Los tensor cores también introducen el entrenamiento e inferencia en \textbf{precisión mixta} de \acrshort{fp}32 y \acrshort{fp}16, 3 veces más veloz que utilizar únicamente \acrshort{fp}32. Dicha arquitectura tiene el código 7.0 como compute capability y es empleada por la \textbf{Jetson Xavier NX}.
 
-En la arquitectura Turing (2018)... La \textbf{GeForce GTX 1650} (gráfica del PC lab) sigue esta arquitectura.
-
-Turing tiene el código 7.0 como compute capability y es empleada por la \textbf{Jetson Xavier NX}.
+La arquitectura Turing (2018) \cite{demystifying} es muy similar a la Volta, salvo por la introducción de las precisiones \textbf{INT8 e INT4}, a mayores de la precisión \acrshort{fp}16 de Volta. Turing tiene el código 7.5 como compute capability y es empleada por la \textbf{GeForce GTX 1650} (gráfica del PC lab).
 
 \subsubsection{Ampere}
 
@@ -32,9 +29,9 @@ Con la arquitectura Ampere \cite{ampere} (2020) se incorporan los tensor cores d
 
 Se introduce la funcionalidad \acrfull{mig}, que permite la partición \textbf{física} de \acrshort{gpu}s para correr aplicaciones de CUDA. En el apéndice \ref{chap:mig} se muestran algunos detalles de la funcionalidad en el caso de la Jetson AGX Thor.
 
-Se añade aceleración en las operaciones con matrices \textbf{dispersas} (\textit{sparsity}), que son matrices con una gran proporción de ceros entre sus valores.
+Se añade aceleración en las operaciones con matrices \textbf{dispersas} (\textit{sparsity}), que son matrices con una gran proporción de ceros entre sus valores. Esta mejora puede aumentar hasta 2 veces la velocidad de la inferencia para modelos que exploten el uso de matrices dispersas.
 
-La \textbf{Jetson Orin Nano}, \textbf{Jetson AGX Orin} y la \textbf{GeForce RTX 3050} (gráfica del portátil) siguen esta arquitectura.
+La \textbf{Jetson Orin Nano}, \textbf{Jetson AGX Orin} y la \textbf{GeForce RTX 3050} (gráfica del portátil) siguen esta arquitectura, que posee desde el código 8.0 hasta el 8.7 como compute capability.
 
 \subsubsection{Blackwell}
 
@@ -44,7 +41,7 @@ Se lanza la segunda generación del \textbf{Transformer Engine} \cite{transforme
 
 En esta nueva versión para la Blackwell, se incorpora el \textit{micro-tensor scaling}, que aplica diferentes factores de escalado al nivel de los elementos de un \gls{tensor}. Esta nueva técnica hace posible la ejecución en \textbf{\acrshort{fp}4} y \textbf{\acrshort{fp}6} sin apenas pérdida en la precisión.
 
-La \textbf{Jetson AGX Thor} sigue esta arquitectura.
+La \textbf{Jetson AGX Thor} sigue esta arquitectura, que posee desde el código 10.0 hasta el 12.1 como compute capability.
 
 \subsection{Familia Jetson}
 
@@ -55,6 +52,8 @@ Es una familia de \textbf{\glspl{embsystem}} pensados para aplicaciones de intel
 \input{contenido/tables/jetsons.tex}
 
 Actualmente existe una amplia variedad en la potencia y precio de estos dispositivos \cite{jason}. Para este proyecto, se han empleado cuatro modelos diferentes que se exponen en la tabla \ref{tab:jetsons} (se encuentran ordenados de menores a mayores prestaciones).
+
+Mientras que las \textbf{Jetson Xavier NX, Orin Nano y AGX Orin} han sido diseñadas para manejar \textbf{aplicaciones de inteligencia artificial en tiempo real} como la que aplica a este proyecto, la \textbf{Jetson AGX Thor} pretende abarcar el ámbito de la \textbf{robótica avanzada} o \textbf{inteligencia artificial física}. La cantidad y la potencia de los núcleos de \acrshort{cpu}, junto a los 128 \acrshort{gb}s de memoria principal y la funcionalidad \acrfull{mig} (ver apéndice \ref{chap:mig} para más detalles) permite la ejecución de múltiples procesos complejos a un ratio estable (ejemplo: modelo de detección de obstáculos funcionando a 30 \acrshort{fps} constantes), posible en gran medida al particionado físico de la \acrshort{gpu} \cite{physAI}.
 
 \subsection{Familia Intel}
 
