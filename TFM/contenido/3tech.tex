@@ -134,11 +134,11 @@ Se procede a comentar las librerías de Python más importantes a la hora de des
 \end{description}
 
 
-\subsection{Optimizadores y runtimes de inferencias}
+\subsection{Optimizadores y \glspl{rt} de inferencias}
 
 Es el software encargado de optimizar la implementación de los modelos y ejecutar sus inferencias. En este proyecto se han utilizado los siguientes (todos son de \textbf{código abierto}):
 \begin{description}
-    \item[TensorRT] \cite{x36} Es un ecosistema de herramientas (con \acrshort{api} de Python incluida) para la optimización de inferencias de modelos de inteligencia artificial en aceleradoras de NVIDIA. Permite ejecutar modelos entrenados en \textit{frameworks} como Pytorch o TensorFlow, aunque se aconseja exportarlos al formato \acrfull{onnx} previamente, para aprovechar al completo las funcionalidades de este software. Se ha empleado en este proyecto para optimizar y ejecutar inferencias de la mayoría de modelos \acrshort{cnn} tanto en equipos \acrshort{arm} como x86.
+    \item[TensorRT] \cite{x36} Es un ecosistema de herramientas (con \acrshort{api} de Python incluida) para la optimización de inferencias de modelos de inteligencia artificial en aceleradoras de NVIDIA. Existen integraciones que permiten ejecutar inferencias de modelos directamente de \textit{frameworks} como Pytorch o TensorFlow, aunque se aconseja utilizarlos en el formato \acrfull{onnx} para obtener la máxima eficiencia de este software (en el apéndice \ref{chap:procedure} se exponen las diferentes integraciones). Se ha empleado en este proyecto para optimizar y ejecutar inferencias de la mayoría de modelos de redes neuronales tanto en equipos \acrshort{arm} como x86.
 
         La versión 10 de TensorRT está disponible para las aceleradoras de NVIDIA con un \textit{compute capability} igual o superior a 7.5. En el caso de querer usar el software con una \textit{compute capability} inferior (ejemplo: Jetson Xavier NX), es necesario instalar la versión 8 u otra anterior. El código de la \acrshort{api} generado en la versión 8 \textbf{no es compatible} con la versión 10.
 

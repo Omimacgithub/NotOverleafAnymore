@@ -1,20 +1,36 @@
-\chapter{Conversión de modelos a TensorRT}
+\chapter{Flujos de trabajo de TensorRT}
 \label{chap:procedure}
 
 \lettrine{E}{n} este apéndice se comentan detalles acerca del procedimiento para la conversión de los modelos utilizados a TensorRT.
 
+\section{Introducción}
+
+A la hora de realizar inferencias en el \textit{framework} de TensorRT, existen diferentes integraciones o flujos de trabajo (\textit{workflows}) que se exponen a continuación:
+
+\begin{description}
+    \item[TensorFlow/PyTorch-TensorRT] Las integraciones de TensorRT con PyTorch (Torch-TensorRT) y TensorFlow (TF-TRT) permiten aprovechar directamente las funcionalidades de TensorRT a través de los frameworks mencionados. Ambas integraciones parten el grafo generado del modelo en varios subgrafos para su optimización y ejecución en TensorRT. Los subgrafos generados que no son compatibles con TensorRT pasan a ejecutarse en los frameworks correspondientes. Esta aproximación no permite exprimir al máximo las capacidades del hardware por lo que, aunque es una solución sencilla, no resulta del todo eficiente.
+    \item[\acrshort{onnx}/\acrshort{onnx} Runtime-TensorRT] Esta aproximación requiere de la exportación de los modelos al formato \acrshort{onnx} para su uso con la \acrshort{api} de TensorRT o \acrshort{onnx} Runtime.  Si se emplea la \acrshort{api} de TensorRT, es necesario reservar la memoria de los dispositivos y planificar la ejecución del trabajo en la \acrshort{gpu} por parte del programador \cite{trtworkflows}. En cambio, \acrshort{onnx} Runtime ofrece una mayor abstracción de este proceso, ya que dicha \acrshort{api} interacciona directamente con TensorRT por medio de los \textbf{Execution Providers (EP)}, que hace uso de su \gls{rt} para ejecutar los subgrafos en el hardware \cite{EP,trtworkflows}.
+\end{description}
+
+\begin{figure}[tbp]
+    \centering
+    \includegraphics[width=0.75\linewidth]{imagenes/trtworkflows.png}
+    \caption{Flujos según el \textit{workflow} de TensorRT, figura extraída de \cite{trtworkflows}.}
+    \label{fig:trtworkflows}
+\end{figure}
+
+La figura \ref{fig:trtworkflows} muestra el flujo seguido para ejecutar inferencias en cada uno de los \textit{workflows} comentados. Se ha optado por usar el \textit{workflow} de \textbf{\acrshort{onnx}-TensorRT}, ya que es el que mayor rendimiento otorga, además de un uso eficiente de la memoria de la \acrshort{gpu}, superior incluso a utilizar \acrshort{onnx} Runtime \cite{trtworkflows}. La única desventaja frente a utilizar los \textit{frameworks} de Tensorflow yPyTorch sería la incompatibilidad de ciertas capas del modelo en la fase de exportación al formato \acrshort{onnx}.
+
 \section{Procedimiento}
 
-A continuación, se explican los pasos seguidos que permitieron obtener los resultados de la sección \ref{sec:modelic}. Los pasos se siguen como en \cite{tutos}.
+A continuación, se explican los pasos seguidos (tomando \cite{tutos} como referencia) para la ejecución de los modelos en el \textit{workflow} de \acrshort{onnx}-TensorRT.
 
 \subsection{Conversión a ONNX}
 
-Los modelos del proyecto se encuentran en diferentes formatos, existen integraciones para utilizar los modelos directamente de TensorFlow y de PyTorch. Sin embargo, se ha optado por usar exclusivamente el formato \acrfull{onnx}.
-
-La principal desventaja de \acrshort{onnx} frente a otros formatos es la incompatibilidad de ciertas capas de redes neuronales. En cambio, es la solución que otorga el mayor rendimiento. Según el formato se han aplicado las siguientes herramientas en la exportación a \acrshort{onnx}:
+Según el formato se han aplicado las siguientes herramientas en la exportación a \acrshort{onnx}:
 
 \begin{itemize}
-    \item \textbf{PyTorch}: la API de Python ya proporciona una herramienta (torch.onnx.export).
+    \item \textbf{PyTorch}: la API de Python ya proporciona una herramienta (torch.onnx.export(), como se muestra en la figura \ref{fig:trtworkflows}).
     \item \textbf{TensorFlow}: se usa la librería de Python \textbf{tf2onnx}.
 \end{itemize}
 
