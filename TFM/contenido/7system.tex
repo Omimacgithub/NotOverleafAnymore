@@ -108,11 +108,11 @@ En el caso del portátil, gracias a las herramientas de \acrshort{ros} y a la ar
 
 \input{contenido/tables/tests/scaleros2.tex}
 
-\input{contenido/tables/tests/scaleresourcesros2.tex}
-
 En la tabla \ref{tab:scaleros2} se muestra el rendimiento del sistema en \textbf{\acrshort{ros} 2} para los equipos Jetson Orin Nano y Jetson AGX Thor. En estos dispositivos no es posible instalar \acrshort{ros} Noetic, al menos para poder contar con las últimas versiones de las librerías. Por los motivos comentados en la sección \ref{subsec:ROS2}, el sistema en \acrshort{ros} 2 no puede ejecutar el nodo \acrshort{lidar}, por lo que los resultados mostrados solo tienen en cuenta los nodos cámara junto al integrador.
 
 El \textit{det\_r} se muestra claramente inferior respecto a los resultados de la familia Intel, ya que el \acrshort{lidar} otorgaba cobertura completa a la reducida visión de las cámaras. La Jetson AGX Thor logra superar el valor del equipo de referencia en esta métrica, mientras que la Jetson Orin Nano se queda a 3 puntos de superarlo. Los resultados de precisión (\textit{det\_p} e \textit{idp}) se mantienen entre todos los dispositivos. Estos datos demuestran el excelente rendimiento de las \acrshort{gpu}s de las Jetson, capaces de compensar las limitaciones de una \acrshort{cpu} de \acrshort{arm} respecto a un Intel Core i5 (procesador del equipo de referencia). También es importante recordar que el cálculo del \textit{det\_r} se ha modificado respecto a \cite{andrew}, por lo que se muestra un \textit{recall} ligeramente inflado en la referencia.
+
+\input{contenido/tables/tests/scaleresourcesros2.tex}
 
 Se experimenta una ligera caída en el \textit{det\_p} al aumentar a 5 cámaras en la Jetson AGX Thor, ya que se generan más resultados, por lo que aumenta la probabilidad de fusionar información de distintos instantes temporales en el nodo integrador. El \textit{det\_r} se mantiene constante, lo que significa que el dispositivo tolera sin problema la carga introducida (el bajo uso de recursos en la tabla \ref{tab:scaleresourcesros2} lo abala). Sin embargo, en la Jetson Orin Nano el \textit{det\_r} cae drásticamente debido a la saturación de los recursos (acorde a la tabla \ref{tab:scaleresourcesros2}), tanto de memoria, lo que impide la realización de las inferencias, como de procesamiento, lo que implica en un retardo de las respuestas y, por consiguiente, a que se consideren resultados desactualizados que conducen a una pérdida en la precisión.
 
