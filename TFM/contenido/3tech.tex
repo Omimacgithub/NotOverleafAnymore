@@ -62,11 +62,21 @@ Mientras que las \textbf{Jetson Xavier NX, Orin Nano y AGX Orin} han sido diseñ
 La tabla \ref{tab:x86} muestra los equipos con \acrshort{cpu}s Intel empleados en el proyecto. La columna \textit{Reference} muestra el equipo de pruebas utilizado en \cite{andrew} para realizar comparaciones de resultados.
 
 \subsection{Comparación entre familias}
+
+\begin{figure}[tbp]
+    \centering
+    \includegraphics[width=0.75\linewidth]{imagenes/memcpy.png}
+    \caption{Arquitectura de interconexión de una \acrshort{gpu} discreta y una \acrshort{gpu} integrada, figura extraída de \cite{zerocpy}}
+    \label{fig:memcpy}
+\end{figure}
+
 Las diferencias y similitudes clave a la hora de comparar la familia Jetson con la Intel se describen a continuación.
 \begin{itemize}
     \item La familia Intel posee \acrshort{gpu}s y \acrshort{cpu}s de \textbf{alta frecuencia} respecto a la familia Jetson.
     \item Las \acrshort{gpu}s de la familia Intel \textbf{no poseen tensor cores}.
     \item Las \acrshort{gpu}s de la familia Intel son \textbf{discretas}, es decir, tienen su propia memoria (\acrshort{dram}) separada de la \acrshort{cpu}, con la que se comunica mediante PCIe. Por otro lado, las \acrshort{gpu}s de la familia Jetson se encuentran \textbf{integradas con la \acrshort{cpu}}, es decir, ambas comparten la memoria del sistema. Las \acrshort{gpu}s integradas pueden beneficiarse de la compartición de la \acrshort{dram} con la \acrshort{cpu}, evitando así operaciones de transferencia de datos como los \textbf{cudaMemcpy}. En el apéndice \ref{sec:pmm} se explican más detalles al respecto.
+
+          La figura \ref{fig:memcpy} muestra un esquema de interconexión de una \acrshort{gpu} discreta (familia Intel) y una \acrshort{gpu} integrada (familia Jetson), en la que la primera requiere un cudaMemcpy para poder disponer de los datos en la \acrshort{gpu} y la segunda evita realizar transferencias debido a que se utiliza la misma \acrshort{dram} (\textbf{zero-copy}).
 \end{itemize}
 
 \section{Hardware}

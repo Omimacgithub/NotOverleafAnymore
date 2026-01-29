@@ -54,13 +54,4 @@ Es \textbf{muy importante} nombrar de forma única los \glspl{tensor} que se dec
 
 Los dispositivos con \acrshort{gpu}s integradas, como en el caso de las Jetson, disponen de la \textbf{memoria fijada mapeada} (o \textit{pinned mapped memory}) de CUDA. La memoria fijada es una región de memoria que no puede ser paginada de vuelta a disco, de forma que siempre se mantiene en \acrshort{dram}, lo que acelera las transferencias de datos. Si la \acrshort{gpu} es integrada, entonces el acceso a la memoria entre el \textit{host} (o \acrshort{cpu}) y el \textit{device} (o \acrshort{gpu}) es \textbf{directo} (se pueden mapear directamente las direcciones de memoria ente el \textit{host} y el \textit{device}), de este modo, se \textbf{evitan operaciones de copias de memoria} (cudaMemcpy), lo que permite recortar la latencia asociada a estas operaciones. Es importante mencionar que dicho tipo de memoria también se puede aplicar a \textbf{\acrshort{gpu}s discretas}, aunque su uso es ventajoso solo en ciertas situaciones \cite{leimao}.
 
-\begin{figure}[tbp]
-    \centering
-    \includegraphics[width=0.75\linewidth]{imagenes/memcpy.png}
-    \caption{Arquitectura de interconexión de una \acrshort{gpu} discreta y una \acrshort{gpu} integrada, figura extraída de \cite{zerocpy}}
-    \label{fig:memcpy}
-\end{figure}
-
-La figura \ref{fig:memcpy} muestra un esquema de interconexión de una \acrshort{gpu} discreta (familia Intel) y una \acrshort{gpu} integrada (familia Jetson), en la que la primera requiere un cudaMemcpy para poder disponer de los datos en la \acrshort{gpu} y la segunda evita realizar transferencias debido a que se utiliza la misma \acrshort{dram} (\textbf{zero-copy}).
-
 A pesar de los beneficios en la reducción de operaciones \textbf{cudaMemcpy} a procesar en los \glspl{stream} de CUDA, la mejora apenas ha supuesto una reducción de \textbf{1 milisegundo} en las pruebas del capítulo \ref{chap:cnn} y, debido a la falta de tiempo y a que ya se encontraban realizadas las pruebas de los modelos y del sistema, finalmente \textbf{no se ha aplicado} dicha mejora en los resultados de esta memoria.

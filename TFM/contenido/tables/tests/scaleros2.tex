@@ -5,7 +5,7 @@
     \begin{tabular}{cc|cc|c}
         \hline
         \multicolumn{2}{c|}{\multirow{2}{*}{\textit{\begin{tabular}[c]{@{}c@{}}Number of\\ cameras\end{tabular}}}}             & \multicolumn{2}{c|}{\textit{Jetson embedded systems}} & \textit{Desktop}                                                               \\
-        \multicolumn{2}{c|}{}                                                                                                  & \textbf{Orin Nano}                                    & \textbf{AGX Thor}   & \textbf{Reference \cite{andrew} \footnotemark[3]}        \\ \hline
+        \multicolumn{2}{c|}{}                                                                                                  & \textbf{Orin Nano}                                    & \textbf{AGX Thor}   & \textbf{Reference \cite{andrew} \footnotemark[2]}        \\ \hline
         \multicolumn{1}{c|}{\multirow{4}{*}{\textit{\begin{tabular}[c]{@{}c@{}}2\\ cameras\end{tabular}}}}                     & \textit{det\_p}                                       & 93.0 ± 0.2          & \textbf{95.6 ± 0.1}                               & 95.0 \\ \cline{2-2}
         \multicolumn{1}{c|}{}                                                                                                  & \textit{det\_r}                                       & 31.8 ± 0.8          & \textbf{36.0 ± 0.1}                               & 34.7 \\ \cline{2-2}
         \multicolumn{1}{c|}{}                                                                                                  & \textit{idf1}                                         & 43.7 ± 1.3          & \textbf{47.7 ± 0.1}                               & -    \\ \cline{2-2}
@@ -14,7 +14,7 @@
         \multicolumn{1}{c|}{}                                                                                                  & \textit{det\_r}                                       & 5.6 ± 1.5           & \textbf{36.2 ± 0.1}                               & -    \\ \cline{2-2}
         \multicolumn{1}{c|}{}                                                                                                  & \textit{idf1}                                         & 18.0 ± 3.0          & \textbf{48.1 ± 0.1}                               & -    \\ \cline{2-2}
         \multicolumn{1}{c|}{}                                                                                                  & \textit{idp}                                          & \textbf{99.1 ± 1.3} & 93.3 ± 0.1                                        & -    \\ \hline
-        \multicolumn{1}{c|}{\multirow{4}{*}{\textit{\begin{tabular}[c]{@{}c@{}}10\\ cameras\\ \footnotemark[4]\end{tabular}}}} & \textit{det\_p}                                       & -                   & \textbf{88.5 ± 0.5}                               & -    \\ \cline{2-2}
+        \multicolumn{1}{c|}{\multirow{4}{*}{\textit{\begin{tabular}[c]{@{}c@{}}10\\ cameras\\ \footnotemark[3]\end{tabular}}}} & \textit{det\_p}                                       & -                   & \textbf{88.5 ± 0.5}                               & -    \\ \cline{2-2}
         \multicolumn{1}{c|}{}                                                                                                  & \textit{det\_r}                                       & -                   & \textbf{24.0 ± 0.6}                               & -    \\ \cline{2-2}
         \multicolumn{1}{c|}{}                                                                                                  & \textit{idf1}                                         & -                   & \textbf{48.0 ± 0.3}                               & -    \\ \cline{2-2}
         \multicolumn{1}{c|}{}                                                                                                  & \textit{idp}                                          & -                   & \textbf{96.0 ± 0.6}                               & -    \\ \hline
@@ -24,5 +24,5 @@
 \end{table}
 
 %\end{landscape}
-\footnotetext[3]{Pruebas con solo cámaras en \acrshort{ros} 1}
-\footnotetext[4]{YuNet se ejecuta en el \textit{runtime} de OpenCV en \acrshort{cpu}}
+\footnotetext[2]{Pruebas con solo cámaras en \acrshort{ros} 1}
+\footnotetext[3]{YuNet se ejecuta en el \textit{runtime} de OpenCV en \acrshort{cpu}}
