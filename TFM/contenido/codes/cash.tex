@@ -5,7 +5,7 @@ def process(self):
     #Collect lidar message
     last_stamp = self.lidar_cash.getLatestTime()
     elapsed = rospy.Time.now().to_sec() - last_stamp.to_sec() if last_stamp else 1
-    lidar = self.lidar_cash.getElemBeforeTime(last_stamp) if elapsed <= 0.5 else None
+    lidar = self.lidar_cash.getElemBeforeTime(last_stamp) if elapsed <= 0.2 else None
     nl = False if lidar else True
     message_list = [lidar] if not nl else []
     #Collect cameras messages
@@ -15,7 +15,7 @@ def process(self):
       report = cam.getElemBeforeTime(camlast)
       if report:
         camlapsed = rospy.Time.now().to_sec() - camlast.to_sec()
-        if camlapsed <= 0.5:
+        if camlapsed <= 0.2:
           message_list.append(report)
     post = len(message_list)
     nc = True if pre == post else False

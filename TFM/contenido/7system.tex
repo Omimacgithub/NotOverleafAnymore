@@ -7,30 +7,21 @@
 
 Para obtener resultados de precisión del sistema, se dispone de un \gls{dataset} que representa el \gls{gt} del nodo integración de sensores (ver sección \ref{sec:basearch}). La prueba de la que se ha extraído el \gls{dataset} corresponde con la misma del \gls{dataset} de las cámaras. En el apéndice \ref{sec:datsys} se comenta su composición.
 
-Es importante remarcar que todas las pruebas de esta sección se realizan en \textbf{tiempo real}. Según el proyecto, la frecuencia del tiempo real puede variar, en este caso, se espera que el sistema trabaje a \textbf{10 Hz} (o 10 \acrshort{fps}), que es la frecuencia a la que ambos sensores \acrshort{lidar} y Kinect devuelven datos.
+Es importante remarcar que todas las pruebas de esta sección se realizan en \textbf{tiempo real}. Según el proyecto, la frecuencia del tiempo real puede variar, en este caso, se espera que el sistema trabaje a \textbf{10 Hz} (o 10 \acrshort{fps}), que es la frecuencia a la que ambos sensores \acrshort{lidar} y Kinect devuelven datos. Los modelos de todas las pruebas realizadas en este capítulo se han ejecutado en el \gls{rt} de \textbf{TensorRT} (salvo YuNet, que utiliza CUDA por medio de OpenCV).
 
 Se inicializa el sistema con el nodo integración de sensores, el nodo \acrshort{lidar} y el número de nodos cámara deseado (ver sección \ref{sec:basearch}). Se reproduce el fichero \gls{rosbag} una vez inicializado el sistema, que lo nutrirá con la información generada por los sensores en \textbf{tiempo real}. Cada predicción generada por el nodo integrador se almacena en memoria y se vuelca en un fichero \acrshort{json} una vez el sistema se detiene (por ejemplo, con un Ctrl+C). Los datos guardados en el fichero \acrshort{json} se procesan contra el \textit{\gls{dataset}} y se devuelven los resultados finales en forma de las siguientes métricas:
 
 %En cada iteración del procesado, se ejecutan \textbf{4 redes neuronales (\acrshort{cnn})}. 2 de ellas, YOLOv8n y YuNet, para la detección de cuerpos y de caras respectivamente. Las otras 2, OSNet\_x1 y ArcFace, para el reconocimiento de cuerpos y caras respectivamente. A pesar de lo que la figura \ref{fig:finalsys} muestra, las redes de detección YOLOv8n y YuNet \textbf{no se ejecutan en paralelo}, lo mismo sucede con las redes ArcFace y OSNet\_x1. Se ha considerado ejecutar en paralelo estas redes. Sin embargo, las limitaciones de memoria principal de la Jetson restringen tomar esta aproximación.
 
 \begin{itemize}
-    \item \textit{\textbf{Det precision} (det\_p)}: es la proporción de personas detectadas en la posición correcta (campo \textit{position} del \gls{dataset}) respecto al total de personas detectadas.
-    \item \textit{\textbf{Det recall} (det\_r)}: representa la proporción de personas detectadas en la posición correcta respecto al total de personas en el \gls{dataset}.
-    \item \textit{\textbf{Ident F1 score} (idf1)}: corresponde con el \textit{F1\_score} global de los modelos de reconocimiento (ver apéndice \ref{subsec:recon} para más información).
-    \item \textit{\textbf{Ident precision} (idp)}: corresponde con la precisión global de los modelos de reconocimiento.
+    \item \textit{\textbf{Det precision} (det\_p)}: es la proporción de personas detectadas en la posición \textbf{\acrshort{3d}} correcta.
+    \item \textit{\textbf{Det recall} (det\_r)}: se define igual que el \textit{recall} para los modelos de detección (ver apéndice \ref{subsec:det}). El cálculo de esta métrica \textbf{se ha modificado} respecto a \cite{andrew}, el \textit{TP + FN} del \textit{recall} se ha cambiado por el número total de detecciones del \gls{dataset}, a diferencia de \cite{andrew}, que considera el número total de detecciones del \gls{dataset} dentro de los \textbf{frames que coinciden} en \gls{timestamp} con la salida del nodo integrador, de modo que las caídas en el número de frames coincidentes (principalmente debido a la congestión del sistema) \textbf{no afectan} al valor del \textit{recall}, lo que no es deseable para analizar la escalabilidad del sistema. Este cambio en el cálculo \textbf{varía ligeramente} los resultados obtenidos del \textit{recall} respecto a \cite{andrew}.
+          %siendo \textit{det\_tp} una detección positiva y \textit{n\_gt} el número de detecciones registradas en el \gls{dataset}, el \textit{det\_r} se calcula como sigue en la ecuaci
+    \item \textit{\textbf{Ident F1 score} (idf1)}: se corresponde con el \textit{F1\_score} global de los modelos de reconocimiento (ver apéndice \ref{subsec:recon}).
+    \item \textit{\textbf{Ident precision} (idp)}: se corresponde con la precisión global de los modelos de reconocimiento.
 \end{itemize}
 
-La prueba del sistema da una detección como positiva si la posición predicha es igual a la del \gls{dataset} dentro de una holgura de \textbf{40 centímetros}.
-
-Siendo \textit{det\_tp} una posición predicha correctamente, \textit{det\_fp} una posición predicha incorrectamente, \textit{n\_gt} el número total de detecciones del \gls{dataset}, \textit{id\_tp} una predicción correcta de la identidad y \textit{id\_fp} una predicción incorrecta de la identidad, se definen las siguientes métricas:
-\begin{itemize}
-    \item $det\_p = \frac{det\_tp}{(det\_tp + det\_fp)}$
-    \item $det\_r = \frac{det\_tp}{n\_gt}$
-    \item $idf1 = \frac{2 * id\_tp}{2 * (id\_tp + id\_fp + (n\_gt - det\_tp))}$
-    \item $idp = \frac{id\_tp}{(id\_tp + id\_fp)}$
-\end{itemize}
-
-Los modelos de todas las pruebas realizadas en este capítulo se han ejecutado en el \gls{rt} de \textbf{TensorRT} (salvo YuNet, que utiliza CUDA por medio de OpenCV).
+La prueba del sistema da una detección como \textbf{positiva} si la posición \acrshort{3d} predicha es igual a la del \gls{dataset} dentro de un umbral de distancia máximo de \textbf{40 centímetros}. Adicionalmente, el retardo máximo para que un resultado del nodo cámara sea procesado por el nodo integrador es de \textbf{200 milisegundos}, como se expone en la sección \ref{sec:scal} (se han establecido estos valores, ya que son los mismos que los utilizados en \cite{andrew} para las pruebas del sistema).
 
 Para cada prueba, también se mostrará la proporción de los recursos utilizados del dispositivo durante la ejecución del sistema (las pruebas se han realizado \textbf{sin el entorno gráfico}). Se empleará la mediana de todas las lecturas de recursos en una ejecución completa del sistema, ya que es robusta frente a los picos de uso de recursos. En dispositivos Jetson, el comando \textbf{tegrastats} devuelve toda la información necesaria, en cambio, para el resto de dispositivos se obtienen de la siguiente forma:
 \begin{itemize}
@@ -76,33 +67,23 @@ A continuación se exponen los resultados de las pruebas de escalabilidad ejecut
 
 La tabla \ref{tab:scaleperf} muestra los resultados de la familia Intel en función del número de cámaras del sistema en \textbf{\acrshort{ros} 1}. La columna \textit{Reference} muestra los resultados obtenidos en el dispositivo de pruebas utilizado en \cite{andrew}, en el que solo se registraron datos del sistema funcionando con un máximo de 2 cámaras.
 
-La principal mejora respecto al equipo de referencia se ve en el \textit{det\_r}, que demuestra que el sistema tiene una mayor capacidad de procesamiento, en cierta medida influida por la potencia de los procesadores Intel Core i7 respecto a Core i5 (este último viniendo del equipo de referencia).
+En el caso de las 2 cámaras, no se ve una mejora respecto a los resultados de referencia, de hecho se experimenta una ligera caída en los resultados...
 
-Por otro lado, se aprecia una bajada en el \textit{det\_p} de los 2 dispositivos de sobremesa respecto al de referencia,
+\input{contenido/tables/tests/scaleresources.tex}
+
+En general, los resultados entre el PC del laboratorio y el portátil son \textbf{muy similares}, esto es especialmente relevante debido al esfuerzo adicional de compresión/descompresión y transmisión de mensajes por la red en el caso del portátil, lo que demuestra la efectividad de las herramientas de red de \acrshort{ros} y de la arquitectura propuesta (figura \ref{fig:systesting}), que han logrado reducir el ancho de banda necesario para la transmisión de mensajes (en la tabla \ref{tab:scaleresources} se muestra un 61\% de utilización respecto al máximo teórico de una red GigabitEthernet (125 \acrshort{mb}/s) en el procesamiento de 10 cámaras). La latencia asociada a la compresión en el origen, transmisión del mensaje y descompresión de un frame \acrshort{rgb} en el destino es de aproximadamente \textbf{50 milisegundos} (obtenido calculando la diferencia entre el tiempo actual y el \gls{timestamp} de generación del mensaje inicial) que, según los resultados, el portátil es capaz de compensar incluso con 10 cámaras.
+
+El portátil escala correctamente hasta las 10 cámaras, a diferencia del PC del laboratorio, que experimenta una caída en el \textit{det\_r}. Dicha caída puede deberse a una carga excesiva en la \acrshort{gpu} del PC del laboratorio, mientras que la \acrshort{gpu} del portátil la consigue tolerar en mayor medida (en la tabla \ref{tab:scaleresources} se muestra una utilización del 84\% respecto al 72\% de la \acrshort{gpu} del portátil), principalmente por un mayor número de \glspl{sm} en la \acrshort{gpu} Ampere (20) respecto a la Turing (14) y del \textbf{casi triple} de núcleos de CUDA (2048 y 896 respectivamente).
 
 % ESTO NO ES CIERTO, al reducir el intervalo a 200 ms baja el recall (a 47, que es MENOS que la referencia) pero no sube la precisión, esto puede deberse a que se acepta la llegada de los mensajes de las cámaras con un máximo de \textbf{500 milisegundos} de retardo respecto a los \textbf{200 milisegundos} configurados en la prueba de referencia, lo que hace que se devuelvan predicciones con posiciones más atrasadas y, por lo tanto, que superen la holgura de 40 centímetros para asumirlas correctas. En cuanto a la métrica \textit{idp} todos los sistemas se encuentran relativamente a la par.
 
 %a que el nodo integrador debe de fusionar los datos procedentes de todos los sensores, al aumentar su número también se aumenta la cantidad de procesamiento. Por lo tanto, más tiempo se demorará en devolver una predicción, que se emparejará con el frame del \gls{dataset} con el mismo \gls{timestamp}, que corresponde a un instante real \textbf{anterior}.
 
-En la métrica \textit{det\_r} se aprecia una bajada, no muy clara en el portátil, al aumentar la cantidad de cámaras. Dicha bajada implica que el sistema empieza a perder mensajes de los nodos, aunque \textbf{no es crítica} y permite atender a la mayoría de las peticiones.
-
 %PRECISION DE FAMILIA INTEL: la caida en la precision no se debe al slope ni al tamaño de la cola. El problema debe de estar en el nodo LiDAR.
 
 %PRECISIÓN AL AUMENTAR EL Nº DE CÁMARAS: creo q el nodo integrador incluye detecciones repetidas (con las mismas posiciones exactas) cuando no se conoce la identidad (la etiqueta como unk), ya que con entidades desconocidas no se guardan duplicados. Esto produce una proliferación de det_fps, ya que al haber puntos repetidos, hay más detecciones pero menos matches, por lo tanto aumentan los unmatches y así los det_fps.
 
-La precisión en los reconocimientos (métrica \textit{idp}) no experimenta caídas notorias (excepto por la situación de las 5 cámaras en el portátil, que sorprendente se recupera al subir a las 10 cámaras) al aumentar la cantidad de cámaras, lo que demuestra que los modelos de reconocimiento siguen funcionando correctamente ante un enorme estrés del sistema. El \textit{idf1} depende en cierta medida del \textit{det\_r}, por lo que es de esperar que dicho valor descienda junto al \textit{det\_r}, que en cierto modo es compensado por el \textit{idp}.
-
-La métrica \textit{det\_p} sufre la mayor caída a medida que se escala en el número de cámaras... Por otra parte, los resultados del \textit{det\_p} se muestran similares entre el PC del laboratorio y el portátil, lo que demuestra la baja latencia de la red Ethernet utilizada para las pruebas del portátil.
-
-\input{contenido/tables/tests/scaleresources.tex}
-
-La tabla \ref{tab:scaleresources} muestra el uso de recursos durante la prueba para los equipos de sobremesa. Se puede apreciar que, hasta las 10 cámaras, el sistema se desempeña de forma fluida, con máximos de poco más de la mitad de recursos utilizados.
-
-(TODO: El portátil ha registrado su mayor recall en 10 cámaras, entonces se puede decir que la GPU está al límite???) Los recursos de la \acrshort{gpu} se llevan al límite con 10 cámaras. La gráfica del portátil (Ampere) frente a la del PC del laboratorio (Turing) es capaz de gestionar mejor la memoria (debido a TODO: \dots). Por otro lado, un mayor número de \glspl{sm} en la \acrshort{gpu} Ampere (20, respecto a los 14 de la Turing) le permite lidiar mejor con la carga respecto a la \acrshort{gpu} del PC del laboratorio.
-
-El uso elevado de recursos explica, junto a otros factores, la bajada en el \textit{det\_r} cuando se ejecutan 10 nodos cámara simultáneamente, más el nodo \acrshort{lidar} y el integrador.
-
-En el caso del portátil, gracias a las herramientas de \acrshort{ros} y a la arquitectura de transmisión de los datos, se ha conseguido reducir significativamente el ancho de banda de transmisión de imágenes \acrshort{rgbd}, permitiendo el tráfico de estos datos en tiempo real.
+% OLD: La precisión en los reconocimientos (métrica \textit{idp}) no experimenta caídas notorias (excepto por la situación de las 5 cámaras en el portátil, que sorprendente se recupera al subir a las 10 cámaras) al aumentar la cantidad de cámaras, lo que demuestra que los modelos de reconocimiento siguen funcionando correctamente ante un enorme estrés del sistema. El \textit{idf1} depende en cierta medida del \textit{det\_r}, por lo que es de esperar que dicho valor descienda junto al \textit{det\_r}, que en cierto modo es compensado por el \textit{idp}.
 
 \subsection{Familia Jetson}
 
@@ -118,11 +99,6 @@ Se experimenta una ligera caída en el \textit{det\_p} al aumentar a 5 cámaras 
 
 % RECALL: En la Thor con 2 y 5 cámaras el n_gt se mantiene encima de los 6000 mientras q con 10 cams baja a 4300. Creo q el recall debe ser: det_fp/6259 y 6259 es el número de detecciones totales del ground truth, sin recortar nada.
 
-%Decir que las pruebas del PC lab:
-%  - Utilizan un slope de 0.5
-%  - El nodo integrador no detecta duplicados a partir de la misma posición
-%  - El tamaño de cola es de 100 (como todas las pruebas excepto las de la Orin Nano), por lo que no tiene problema de pérdida de mensajes
-
 La Jetson AGX Thor sufre una caída en el \textit{det\_p}, pero sobretodo en el \textit{det\_r} al procesar 10 cámaras. Esto se debe a la elevada utilización de la \acrshort{gpu} (como se muestra en la tabla \ref{tab:scaleresourcesros2}), que provoca una reducción en el número de detecciones totales, además de su precisión. Este hecho lo demuestra la ejecución del modelo YuNet en la \acrshort{cpu}, que ha logrado aumentar el \textit{det\_p} en 4 puntos respecto a ejecutarlo en \acrshort{gpu}. Se ha escogido YuNet, debido a que la reducción en la latencia mediante CUDA no es tan efectiva como en TensorRT y a que la gestión de la memoria realizada por OpenCV es mucho menos eficiente (en la tabla \ref{tab:scaleresourcesros2} se puede ver como el uso de memoria con 10 cámaras y YuNet en \acrshort{cpu} es \textbf{menor} que con 5 cámaras y YuNet en \acrshort{gpu}).
 
 \section{Discusiones}
@@ -135,8 +111,8 @@ Es importante destacar que las pruebas se realizaron con \textbf{6 personas regi
 
 Los 8 \acrshort{gb}s de memoria de la Jetson Orin Nano se vuelven insuficientes, debido a todos los recursos necesarios a reservar, que pesan en torno a cientos de \acrshort{mb}s, que se multiplican por 4 modelos y a su vez por 5 cámaras. Para reducir el impacto de este problema, se han aplicado ciertas optimizaciones de los códigos de Python, que han permitido ahorrar hasta \textbf{400 \acrshort{mb}s} en la inicialización del sistema, y que se citan en el apéndice \ref{chap:optimus}. De todos modos, es necesario recortar también el elevado coste de procesamiento que impide al \textit{det\_r} despegar.
 
-TODO: Acorde al uso de recursos, no da la impresión de que ninguno de los dispositivos pueda ejecutar más de 10 cámaras sin una caída en el rendimiento.
+%TODO: Acorde al uso de recursos, no da la impresión de que ninguno de los dispositivos pueda ejecutar más de 10 cámaras sin una caída en el rendimiento.
 
-Aunque la ejecución de YuNet en la \acrshort{gpu} sea beneficioso, en una situación de estrés en la \acrshort{gpu} impide ...
+%Aunque la ejecución de YuNet en la \acrshort{gpu} sea beneficioso, en una situación de estrés en la \acrshort{gpu} impide ...
 
 %el uso ineficiente de la memoria de OpenCV con CUDA respecto a TensorRT impide 
