@@ -1,13 +1,13 @@
 \chapter{Fundamentos teóricos}
-\lettrine{E}{n} este capítulo se exponen los conceptos necesarios para comprender la memoria.
+\lettrine{E}{n} este capítulo se exponen los conceptos necesarios para comprender el resto de la memoria.
 
 \section{Clasificadores}
 
-Los clasificadores o algoritmos de clasificación resuelven la tarea de decidir la membresía de un nuevo dato a una clase a partir de un \gls{dataset}. Aparte de las extendidas \textbf{redes neuronales artificiales} (ann), se suelen emplear los siguientes algoritmos en el campo de la detección de objetos y en otros problemas de clasificación \cite{DREISEITL2002352}:
+Los clasificadores o algoritmos de clasificación resuelven la tarea de decidir la membresía de un nuevo dato a una clase a partir de un \gls{dataset}. Aparte de las extendidas \textbf{redes neuronales artificiales} (ANN), se suelen emplear los siguientes algoritmos en el campo de la detección de objetos y en otros problemas de clasificación \cite{DREISEITL2002352}:
 
 \begin{itemize}
-    \item \textbf{\textit{k-nearest neighbors (knn)}}: es un método de clasificación basado en las distancias de la muestra respecto a sus muestras más cercanas (vecinos). El parámetro k establece la cantidad de dichos vecinos, de forma que se asigna la clase predominante de los vecinos a la propia muestra \cite{peterson2009k}.
-    \item \textbf{\textit{Decision tree}}: es un método de clasificación que sigue una estructura de árbol, en el que un nodo representa una característica y una rama un conjunto de características. La clasificación empieza desde el nodo raíz y termina en uno de los nodos hoja \cite{ali2012random}.
+    \item \textbf{\textit{k-nearest neighbors (knn)}}: es un método basado en las distancias de la muestra respecto a sus muestras más cercanas (\textbf{vecinos}). El parámetro \textbf{k} establece la cantidad de dichos vecinos con los que relacionarse, de forma que se asigna la clase predominante de entre todos los vecinos de la propia muestra \cite{peterson2009k}.
+    \item (TODO: explicar más) \textbf{\textit{Decision tree}}: dicho método sigue una estructura de \textbf{árbol}, en el que un nodo \textbf{no hoja} representa una característica compartida entre clases y un nodo \textbf{hoja} una característica específica de una clase, de forma que una rama representa el conjunto de características de una clase. La clasificación empieza desde el nodo raíz y termina en uno de los nodos hoja \cite{ali2012random}.
     \item \textbf{\textit{\acrfull{svm}}}: trata de dibujar el hiperplano óptimo en cuanto al margen que separa las clases de datos. A diferencia de los anteriores clasificadores, las predicciones devueltas por las \acrshort{svm} son puramente \textbf{dicotómicas}, es decir, no devuelve probabilidades de pertenencia para cada clase (al menos de forma nativa) \cite{DREISEITL2002352}.
 \end{itemize}
 
