@@ -14,11 +14,11 @@ Se inicializa el sistema con el nodo integración de sensores, el nodo \acrshort
 %En cada iteración del procesado, se ejecutan \textbf{4 redes neuronales (\acrshort{cnn})}. 2 de ellas, YOLOv8n y YuNet, para la detección de cuerpos y de caras respectivamente. Las otras 2, OSNet\_x1 y ArcFace, para el reconocimiento de cuerpos y caras respectivamente. A pesar de lo que la figura \ref{fig:finalsys} muestra, las redes de detección YOLOv8n y YuNet \textbf{no se ejecutan en paralelo}, lo mismo sucede con las redes ArcFace y OSNet\_x1. Se ha considerado ejecutar en paralelo estas redes. Sin embargo, las limitaciones de memoria principal de la Jetson restringen tomar esta aproximación.
 
 \begin{itemize}
-    \item \textit{\textbf{Det precision} (det\_p)}: es la proporción de personas detectadas en la posición \textbf{\acrshort{3d}} correcta.
+    \item \textit{\textbf{Det precision} (det\_p)}: proporción de personas detectadas en la posición \textbf{\acrshort{3d}} correcta.
     \item \textit{\textbf{Det recall} (det\_r)}: se define igual que el \textit{recall} para los modelos de detección (ver apéndice \ref{subsec:det}). El cálculo de esta métrica \textbf{se ha modificado} respecto a \cite{andrew}, el \textit{TP + FN} del \textit{recall} se ha cambiado por el número total de detecciones del \gls{dataset}, a diferencia de \cite{andrew}, que considera el número total de detecciones del \gls{dataset} dentro de los \textbf{frames que coinciden} en \gls{timestamp} con la salida del nodo integrador, de modo que las caídas en el número de frames coincidentes (principalmente debido a la congestión del sistema) \textbf{no afectan} al valor del \textit{recall}, lo que no es deseable para analizar la escalabilidad del sistema. Este cambio en el cálculo \textbf{varía ligeramente} los resultados obtenidos del \textit{recall} respecto a \cite{andrew}.
           %siendo \textit{det\_tp} una detección positiva y \textit{n\_gt} el número de detecciones registradas en el \gls{dataset}, el \textit{det\_r} se calcula como sigue en la ecuaci
     \item \textit{\textbf{Ident F1 score} (idf1)}: se corresponde con el \textit{F1\_score} global de los modelos de reconocimiento (ver apéndice \ref{subsec:recon}).
-    \item \textit{\textbf{Ident precision} (idp)}: se corresponde con la precisión global de los modelos de reconocimiento.
+    \item \textit{\textbf{Ident precision} (idp)}: es la precisión global de los modelos de reconocimiento.
 \end{itemize}
 
 La prueba del sistema da una detección como \textbf{positiva} si la posición \acrshort{3d} predicha es igual a la del \gls{dataset} dentro de un umbral de distancia máximo de \textbf{40 centímetros}. Adicionalmente, el retardo máximo para que un resultado del nodo cámara sea procesado por el nodo integrador es de \textbf{200 milisegundos}, como se expone en la sección \ref{sec:scal} (se han establecido estos valores, ya que son los mismos que los utilizados en \cite{andrew} para las pruebas del sistema).
@@ -37,11 +37,11 @@ Para cada prueba, también se mostrará la proporción de los recursos utilizado
 Debido a que el \gls{rosbag} utilizado es un archivo pesado (41 \acrshort{gb}), en ciertas situaciones ha sido necesario reproducir dicho fichero desde una \textbf{fuente externa} al no disponer de almacenamiento local suficiente.
 
 \begin{equation}
-    (|imagen\_RGB| + |imagen\_profundidad|)*ncams + |nube\_de\_puntos\_LiDAR|
+    (|imagen\_RGB| + |imagen\_profundidad|)*ncams + |nube\_puntos\_LiDAR|
 \end{equation}
 \label{eq:transmision}
 
-La comunicación con la fuente externa se realiza a través de una red \acrshort{lan} \textbf{Gigabit Ethernet}, que posee un ancho de banda limitado para la transmisión de imágenes \acrshort{rgbd} (máximo teórico de 125 \acrshort{mb}/s). La fórmula \ref{eq:transmision} muestra el tamaño de los datos que debe transmitir la fuente externa cada 100 ms (que es la frecuencia a la que trabaja el sistema). Siendo $|imagen\_RGB| = 40 \acrshort{mb}/s$ (resolución de 1280x1024), $|imagen\_profundidad| = 20 \acrshort{mb}/s$ (resolución de 640x480) y $|nube\_de\_puntos\_LiDAR| = 5 \acrshort{mb}/s$ (los datos se han tomado del comando \textbf{rostopic bw}), el ancho de banda necesario es de \textbf{125 \acrshort{mb}/s} para dos cámaras (\textit{ncams}=2), lo que ya \textbf{equivale} al ancho de banda máximo teórico.
+La comunicación con la fuente externa se realiza a través de una red \acrshort{lan} \textbf{Gigabit Ethernet}, que posee un ancho de banda limitado para la transmisión de imágenes \acrshort{rgbd} (máximo teórico de 125 \acrshort{mb}/s). La fórmula \ref{eq:transmision} muestra el tamaño de los datos que debe transmitir la fuente externa cada 100 ms (que es la frecuencia a la que trabaja el sistema). Siendo $|imagen\_RGB| = 40 \acrshort{mb}/s$ (resolución de 1280x1024), $|imagen\_profundidad| = 20 \acrshort{mb}/s$ (resolución de 640x480) y $|nube\_puntos\_LiDAR| = 5 \acrshort{mb}/s$ (los datos se han tomado del comando \textbf{rostopic bw}), el ancho de banda necesario es de \textbf{125 \acrshort{mb}/s} para dos cámaras (\textit{ncams}=2), lo que ya \textbf{equivale} al ancho de banda máximo teórico.
 
 \begin{figure}
     \centering
@@ -61,13 +61,13 @@ Debido a que el \gls{rosbag} solo contiene los datos de 2 cámaras, para realiza
 
 A continuación se exponen los resultados de las pruebas de escalabilidad ejecutadas en la familia Intel (equipos de sobremesa) y en 2 dispositivos de la familia Jetson (Jetson Orin Nano y Jetson AGX Thor). Los resultados marcados con guion indican ausencia del dato por imposibilidad de realizar la prueba.
 
-\subsection{TODO: Familia Intel}
+\subsection{Familia Intel}
 
 \input{contenido/tables/tests/scaleperf.tex}
 
 La tabla \ref{tab:scaleperf} muestra los resultados de la familia Intel en función del número de cámaras del sistema en \textbf{\acrshort{ros} 1}. La columna \textit{Reference} muestra los resultados obtenidos en el dispositivo de pruebas utilizado en \cite{andrew}, en el que solo se registraron datos del sistema funcionando con un máximo de 2 cámaras.
 
-En el caso de las 2 cámaras, no se ve una mejora respecto a los resultados de referencia, de hecho se experimenta una ligera caída en los resultados...
+% TODO: En el caso de las 2 cámaras, no se ve una mejora respecto a los resultados de referencia, de hecho se experimenta una ligera caída en los resultados...
 
 \input{contenido/tables/tests/scaleresources.tex}
 
@@ -95,11 +95,11 @@ El \textit{det\_r} se muestra claramente inferior respecto a los resultados de l
 
 \input{contenido/tables/tests/scaleresourcesros2.tex}
 
-Se experimenta una ligera caída en el \textit{det\_p} al aumentar a 5 cámaras en la Jetson AGX Thor, ya que se generan más resultados, por lo que aumenta la probabilidad de fusionar información de distintos instantes temporales en el nodo integrador. El \textit{det\_r} se mantiene constante, lo que significa que el dispositivo tolera sin problema la carga introducida (el bajo uso de recursos en la tabla \ref{tab:scaleresourcesros2} lo abala). Sin embargo, en la Jetson Orin Nano el \textit{det\_r} cae drásticamente debido a la saturación de los recursos (acorde a la tabla \ref{tab:scaleresourcesros2}), tanto de memoria, lo que impide la realización de las inferencias, como de procesamiento, lo que implica en un retardo de las respuestas y, por consiguiente, a que se consideren resultados desactualizados que conducen a una pérdida en la precisión.
+Se experimenta una ligera caída en el \textit{det\_p} al aumentar a 5 cámaras en la Jetson AGX Thor, ya que se generan más resultados, por lo que aumenta la probabilidad de fusionar información de distintos instantes temporales en el nodo integrador. El \textit{det\_r} se mantiene constante, lo que significa que el dispositivo tolera sin problema la carga introducida (el bajo uso de recursos en la tabla \ref{tab:scaleresourcesros2} lo avala). Sin embargo, en la Jetson Orin Nano el \textit{det\_r} cae drásticamente debido a la saturación de los recursos (acorde a la tabla \ref{tab:scaleresourcesros2}), tanto de memoria, lo que impide la realización de las inferencias, como de procesamiento, lo que implica en un retardo de las respuestas y, por consiguiente, a que se consideren resultados desactualizados que conducen a una pérdida en la precisión.
 
 % RECALL: En la Thor con 2 y 5 cámaras el n_gt se mantiene encima de los 6000 mientras q con 10 cams baja a 4300. Creo q el recall debe ser: det_fp/6259 y 6259 es el número de detecciones totales del ground truth, sin recortar nada.
 
-La Jetson AGX Thor sufre una caída en el \textit{det\_p}, pero sobretodo en el \textit{det\_r} al procesar 10 cámaras. Esto se debe a la elevada utilización de la \acrshort{gpu} (como se muestra en la tabla \ref{tab:scaleresourcesros2}), que provoca una reducción en el número de detecciones totales, además de su precisión. Este hecho lo demuestra la ejecución del modelo YuNet en la \acrshort{cpu}, que ha logrado aumentar el \textit{det\_p} en 4 puntos respecto a ejecutarlo en \acrshort{gpu}. Se ha escogido YuNet, debido a que la reducción en la latencia mediante CUDA no es tan efectiva como en TensorRT y a que la gestión de la memoria realizada por OpenCV es \textbf{mucho menos eficiente} (en la tabla \ref{tab:scaleresourcesros2} se puede ver como el uso de memoria con 10 cámaras y YuNet en \acrshort{cpu} es \textbf{menor} que con 5 cámaras y YuNet en \acrshort{gpu}).
+La Jetson AGX Thor sufre una caída en el \textit{det\_p}, pero sobre todo en el \textit{det\_r} al procesar 10 cámaras. Esto se debe a la elevada utilización de la \acrshort{gpu} (como se muestra en la tabla \ref{tab:scaleresourcesros2}), que provoca una reducción en el número de detecciones totales, además de su precisión. Este hecho lo demuestra la ejecución del modelo YuNet en la \acrshort{cpu}, que ha logrado aumentar el \textit{det\_p} en 4 puntos respecto a ejecutarlo en \acrshort{gpu}. Se ha escogido YuNet, debido a que la reducción en la latencia mediante CUDA no es tan efectiva como en TensorRT y a que la gestión de la memoria realizada por OpenCV es \textbf{mucho menos eficiente} (en la tabla \ref{tab:scaleresourcesros2} se puede ver como el uso de memoria con 10 cámaras y YuNet en \acrshort{cpu} es \textbf{menor} que con 5 cámaras y YuNet en \acrshort{gpu}).
 
 \section{Discusiones}
 

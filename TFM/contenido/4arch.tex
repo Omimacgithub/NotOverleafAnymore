@@ -15,7 +15,7 @@ Toda la arquitectura se ejecuta en el \textit{framework} \acrshort{ros} \cite{RO
 
 \begin{figure}[tbp]
     \centering
-    \includegraphics[width=0.6\linewidth]{imagenes/SYSARCH.png}
+    \includegraphics[width=0.6\linewidth]{imagenes/SYSARCH.jpg}
     \caption{Arquitectura del sistema de partida, figura extraída de \cite{andrew}}
     \label{fig:sysarch}
 \end{figure}
@@ -77,7 +77,7 @@ Finalmente, las predicciones de cada nodo cámara se contrastan dentro del nodo 
 
 %coherente con la información otorgada por los nodos (ejemplo: dos cámaras que no están solapadas no pueden reconocer a una misma persona en el mismo instante temporal).
 
-A continuación, se exponen en detalle los componentes recién comentados. El \textbf{diseño e implementación del módulo de reconocimiento adaptativo} se detalla en el apéndice \ref{chap:adaptrecon}. Se ha decidido así, puesto que no incluye ninguna mejora significativa respecto a los modelos propuestos en \cite{Erik,CESAR}.
+A continuación, se exponen en detalle los componentes recién comentados.
 
 \section{Procesamiento de video}
 \label{sec:video}
@@ -186,7 +186,7 @@ La figura \ref{fig:ADAPTSYS} muestra la arquitectura del módulo de reconocimien
 
 Se recibe la secuencia de vectores del individuo, que son procesados por el \textbf{módulo de valoración} (módulo EDF en la figura \ref{fig:ADAPTSYS}), que devuelve las puntuaciones de cada comité, dichas puntuaciones se ordenan de menor a mayor, de forma que la primera puntuación (la mejor) se corresponde \textit{a priori} con el comité del individuo. Las puntuaciones son recibidas por el \textbf{módulo de reconocimiento} (módulo RDF en la figura \ref{fig:ADAPTSYS}), que determina, mediante el \acrfull{evt}, si el comité corresponde realmente al individuo (conocido) o no (desconocido). El \textbf{módulo de actualización} (\textit{update module} en la figura \ref{fig:ADAPTSYS}) recibe la decisión, si el individuo es conocido, se agrega una nueva \acrshort{svm} entrenada con la secuencia de \glspl{embedding} como positivos y con un extracto de las muestras del resto de individuos como negativos, en caso contrario, se crea un nuevo comité con una \acrshort{svm} entrenada con el mismo conjunto de positivos y un conjunto aleatorio de las muestras de \textbf{todos los individuos} como negativos. Finalmente, si el comité se excede en el límite fijado de \acrshort{svm}s, el \textbf{módulo de limitación} (\textit{limitation module} en la figura \ref{fig:ADAPTSYS}) determina la \acrshort{svm} que menos aporta a dicho comité, que pasa a ser \textbf{eliminada} del mismo. Sendos módulos de actualización y limitación se encargan de añadir, actualizar y eliminar las \acrshort{svm}, los comités y las muestras de los individuos a la base de datos de \textbf{personas registradas}.
 
-Los detalles del diseño de cada componente se exponen en el apéndice \ref{chap:adaptrecon}.
+Para facilitar la lectura de la memoria y, puesto que no se incluye ninguna mejora respecto a los modelos propuestos en \cite{Erik,CESAR}, el diseño e implementación de este módulo se ha movido al apéndice \ref{chap:adaptrecon}.
 
 \section{Personas registradas}
 \label{sec:initarch}
