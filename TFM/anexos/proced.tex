@@ -19,7 +19,7 @@ A la hora de realizar inferencias en el \textit{framework} de TensorRT, existen 
     \label{fig:trtworkflows}
 \end{figure}
 
-La figura \ref{fig:trtworkflows} muestra el flujo seguido para ejecutar inferencias en cada uno de los \textit{workflows} comentados. Se ha optado por usar el \textit{workflow} de \textbf{\acrshort{onnx}-TensorRT}, ya que es el que mayor rendimiento otorga, además de un uso eficiente de la memoria de la \acrshort{gpu}, superior incluso a utilizar \acrshort{onnx} Runtime \cite{trtworkflows}. La única desventaja frente a utilizar los \textit{frameworks} de Tensorflow yPyTorch sería la incompatibilidad de ciertas capas del modelo en la fase de exportación al formato \acrshort{onnx}.
+La figura \ref{fig:trtworkflows} muestra el flujo seguido para ejecutar inferencias en cada uno de los \textit{workflows} comentados. Se ha optado por usar el \textit{workflow} de \textbf{\acrshort{onnx}-TensorRT}, ya que es el que mayor rendimiento otorga, además de un uso eficiente de la memoria de la \acrshort{gpu}, superior incluso a utilizar \acrshort{onnx} Runtime \cite{trtworkflows}. La única desventaja frente a utilizar los \textit{frameworks} de Tensorflow y PyTorch sería la incompatibilidad de ciertas capas del modelo en la fase de exportación al formato \acrshort{onnx}.
 
 \section{Procedimiento}
 
