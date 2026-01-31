@@ -20,7 +20,7 @@ En el contexto del reconocimiento \textit{Open-Set}, TODO: %https://ieeexplore.i
 
 \begin{figure}[tbp]
     \centering
-    \includegraphics[width=0.5\linewidth]{imagenes/LINSVM.png}
+    \includegraphics[width=0.5\linewidth]{imagenes/LINSVM.jpg}
     \caption{Clasificación en espacio \acrshort{2d} mediante el uso de las \acrshort{svm}, figura extraída de \cite{svn}.}
     \label{fig:linsvm}
 \end{figure}
@@ -40,19 +40,19 @@ Un ejemplo de un sistema formado por comités de clasificadores es el \textbf{\t
 \section{Aprendizaje incremental}
 \label{sec:incrtypes}
 
-Como ya se ha introducido en la sección \ref{sec:incrlearning}, el aprendizaje incremental \cite{rodeo} permite añadir nuevo conocimiento al sistema durante su operación o fase de inferencia (\textit{online training}). Esta aproximación permite al sistema adaptarse a nuevos datos que no corresponden a los etiquetados en los \glspl{dataset} utilizados durante su fase de entrenamiento (\textit{offline training}). Dentro de este campo se encuentran los siguientes tipos de configuración:
-\begin{itemize}
-    \item \textbf{No supervisado} \cite{sharma2012unsupervised}: el sistema se entrena con datos obtenidos durante su operación (muestras o datos \textit{online}), es decir, en \textbf{completa ausencia de datos etiquetados}. El sistema, de forma autónoma, recolecta los datos de los casos de prueba utilizando \textbf{métodos de seguimiento} de los objetos. Este tipo de aprendizaje debe ser capaz de manejar el \textbf{ruido inevitable} de las muestras \textit{online}.
-    \item \textbf{Semisupervisado} \cite{zhu2005semi}: el sistema parte de un conjunto \textbf{reducido} de datos etiquetados, que se expanden y modifican posteriormente con datos \textit{online}. A partir de los datos etiquetados se logra suprimir fácilmente el ruido en las muestras iniciales, que puede ser un factor crítico en el rendimiento del sistema \cite{andrew}.
-\end{itemize}
+Como ya se ha introducido en la sección \ref{sec:incrlearning}, el aprendizaje incremental \cite{rodeo} permite añadir nuevo conocimiento al sistema durante su operación (\textit{online training}), en sustitución del entrenamiento con datos etiquetados (\textit{offline training}), lo que permite al sistema adaptarse a los cambios en la distribución inicial de dichos datos. Sin embargo, es importante manejar el \textbf{ruido} \cite{sharma2012unsupervised} de las muestras \textit{online} (ejemplo: error en el seguimiento de un objeto), que presentan \textbf{desalineaciones} respecto a las muestras de la clase a la que pertenecen. Dentro de este campo se encuentran los siguientes tipos de aprendizaje:
+\begin{description}
+    \item[No supervisado] \cite{sharma2012unsupervised} El sistema se entrena \textbf{únicamente} con datos obtenidos durante su operación (muestras o datos \textit{online}), es decir, en \textbf{completa ausencia de datos etiquetados}. El sistema, de forma autónoma, recolecta los datos de los casos de prueba utilizando \textbf{métodos de seguimiento} de objetos.
+    \item[Semisupervisado] \cite{zhu2005semi} El sistema parte de un conjunto \textbf{reducido} de datos etiquetados, que se expanden y modifican posteriormente con datos \textit{online}. A partir de los datos etiquetados se logra \textbf{suprimir fácilmente el ruido} en las muestras iniciales, que puede ser un factor crítico en el rendimiento del sistema \cite{andrew}.
+\end{description}
 
 No se menciona un tipo supervisado, ya que esto supondría no utilizar datos \textit{online} para el aprendizaje, lo que contradice el principio principal del aprendizaje incremental.
 
-Dentro del aprendizaje incremental, los conceptos \textbf{\textit{Closed-Set}, \textit{Open-Set} y \textit{Open-World}} \cite{bendale2015towards, rudd2017extreme, Erik, CESAR} han surgido para etiquetar a los sistemas según el tipo de reconocimiento que implementan. A continuación, se explican los detalles de cada uno.
+Dentro del aprendizaje incremental, los conceptos \textbf{\textit{Closed-Set}, \textit{Open-Set} y \textit{Open-World}} \cite{bendale2015towards, rudd2017extreme, Erik, CESAR} han surgido para nombrar a los sistemas según el tipo de reconocimiento que implementan. A continuación se explican los detalles de cada uno.
 
 \begin{description}
-    \item[\textit{Closed-Set}] \cite{bendale2015towards} Opera en un conjunto \textbf{cerrado} de objetos y no implementa ningún tipo de aprendizaje en absoluto. Se entrena puramente con datos etiquetados y está limitado a reconocer las clases con las que se inicializó (clases de entrenamiento). Este es el modo en el que trabaja el sistema base \cite{andrew}. Asumiendo que el sistema no va a reconocer nuevas clases, se estrecha enormemente el universo de clases que este conoce, lo que permite implementar métodos de clasificación basados en la clase más probable, como los ya vistos en la sección \ref{sec:clasf} y que pertenecen a este tipo de reconocimiento.
-    \item[\textit{Open-Set}] \cite{rudd2017extreme} Extiende al modo \textit{Closed-Set}, de forma que puede reconocer nuevas clases nunca vistas en el entrenamiento, o clases \textbf{desconocidas}. Al ampliar el universo de categorías a la categoría desconocida, deja de ser válida la clasificación por la clase más probable. El reconocimiento de nuevas clases sigue siendo un tópico activo en la investigación, donde se apuesta fuertemente por el teorema \acrfull{evt} combinado con un valor de umbral.
+    \item[\textit{Closed-Set}] \cite{bendale2015towards} Opera en un conjunto \textbf{cerrado} de categorías y no implementa ningún tipo de aprendizaje incremental en absoluto. Se entrena puramente con datos etiquetados y está limitado a reconocer las clases con las que se inicializó (clases de entrenamiento). Este es el modo en el que trabaja el sistema base \cite{andrew}. Asumiendo que el sistema no va a reconocer nuevas clases, se estrecha enormemente el universo de categorías existentes, lo que permite implementar métodos de clasificación basados en la clase \textbf{más probable}, como los ya vistos en la sección \ref{sec:clasf} y que pertenecen a este tipo de reconocimiento.
+    \item[\textit{Open-Set}] \cite{rudd2017extreme} Extiende al modo \textit{Closed-Set}, de forma que puede reconocer nuevas clases nunca vistas en el entrenamiento o clases \textbf{desconocidas}. Al ampliar el universo de categorías a la categoría desconocida, deja de ser válida la clasificación por la clase más probable, por lo que deben de integrarse clasificadores \textbf{discriminativos} (ejemplo: \acrshort{svm}s) \cite{scheirer2012toward}.
     \item[\textit{Open-World}] Este modo a su vez extiende al modo \textit{Open-Set}. Atendiendo a la definición de \cite{rudd2017extreme}, un sistema de reconocimiento \textit{Open-World} debe de ser capaz de realizar las siguientes 4 tareas:
         \begin{itemize}
             \item Detectar desconocidos (\textbf{\textit{Open-Set}}): identificar cuando una muestra de entrada no pertenece al conjunto de datos del entrenamiento.
