@@ -27,7 +27,7 @@ Los pipelines de pre y postprocesado de los modelos suponen uno de los principal
 \subsection{TODO: Postprocesado YOLO}
 \label{sec:postyolo}
 
-Respecto al postprocesado, se ha optimizado para aprovechar los arrays y operaciones de NumPy, de esta forma ha sido posible recortar varios milisegundos en todos los equipos.
+El postprocesado de YOLO se ha optimizado para aprovechar los arrays y operaciones de NumPy. Los dispositivos Jetson agradecen especialmente esta mejora, que ha conseguido recortar hasta \textbf{22.3 milisegundos} en la Jetson Orin Nano (los resultados de inferencia reportaron una media de 44.4 milisegundos).
 
 \subsection{Preprocesado OSNet}
 \label{sec:preosnet}
