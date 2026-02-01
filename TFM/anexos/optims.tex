@@ -43,11 +43,13 @@ Gracias a que se disponía del código de PyTorch del modelo, se ha podido integ
 
 \input{contenido/codes/preosnet.tex}
 
-El código \ref{coud:preosnet} muestra un extracto de la función \textit{forward} del modelo en el que se muestran las operaciones del preprocesado. Se han tenido que intercambiar funciones de OpenCV por alternativas integradas de los arrays de NumPy (ejemplo: cvtColor por permute), el reescalado de la imagen se ha dejado en el código de la inferencia.
+El código \ref{coud:preosnet} muestra un extracto de la función \textit{forward} del modelo en el que se muestran las operaciones del preprocesado. Se han tenido que intercambiar funciones de OpenCV por alternativas integradas de los arrays de NumPy (ejemplo: cvtColor por permute), el reescalado de la imagen (cv2.resize) se ha dejado en el código de la inferencia.
 
 Finalmente, se crea la instancia del modelo en PyTorch y se exporta mediante la función \textbf{torch.onnx.export}.
 
 Es \textbf{muy importante} nombrar de forma única los \glspl{tensor} que se declaren, ya que especialmente en las últimas versiones de \gls{onnx} esto puede causar errores de \textbf{grafos acíclicos} en los modelos exportados.
+
+La ejecución del preprocesado en \acrshort{gpu} ha supuesto una mejora de aproximadamente \textbf{1 milisegundo} en la ejecución.
 
 \section{Memoria fijada mapeada (\textit{pinned mapped memory})}
 \label{sec:pmm}
