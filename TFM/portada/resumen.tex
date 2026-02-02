@@ -2,17 +2,21 @@
 
 \begin{abstract}
     \thispagestyle{empty}
-    El auge del Deep Learning (DL) y las redes neuronales profundas han impulsado numerosos avances en aplicaciones como la visión artificial. No obstante, estos modelos dependen en gran medida de los datos de entrenamiento, lo que limita su capacidad de generalización a nuevos contextos. El aprendizaje incremental aborda esta problemática al permitir el reconocimiento de datos desconocidos (\textit{Open-Set}) y su inclusión durante el tiempo de operación (\textit{Open-World}) sin necesidad de reentrenar el modelo desde cero. En aplicaciones de redes neuronales en tiempo real con enfoque en sistemas embebidos, se requiere además de un esfuerzo de optimización debido a las restricciones computacionales existentes.
+    El auge del Deep Learning (DL) %y las redes neuronales profundas 
+    ha impulsado numerosos avances en aplicaciones como la visión artificial. No obstante, estos modelos dependen en gran medida de los datos de entrenamiento, lo que limita su capacidad de generalización a nuevos contextos. El aprendizaje incremental aborda esta problemática al permitir el reconocimiento de datos desconocidos (\textit{Open-Set}) y su inclusión durante el tiempo de operación (\textit{Open-World}) sin necesidad de reentrenar el modelo desde cero. En aplicaciones de redes neuronales en tiempo real con enfoque en sistemas embebidos, se requiere además de un esfuerzo de optimización debido a las restricciones computacionales existentes.
 
     %Las redes neuronales son altamente precisas, pero fuertemente dependientes del conjunto de datos de entrenamiento, lo que resulta en una pérdida significativa de precisión al extrapolarlas a contextos diferentes a los del entrenamiento. La perspectiva del aprendizaje logra superar esta limitación, al otorgar la capacidad de añadir nuevos datos durante el tiempo de operación (\textit{Open-World}), las redes neuronales son capaces de evolucionar y extenderse a nuevos contextos, sin necesidad de un reentrenamiento desde cero, lo que puede ser un proceso extremadamente costoso.
 
-    Este proyecto propone la integración de un método de aprendizaje incremental en un sistema de detección y reconocimiento de personas, diseñado para el robot móvil Summit\_XL, equipado con un sensor LiDAR 3D y múltiples cámaras RGBD. Se analizan las capacidades del aprendizaje implementado en escenarios con conocimiento parcial de los datos (\textit{semisupervised learning}) y sin conocimiento previo (\textit{unsupervised learning}).
+    Este proyecto propone la integración de un método de aprendizaje incremental en un sistema de detección y reconocimiento de personas, diseñado para el robot móvil Summit\_XL, equipado con %un sensor LiDAR 3D y 
+    múltiples cámaras RGBD. Se analizan las capacidades del aprendizaje implementado en escenarios con conocimiento parcial de los datos (\textit{semisupervised learning}) y sin conocimiento previo (\textit{unsupervised learning}).
 
     El sistema ha sido adaptado para aprovechar las capacidades de la familia de placas NVIDIA Jetson y otros dispositivos relacionados (GeForce GTX y RTX). Se evalúa el rendimiento de los modelos de redes neuronales en distintas arquitecturas de GPU y se analiza la escalabilidad del sistema completo en tiempo real en función del número de cámaras.
 
     %Adicionalmente, se ha medido el rendimiento del sistema completo ante varias cargas de trabajo en función del número de cámaras, con el fin de demostrar su escalabilidad en tiempo real.
 
-    Todas las pruebas se han realizado a partir de muestras (videos etiquetados) obtenidas en un entorno real de operación, con movimientos bruscos de las cámaras y entrecruzado de los individuos.
+    Todas las pruebas se han realizado a partir de muestras (videos etiquetados) obtenidas en un entorno real de operación, con movimientos  de las cámaras y entrecruzado de los individuos.
+    
+    \textcolor{red}{No se comenta la generalización al procesado de vídeo en tiempo real. Tampoco que se trabaja en ROS}
 
     \vspace*{25pt}
     \begin{english}

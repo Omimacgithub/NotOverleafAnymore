@@ -1,20 +1,22 @@
 \chapter{Fundamentos tecnológicos}
-\lettrine{E}{n} este capítulo se detallan las herramientas hardware y software empleadas para el desarrollo y la gestión del proyecto.
+\lettrine{E}{n} este capítulo se detallan las herramientas hardware y software empleadas para el desarrollo y la gestión del proyecto: dispositivos de altas prestaciones, hardware y software específicos y software genérico.
 
 \section{Dispositivos de altas prestaciones}
 
-Con el fin de conocer los detalles de los dispositivos sujetos a las pruebas de este proyecto, se proceden a comentar sus características técnicas, junto a las arquitecturas de las \acrshort{gpu}s que incorporan.
+Con el fin de conocer los dispositivos empleados en este proyecto, se comentan las arquitecturas de las \acrshort{gpu}s que incorporan y las características técnicas de cada una de ellos (familias Jetson e Intel).
 
 \subsection{Arquitecturas de \acrshort{gpu}}
 \label{sec:gpuses}
 
-Según la arquitectura de la \acrshort{gpu} de NVIDIA, se agregan nuevas características que maximizan el rendimiento de las tareas de inteligencia artificial. A continuación se detallan las características de las arquitecturas de \acrshort{gpu} que se tratarán en esta memoria, junto con sus \textbf{\textit{compute capabilities}}, que no son más que códigos que definen las características hardware e instrucciones soportadas. Las arquitecturas se encuentran ordenadas de menor a mayor generación.
+%Según la arquitectura de la \acrshort{gpu} de NVIDIA, se agregan nuevas características que maximizan el rendimiento de las tareas de inteligencia artificial. 
+A continuación se detallan las características de las arquitecturas de \acrshort{gpu} que se tratarán en esta memoria, junto con sus \textbf{\textit{compute capabilities}}, que no son más que códigos que definen las características hardware e instrucciones soportadas. Las arquitecturas se encuentran ordenadas de menor a mayor generación.
 
-\subsubsection{Volta y Turing}
+\subsubsection{Volta}
 
-En la arquitectura Volta (2017) \cite{volta}, se introducen los \textbf{tensor cores}, que son componentes destinados a acelerar multiplicaciones y sumas de matrices (también conocido como MAC), ampliamente utilizas para implementar capas de convoluciones en redes neuronales. Los tensor cores también introducen el entrenamiento e inferencia en \textbf{precisión mixta en \acrshort{fp}32 y \acrshort{fp}16}, que consiste en escoger la precisión que menor latencia reporte entre una lista de precisiones (ejemplo: \acrshort{fp}32+\acrshort{fp}16) para cada capa de un modelo. El entrenamiento en precisión mixta puede otorgar hasta \textbf{3 veces mayor velocidad} que utilizar únicamente \acrshort{fp}32. Dicha arquitectura tiene el código 7.0 como compute capability y es empleada por la \textbf{Jetson Xavier NX}.
+En la arquitectura Volta (2017) \cite{volta} se introducen los \textbf{\emph{tensor cores}}, que son componentes destinados a acelerar multiplicaciones y sumas de matrices (también conocido como MAC), ampliamente utilizas para implementar capas de convoluciones en redes neuronales. Los \emph{tensor cores} también introducen el entrenamiento e inferencia en \textbf{precisión mixta en \acrshort{fp}32 y \acrshort{fp}16}, que consiste en escoger la precisión que menor latencia reporte entre una lista de precisiones (ejemplo: \acrshort{fp}32+\acrshort{fp}16) para cada capa de un modelo. El entrenamiento en precisión mixta puede otorgar hasta \textbf{3 veces mayor velocidad} que utilizar únicamente \acrshort{fp}32. Dicha arquitectura tiene el código 7.0 como \emph{compute capability} y la emplea la \textbf{Jetson Xavier NX}.
 
-La arquitectura Turing (2018) \cite{demystifying} introduce las precisiones \textbf{INT8 e INT4}, a mayores de la precisión \acrshort{fp}16 de Volta. Turing tiene el código 7.5 como compute capability y es empleada por la \textbf{GeForce GTX 1650} (gráfica del PC lab).
+\subsubsection{Turing}
+La arquitectura Turing (2018) \cite{demystifying} introduce las precisiones \textbf{INT8 e INT4}, a mayores de la precisión \acrshort{fp}16 de Volta. Turing tiene el código 7.5 como \emph{compute capability} y es empleada por la \textbf{GeForce GTX 1650} (gráfica del PC lab).
 
 \subsubsection{Ampere}
 
@@ -25,23 +27,23 @@ La arquitectura Turing (2018) \cite{demystifying} introduce las precisiones \tex
     \label{fig:types}
 \end{figure}
 
-Con la arquitectura Ampere (2020) \cite{ampere} se incorporan los tensor cores de tercera generación, que incluyen el formato de precisión \textbf{TF32} (Tensor Float 32). TF32 es un tipo optimizado para los tensor cores, híbrido entre \acrshort{fp}32 y \acrshort{fp}16, ya que de rango o exponente tiene los mismos bits que \acrshort{fp}32 y de mantisa o precisión tiene los mismos bits que \acrshort{fp}16 (como se muestra en la figura \ref{fig:types}). TF32 funciona igual que \acrshort{fp}32 (acepta entradas y salidas de dicho tipo) y puede otorgar velocidades hasta \textbf{20 veces} superiores que \acrshort{fp}32 sin realizar ningún cambio en el código. Por otro lado, se han incorporado nuevos tensor cores diseñados para operaciones con matrices \textbf{dispersas} (sparse tensor cores), que son matrices con una gran proporción de ceros entre sus valores. Esta mejora puede aumentar hasta 2 veces la velocidad de la inferencia para modelos que exploten el uso de matrices dispersas.
+Con la arquitectura Ampere (2020) \cite{ampere} se incorporan los \emph{tensor cores} de tercera generación, que incluyen el formato de precisión \textbf{TF32} (Tensor Float 32). TF32 es un tipo optimizado para los tensor cores, híbrido entre \acrshort{fp}32 y \acrshort{fp}16, ya que de rango o exponente tiene los mismos bits que \acrshort{fp}32 y de mantisa o precisión tiene los mismos bits que \acrshort{fp}16 (como se muestra en la figura \ref{fig:types}). TF32 funciona igual que \acrshort{fp}32 (acepta entradas y salidas de dicho tipo) y puede otorgar velocidades hasta \textbf{20 veces} superiores que \acrshort{fp}32 sin realizar ningún cambio en el código. Por otro lado, se han incorporado nuevos tensor cores diseñados para operaciones con matrices \textbf{dispersas} (\emph{sparse tensor cores}), que son matrices con una gran proporción de ceros entre sus valores. Esta mejora puede aumentar hasta 2 veces la velocidad de la inferencia para modelos que exploten el uso de matrices dispersas.
 
 Se introduce la funcionalidad \textbf{\acrfull{mig}}, que permite la asignación de particiones \textbf{físicas} de la \acrshort{gpu} a las aplicaciones de \gls{CUDA}, de forma que se ejecutan en unos recursos asignados, \textbf{sin interferencia} de otros procesos. En el apéndice \ref{chap:mig} se muestran algunos detalles de la funcionalidad en el caso de la Jetson AGX Thor.
 
-La \textbf{Jetson Orin Nano}, \textbf{Jetson AGX Orin} y la \textbf{GeForce RTX 3050} (gráfica del portátil) siguen esta arquitectura, que posee desde el código 8.0 hasta el 8.7 como compute capability.
+La \textbf{Jetson Orin Nano}, \textbf{Jetson AGX Orin} y la \textbf{GeForce RTX 3050} (gráfica del portátil) siguen esta arquitectura, que posee desde el código 8.0 hasta el 8.7 como \emph{compute capability}.
 
 \subsubsection{Blackwell}
 
-Blackwell (2024) \cite{blackwell} es la última arquitectura diseñada para \acrshort{gpu}s de NVIDIA, en ella se incorporan los tensor cores de quinta generación, que permiten operar en las precisiones \textbf{\acrshort{fp}4} y \textbf{\acrshort{fp}6} (punto flotante de 4 y 6 bits respectivamente).
+Blackwell (2024) \cite{blackwell} es la última arquitectura diseñada para \acrshort{gpu}s de NVIDIA, en ella se incorporan los \emph{tensor cores} de quinta generación, que permiten operar en las precisiones \textbf{\acrshort{fp}4} y \textbf{\acrshort{fp}6} (punto flotante de 4 y 6 bits respectivamente).
 
 Se lanza la \textbf{segunda generación del Transformer Engine} \cite{transformer}. Introducido en las arquitecturas Ada Lovelace y Hopper (posteriores a Ampere), el \textit{Transformer Engine} es una librería que permite manejar modelos en \textbf{precisiones muy reducidas} (a partir de \acrshort{fp}8 e INT8 para abajo) a través de múltiples técnicas que computan los \textbf{factores de escalado}, que permiten ajustar los valores de los \glspl{tensor} a un rango más compacto y representable por precisiones más pequeñas. En esta nueva versión para la Blackwell, se incorpora el \textbf{\textit{micro-tensor scaling}}, que aplica diferentes factores de escalado al nivel de los elementos de un \gls{tensor}. Esta nueva técnica hace posible la ejecución en \textbf{\acrshort{fp}4} y \textbf{\acrshort{fp}6} sin apenas pérdida en la precisión.
 
-La \textbf{Jetson AGX Thor} sigue esta arquitectura, que posee desde el código 10.0 hasta el 12.1 como compute capability.
+La \textbf{Jetson AGX Thor} sigue esta arquitectura, que posee desde el código 10.0 hasta el 12.1 como \emph{compute capability}.
 
 \subsection{Familias Jetson e Intel}
 
-Los \textbf{6 dispositivos} que se emplearon en este proyecto se han agrupado en \textbf{2 familias}. Por un lado, la \textbf{familia Jetson}, que engloba a los sistemas embebidos propietarios de NVIDIA con dicho nombre y, por el otro lado, la \textbf{familia Intel}, compuesta por 1 equipo de escritorio y 1 portátil, ambos con una \acrshort{cpu} Intel junto a una \acrshort{gpu} de NVIDIA.
+Los \textbf{seis dispositivos} que se emplearon en este proyecto se han agrupado en \textbf{dos familias}. Por un lado, la \textbf{familia Jetson}, que engloba a los sistemas embebidos propietarios de NVIDIA con dicho nombre y, por el otro lado, la \textbf{familia Intel}, compuesta por un equipo de escritorio y un portátil, ambos con una \acrshort{cpu} Intel junto a una \acrshort{gpu} de NVIDIA.
 
 \input{contenido/tables/jetsons.tex}
 
@@ -64,12 +66,12 @@ Ambas familias poseen \textbf{diferencias significativas} que repercuten directa
 
 La figura \ref{fig:memcpy} muestra un esquema de interconexión de una \acrshort{gpu} discreta (familia Intel) y una \acrshort{gpu} integrada (familia Jetson), en la que la primera requiere un cudaMemcpy para poder disponer de los datos en la \acrshort{gpu} y la segunda evita realizar transferencias debido a que se utiliza la misma \acrshort{dram} (\textbf{zero-copy}). La conexión \acrshort{PCIe} en los equipos Intel resulta un \textbf{cuello de botella} en el ancho de banda de las transferencias de memoria entre \acrshort{cpu} y \acrshort{gpu}, con tan solo \textbf{31.5 \acrshort{gb}/s} en la versión 4. Para colmo, las memorias DDR4 de los equipos Intel se encuentran \textbf{por debajo} del ancho de banda ofrecido por \acrshort{PCIe} (\textbf{25.6 \acrshort{gb}/s}), lo que \textbf{limita el rendimiento} de operaciones de \textbf{transferencia de memoria} entre dispositivos y no aprovecha al máximo la frecuencia de trabajo de la \acrshort{gpu}.
 
-\section{Hardware}
+\section{Hardware específico}
 \label{sec:hw}
 
-A continuación se comentan los componentes hardware sobre los que funciona el sistema del proyecto.
+A continuación se comentan los componentes hardware específicos sobre los que funciona el sistema del proyecto: robot móvil y cámaras \acrshort{rgbd}.
 
-\subsection{Summit\_XL}
+\subsection{Robot móvil Summit\_XL}
 \label{sec:summit}
 
 \begin{figure}[tbp]
@@ -79,6 +81,7 @@ A continuación se comentan los componentes hardware sobre los que funciona el s
         \caption{Cámara Microsoft Kinect}
         \label{fig:kin1}
     \end{subfigure}
+    \hspace{3em}
     \begin{subfigure}[t]{0.3\textwidth}
         \includegraphics[width=\textwidth]{imagenes/SUMKINECTS.jpg}
         \caption{Cámaras Kinect instaladas}
@@ -87,48 +90,48 @@ A continuación se comentan los componentes hardware sobre los que funciona el s
     \caption{Summit\_XL con las 2 cámaras Kinect instaladas}
 \end{figure}
 
-El sistema del proyecto se ha construido para funcionar en el robot móvil \textbf{Summit\_XL} \cite{rb}. Dicho robot es de tipo \textbf{diferencial} (es decir, permite el movimiento en todas las direcciones excepto en sus laterales) y dispone de 4 ruedas de goma para su movilidad en una amplia variedad de entornos. Entre sus componentes, destaca un sensor Velodyne \acrshort{lidar} \cite{lidar} (sensor circular de la figura \ref{fig:kin2}) que otorga nubes de puntos \acrshort{3d} del entorno y una cámara \acrshort{rgb} frontal, que no se ha empleado en este proyecto debido a su baja calidad de imagen. A mayores, se instalaron \textbf{2 cámaras Kinect \acrshort{rgbd}} en los laterales (figura \ref{fig:kin2}).
+El sistema del proyecto se ha construido para funcionar en el robot móvil \textbf{Summit\_XL} \cite{rb}. Dicho robot es de tipo \textbf{diferencial} (es decir, permite el movimiento en todas las direcciones excepto en sus laterales) y dispone de cuatro ruedas de goma para su movilidad en una amplia variedad de entornos. Entre sus componentes, destaca un sensor Velodyne \acrshort{lidar} \cite{lidar} (sensor circular de la figura \ref{fig:kin2}) que genera nubes de puntos \acrshort{3d} del entorno y una cámara \acrshort{rgb} frontal, que no se ha empleado en este proyecto debido a su baja calidad de imagen. A mayores, se instalaron \textbf{dos cámaras Kinect \acrshort{rgbd}} en los laterales (figura \ref{fig:kin2}).
 
-El Summit\_XL utiliza una arquitectura basada en el \textbf{\textit{middleware} \acrshort{ros}} \cite{ROS}, que permite la fácil interacción e integración de múltiples sensores con el robot. Este cuenta con soporte para las versiones de \textbf{\acrshort{ros} 2}, sin embargo, el modelo adquirido por el \acrshort{citic} emplea \acrshort{ros} 1, que a fecha de esta memoria ya ha alcanzado su \textbf{final de vida} \cite{ROSEOL}.
+El Summit\_XL utiliza una arquitectura basada en el \textbf{\textit{middleware} \acrshort{ros}} \cite{ROS}, que permite la fácil interacción e integración de múltiples sensores con el robot. Este cuenta con soporte para las versiones de \textbf{\acrshort{ros}2}, sin embargo, el modelo adquirido por el \acrshort{citic} emplea \acrshort{ros}1, que a fecha de esta memoria ya ha alcanzado su \textbf{final de vida} \cite{ROSEOL}.
 
 \subsection{Cámaras \acrshort{rgbd}}
 
 Para nutrir al sistema de imágenes se cuenta con las cámaras \acrshort{rgbd} Kinect de Microsoft \cite{kinect} (figura \ref{fig:kin1}). Dichas cámaras capturan la información del entorno en forma de imágenes \acrfull{rgb} y realiza reconstrucciones \acrshort{3d} en tiempo real, que otorga en forma de imágenes de profundidad o de distancias (depth).
 
-Para este proyecto, se cuenta con 2 de estas cámaras, cada una con una cobertura de visión de 57º. Dichas cámaras se disponen de forma que \textbf{no existan solapes} (en los laterales del robot, como se muestra en la figura \ref{fig:kin2}), lo que otorga un rango de visión total de 117º.
+Para este proyecto, se cuenta con dos de estas cámaras (aunque se planea añadir otras dos más), cada una con una cobertura de visión de 57º en horizontal. Dichas cámaras se disponen de forma que \textbf{no existan solapes} (en los laterales del robot, como se muestra en la figura \ref{fig:kin2}), lo que otorga un rango de visión total de 114º.
 
 \section{Software específico}
 \label{sec:sw}
 
-A continuación se expone el software que compone el esqueleto del sistema de este proyecto.
+A continuación se expone el software que compone el núcleo del sistema de este proyecto: \acrshort{ros}, las librerías de Python específicas y las herramientas para su virtualización y \gls{profiling}.
 
 \subsection{ROS}
 \label{sec:ros}
 
 \acrfull{ros} \cite{ROS} es un \textit{middleware} de \textbf{código abierto} que incorpora las herramientas necesarias para la interacción y desarrollo de software en robots en múltiples lenguajes de programación (principalmente Python y C++). Cuenta con una amplia biblioteca de distribuciones y librerías desarrolladas por la comunidad, entre las que se incluyen implementaciones de algoritmos y drivers de sensores.
 
-Cualquier entorno de desarrollo de \acrshort{ros} está compuesto por \textbf{paquetes}, los paquetes son las unidades funcionales del entorno de \acrshort{ros} y estas contienen el código, archivos de configuración y de lanzamiento de los nodos, entre otros componentes. Los entornos de \acrshort{ros} son \textbf{heterogéneos}, es decir, permiten ejecutar paquetes implementados en múltiples lenguajes de programación.
+Cualquier entorno de desarrollo de \acrshort{ros} está compuesto por \textbf{paquetes}, que son las unidades funcionales del entorno de \acrshort{ros} y  contienen el código y los archivos de configuración y de lanzamiento de los nodos, entre otros componentes. Los entornos de \acrshort{ros} son \textbf{heterogéneos}, es decir, permiten ejecutar paquetes implementados en múltiples lenguajes de programación.
 
 \acrshort{ros} crea y mantiene una \textbf{red distribuida} en la que los nodos se ejecutan e intercambian mensajes. Se sigue un patrón \textbf{\textit{publish/subscribe}} (publicador/subscriptor), en el que existen nodos que publican información por medio de \textbf{tópicos}, disponibles para cualquier nodo que desee suscribirse a dicho tópico.
 
 \begin{figure}[tbp]
     \centering
-    \includegraphics[width=0.6\linewidth]{imagenes/mastel.jpg}
+    \includegraphics[width=0.56\linewidth]{imagenes/mastel.jpg}
     \caption[Arquitectura maestro-esclavo de ROS]{Arquitectura maestro-esclavo de ROS, figura extraída de \cite{mastel}}
     \label{fig:mastel}
 \end{figure}
 
-En \acrshort{ros} 1, se sigue una arquitectura \textbf{maestro-esclavo} \cite{mastel}. El maestro registra a todos los publicadores/subscriptores de la red, de forma que si un nodo quiere suscribirse/publicar un tópico, este se comunica con el maestro para registrar/conocer la manera de conectarse a dicho tópico. El resto de las comunicaciones se realizan directamente entre los nodos. El principal inconveniente es que el maestro es un \textbf{punto único de fallo} (si este deja de estar disponible, todo el sistema falla). \acrshort{ros} 2 presciende de un nodo maestro, por lo que no sufre de dicha limitación. La figura \ref{fig:mastel} describe el comportamiento descrito.
+En \acrshort{ros}1, se sigue una arquitectura \textbf{maestro-esclavo} \cite{mastel} (figura \ref{fig:mastel}). El maestro registra a todos los publicadores/subscriptores de la red, de forma que si un nodo quiere suscribirse/publicar un tópico, este se comunica con el maestro para registrar/conocer la manera de conectarse a dicho tópico. El resto de las comunicaciones se realizan directamente entre los nodos. El principal inconveniente es que el maestro es un \textbf{punto único de fallo} (si este deja de estar disponible, todo el sistema falla). \acrshort{ros}2 prescinde de un nodo maestro, por lo que no sufre de dicha limitación.  
 
-Existe una amplia variedad de distribuciones de este software según la versión del \acrshort{so}. Para este proyecto, se han empleado las distribuciones \textbf{Noetic, Humble y Rolling}, para Ubuntu 20.04, 22.04 y 24.04 respectivamente, el Summit\_XL tiene la distribución Melodic, ya que tiene la versión 18.04 de Ubuntu. En las versiones de Ubuntu superiores a 20.04 \textbf{no es posible instalar} \acrshort{ros} 1 (descontinuado) a menos que se compile desde el fuente.
+Existe una amplia variedad de distribuciones de este software según la versión del \acrshort{so}. Para este proyecto se han empleado las distribuciones \textbf{Noetic, Humble y Rolling}, para Ubuntu 20.04, 22.04 y 24.04, respectivamente. El Summit\_XL tiene la distribución Melodic, ya que tiene la versión 18.04 de Ubuntu. En las versiones de Ubuntu superiores a 20.04 \textbf{no es posible instalar} \acrshort{ros}1 (descontinuado) a menos que se compile desde el código fuente.
 
 \subsection{Librerías de Python}
-Se procede a comentar las librerías de Python más importantes a la hora de desarrollar el código del proyecto (todas las librerías descritas son de \textbf{código abierto}):
+A continuación nombraremos las librerías de Python empleadas en el proyecto (todas son de \textbf{código abierto}):
 \begin{description}
     \item[PyCUDA] \cite{pycuda} Es un \gls{wrapper} para Python que interacciona con el driver de \gls{CUDA}. Se ha utilizado principalmente para generar los contextos y reservar la memoria en la \acrshort{gpu} con el propósito de realizar las inferencias de los modelos.
     \item[NumPy] \cite{np} Es una librería que incluye estructuras de datos y funciones para operar con matrices multidimensionales. Se ha empleado en este proyecto para representar y manipular las imágenes y la información generada por los modelos en forma de vectores y matrices multidimensionales.
     \item[SciPy] \cite{scipy} Implementa numerosos algoritmos relacionados con la computación científica. En este proyecto se ha usado para aplicar el método húngaro, hallar los parámetros que modelan una distribución de Weibull, calcular distancias coseno, entre otras aplicaciones relacionadas con cálculos científicos.
-    \item[OpenCV] \cite{cv2} Es una librería con una gran variedad de funciones relacionadas con la visión por computadora. Se ha utilizado para la obtención y el procesado de imágenes y entradas y salidas de las redes neuronales (ejemplo: \gls{nms}), este último por medio del módulo de redes neuronales profundas (dnn), que contiene múltiples algoritmos y modelos ya implementados con los que se pueden realizar inferencias por medio de su \gls{rt}. En este proyecto se ha utilizado para ejecutar un modelo de detección de caras. Dicho módulo puede ejecutarse en \textbf{CUDA}, aunque solo si se \textbf{compila el código fuente}. Para este proyecto El proceso seguido para compilar OpenCV es el mismo que en \cite{OpenCVCUDA}.
+    \item[OpenCV] \cite{cv2} Es una librería con una gran variedad de funciones relacionadas con la visión por computadora. Se ha utilizado para la obtención y el procesado de imágenes y entradas y salidas de las redes neuronales (ejemplo: \gls{nms}), este último por medio del módulo de redes neuronales profundas (dnn), que contiene múltiples algoritmos y modelos ya implementados con los que se pueden realizar inferencias por medio de su \gls{rt}. En este proyecto se ha utilizado para ejecutar un modelo de detección de caras. Dicho módulo puede ejecutarse en \textbf{CUDA}, aunque solo si se \textbf{compila el código fuente}. Para este proyecto Ee proceso seguido para compilar OpenCV es el mismo que en \cite{OpenCVCUDA}.
     \item[TensorRT] \cite{x36} Contiene una \acrshort{api} y una herramienta (\textit{trtexec}) para la optimización y ejecución de inferencias de modelos en aceleradoras de NVIDIA. La \acrshort{api} puede integrarse directamente en \textit{frameworks} como PyTorch o TensorFlow o utilizarse directamente con los modelos exportados al formato \acrfull{onnx} (ver apéndice \ref{chap:procedure} para más detalles). Se ha empleado en este proyecto para optimizar y ejecutar las inferencias de los modelos en las \acrshort{gpu} de los dispositivos.
 
         %La versión 10 de TensorRT está disponible para las aceleradoras de NVIDIA con un \textit{compute capability} igual o superior a 7.5. En el caso de querer usar el software con una \textit{compute capability} inferior (ejemplo: Jetson Xavier NX), es necesario instalar la versión 8 u otra anterior. El código de la \acrshort{api} generado en la versión 8 \textbf{no es compatible} con la versión 10.
@@ -157,10 +160,10 @@ Se procede a comentar las librerías de Python más importantes a la hora de des
 \end{description}
 
 \section{Software general}
-A continuación, se mencionan las herramientas relacionadas con la gestión y desarrollo tanto del proyecto como de la memoria resultante (todas las herramientas, menos Trello, son de \textbf{código abierto}).
+A continuación, se mencionan las herramientas relacionadas con la gestión y desarrollo del proyecto y de la memoria. Menos Trello, todas son de \textbf{código abierto}: 
 \begin{description}
     \item[Git] \cite{git} Es un sistema de control de versiones que permite mantener un historial de las versiones de un proyecto, de forma que se mantiene la trazabilidad del mismo. \textbf{GitHub} es una plataforma en la nube para alojar y compartir proyectos de Git. El código \footnote{\url{https://github.com/cvregueiro/lidargb-person-following}} y la memoria \footnote{\url{https://github.com/Omimacgithub/NotOverleafAnymore}} de este proyecto se ha subido a esta plataforma para su fácil acceso desde múltiples dispositivos.
-    \item[Visual Studio Code] \cite{vscode} Es un entorno de desarrollo integrado (IDE) que contiene una amplia variedad de funciones integradas, como un cliente de Git con una sencilla interfaz y una extensión para manejar contenedores de Docker (Dev Containers), entre las funciones más usadas en este proyecto. Dicha herramienta también cuenta con una extensión de \textbf{LaTeX} (LaTeX Workshop) altamente configurable, que permite el autocompletado de código LaTeX y su compilación de una forma similar a Overleaf \cite{overleaf}. Se ha optado por utilizar \textbf{VS Code + LaTeX Workshop} para escribir la memoria en sustitución de Overleaf, debido a las limitaciones en la compilación de la versión gratuita de esta última herramienta.
+    \item[Visual Studio Code] \cite{vscode} Es un entorno de desarrollo integrado (IDE) que contiene una amplia variedad de funciones integradas, como un cliente de Git con una sencilla interfaz y una extensión para manejar contenedores de Docker (\emph{Dev Containers}), entre las funciones más usadas en este proyecto.  También cuenta con una extensión de \textbf{LaTeX} (LaTeX Workshop) altamente configurable, que permite el autocompletado de código LaTeX y su compilación de una forma similar a Overleaf \cite{overleaf}. Se ha optado por utilizar \textbf{VS Code + LaTeX Workshop} para escribir la memoria en sustitución de Overleaf, debido a las limitaciones en la compilación de la versión gratuita de esta última herramienta.
     \item[Trello] \cite{trallao} Es un programa online para la gestión de proyectos Kanban, en el que cada proyecto es un tablero con distintas listas de tarjetas que representan a las tareas. Se ha empleado para llevar un seguimiento de las tareas del proyecto en sus diferentes fases del desarrollo.
     \item[Draw.io] \cite{drawio} Es una aplicación para la creación de todo tipo de diagramas. Se ha utilizado para crear la mayoría de diagramas y figuras de la memoria de este proyecto.
 \end{description}
