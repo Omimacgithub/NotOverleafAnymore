@@ -6,3 +6,6 @@ TFM/TFM.zip
 PDF/
 indent.log
 TFM/imagenes/bckp
+TFM/*.pdf
+TFM/*.gz
+.vscode/
