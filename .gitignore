@@ -8,3 +8,4 @@ indent.log
 TFM/imagenes/bckp
 TFM/*.pdf
 TFM/*.gz
+.vscode/
