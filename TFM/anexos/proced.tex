@@ -35,11 +35,10 @@ Según el formato se han aplicado las siguientes herramientas en la exportación
 \end{itemize}
 
 \subsection{Conversión a TensorRT engine}
-Los archivos \textit{engine} de TensorRT (extensión .trt o .engine) representan los modelos finales optimizados por dicha herramienta. El proceso de conversión se puede realizar a través de la API de Python/C++ o mediante el ejecutable \textit{trtexec}, este último analiza el rendimiento del modelo ejecutando una serie de inferencias y devuelve los resultados de \gls{profiling} del mismo. Según la imagen de Docker que se utilize, el ejecutable \textit{trtexec} no se encuentra instalado (las imágenes de TensorRT pensadas para la Jetson suelen tenerlo), en ese caso es necesario utilizar la API para convertir los modelos.
 
 \input{contenido/codes/trtshapes.tex}
 
-En \ref{coud:trtshapes} se muestran las características de un modelo transformado en un \textit{engine} de TensorRT. La aparición de un -1 en la primera dimensión de los tensores indica que el modelo soporta \textit{\glspl{batch}} de tamaño dinámico.
+Los archivos \textit{engine} de TensorRT (extensión .trt o .engine) representan los modelos finales optimizados por dicha herramienta. El proceso de conversión se puede realizar a través de la API de Python/C++ o mediante el ejecutable \textit{trtexec}, este último analiza el rendimiento del modelo ejecutando una serie de inferencias y devuelve los resultados de \gls{profiling} del mismo. Según la imagen de Docker que se utilize, el ejecutable \textit{trtexec} no se encuentra instalado (las imágenes de TensorRT pensadas para la Jetson suelen tenerlo), en ese caso es necesario utilizar la API para convertir los modelos. En \ref{coud:trtshapes} se muestran las características de un modelo transformado en un \textit{engine} de TensorRT. La aparición de un -1 en la primera dimensión de los tensores indica que el modelo soporta \textit{\glspl{batch}} de tamaño dinámico.
 
 \subsection{Flags de \textit{trtexec}}
 \label{seq:execflags}
@@ -54,8 +53,6 @@ A la hora de compilar algunos de los modelos a partir de la herramienta \textit{
 \section{Exportación de YOLO con ultralytics}
 \label{sec:exports}
 
-La \acrshort{api} de ultralytics permite la exportación de modelos YOLO con una gran variedad de ajustes y conversión a diferentes formatos como \acrshort{onnx} o incluso los utilizados por los \gls{rt} de OpenVINO, TensorRT, entre otros.
-
 \input{contenido/codes/YOLOexport.tex}
 
-El código \ref{coud:yolexport} se muestra un ejemplo de como exportar el modelo YOLO de ultralytics. Se descarga el archivo de pesos (.pt) y se exporta a \acrshort{onnx}, con un tamaño de batch de 1 y precisión de 16 bits de punto flotante (flag \textit{half}).
+La \acrshort{api} de ultralytics permite la exportación de modelos YOLO con una gran variedad de ajustes y conversión a diferentes formatos como \acrshort{onnx} o incluso los utilizados por los \gls{rt} de OpenVINO, TensorRT, entre otros. En el código \ref{coud:yolexport} se muestra un ejemplo de como exportar el modelo YOLO de ultralytics. Se descarga el archivo de pesos (.pt) y se exporta a \acrshort{onnx}, con un tamaño de batch de 1 y precisión de 16 bits de punto flotante (flag \textit{half}).

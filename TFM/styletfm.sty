@@ -21,7 +21,12 @@
 \usepackage{libertine}
 
 \usepackage{fancyhdr}
-\usepackage[numbers,sort]{natbib}
+%\usepackage[sort&compress,numbers]{natbib}
+\bibliographystyle{IEEEtranN}
+\usepackage[sort&compress,numbers]{natbib}
+%\usepackage[sorting=none]{biblatex}
+%\bibliographystyle{IEEEtranN}
+%\bibliographystyle{unsrtnat}
 \usepackage{setspace}
 \usepackage{multicol}
 \usepackage[nottoc,notlot,notlof,notindex]{tocbibind}
@@ -115,7 +120,6 @@
 }
 
 \usepackage[utf8]{inputenc}
-
 \usepackage[toc,acronym]{glossaries}
 
 \input{bibliografia/acronimos}

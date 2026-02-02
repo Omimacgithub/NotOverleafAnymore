@@ -126,6 +126,7 @@
 			"name": "bibtex",
 			"command": "bibtex",
 			"args": [
+				//"%DIR%/%OUTDIR%/memtfm.aux"
 				"%DOCFILE%"
 			],
 			"env": {}
@@ -195,6 +196,7 @@
 			"tools": [
 				"xelatexmk",
 				"makeglossaries",
+				"xelatexmk",
 				"xelatexmk",
 			]
 		},

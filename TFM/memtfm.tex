@@ -29,6 +29,8 @@
 %\input{bibliografia/glosario.tex}
 %\input{bibliografia/acronimos.tex}
 
+%\usepackage{cite}
+
 \begin{document}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -102,19 +104,11 @@
 \include{anexos/datasets}
 \include{anexos/migthor}
 
-%\printglossary[title={Glossary}, type=main]
-%\printglossary[title={Acronyms}, type=\acronymtype]
-
-%\bibliographystyle{IEEEtranN}
-%\bibliography{bibliografia/bibliografia}
-%\cleardoublepage
-
 \printglossary[type=\acronymtype,title=Relación de Acrónimos]
 \printglossary[title=Glosario]
 
-\bibliographystyle{IEEEtranN}
 \bibliography{bibliografia/bibliografia}
-\
+%\cleardoublepage
 
 \end{document}
 
