@@ -8,6 +8,7 @@
 En esta sección se explica la estructura general del sistema del proyecto. Para entenderla mejor, se empezará por explicar la arquitectura base de la que se parte y del nodo cámara, el componente más importante. A continuación, se explicarán las mejoras de la arquitectura final extendida.
 
 \subsection{Arquitectura base}
+\label{sec:basearch}
 
 Se parte de un sistema diseñado para el robot móvil Summit\_XL, compuesto por 2 cámaras \acrshort{rgbd} y un sensor \acrshort{lidar}, que detecta y reconoce personas a partir de nodos que aplican los respectivos modelos de redes neuronales convolucionales (o \acrshort{cnn}). El sistema posee la capacidad de fusionar la información de todos los nodos, de forma que se obtiene un único reconocimiento robusto para cada individuo, junto a su posición concreta respecto al robot en el espacio \acrshort{3d}.
 
@@ -31,7 +32,6 @@ Finalmente, mediante los datos de todos los nodos, el uso de la coherencia espac
 %La integración de sensores propuesta en \cite{andrew} ha demostrado mejorar los resultados, debido a su capacidad de rastrear individuos por medio del \acrshort{lidar} fuera del ángulo de visión de las cámaras (cada una con un rango de visión horizontal de 57º), lo que otorga detecciones robustas y persistentes en el tiempo.
 
 \subsection{Nodo cámara}
-\label{sec:basearch}
 
 \begin{figure}[tbp]
     \centering

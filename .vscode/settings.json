@@ -197,7 +197,6 @@
 				"xelatexmk",
 				"makeglossaries",
 				"xelatexmk",
-				"xelatexmk",
 			]
 		},
 		{
