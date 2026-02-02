@@ -1,7 +1,7 @@
 \chapter{Métricas de evaluación de modelos de visión artificial}
 \label{sec:modeleval}
 
-\lettrine{E}{n} este apéndice se presentan algunas de las métricas ampliamente reconocidas para evaluar modelos dentro del campo de la visión artificial.
+\lettrine{E}{n} este apéndice se presentan los \textit{items} y métricas utilizadas para evaluar los modelos de detección y reconocimiento de este proyecto.
 
 \section{Matriz de confusión}
 \label{sec:metriks}
@@ -14,9 +14,7 @@ Para evaluar la clasificación de los modelos de visión artificial del proyecto
     \item \textit{\textbf{False Negative (FN)}}: predicción negativa errónea. Para los modelos de detección, sería no detectar a la persona presente, mientras que para los modelos de reconocimiento, sería asignar la entidad de desconocido a una persona ya registrada en el sistema.
 \end{itemize}
 
-Estos componentes se aplicarán a los \glspl{dataset} de prueba formados a partir de los videos grabados. En un entorno real de operación no sería posible aplicar dichas métricas por falta de un \textit{\gls{gt}}. %\textit{ground truth}.
-
-A continuación se exponen las métricas, que hacen uso de los componentes ya comentados, para evaluar los modelos de detección y reconocimiento.
+Estos componentes se aplicarán a los \glspl{dataset} de prueba formados a partir de los videos grabados. En un entorno real de operación no sería posible aplicar dichas métricas por falta de un \textit{\gls{gt}}.
 
 \section{Modelos de detección}
 \label{subsec:det}

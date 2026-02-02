@@ -1,7 +1,7 @@
 \chapter{Pequeñas optimizaciones al código del sistema}
 \label{chap:optimus}
 
-\lettrine{E}{n} este apéndice se exponen algunas optimizaciones realizadas al código del sistema en términos de reserva de memoria y rendimiento.
+\lettrine{E}{n} este apéndice se exponen algunas optimizaciones realizadas al código del sistema en términos de reserva de memoria y de rendimiento.
 
 \section{Optimizaciones en la reserva de memoria}
 
@@ -22,12 +22,14 @@ La versión optimizada en TensorRT del modelo ArcFace pesa \textbf{79 \acrshort{
 \section{Modificaciones en el pre y postprocesado de modelos}
 \label{chap:prepost}
 
-Los pipelines de pre y postprocesado de los modelos suponen uno de los principales retos de los dispositivos Jetson, debido a limitada capacidad de procesamiento de las \acrshort{cpu} \acrshort{arm}, en este capítulo se exponen las soluciones aplicadas para mitigar el impacto computacional de dichos procesos en los modelos YOLO y OSNet.
+Los pipelines de pre y postprocesado de los modelos suponen uno de los principales retos de los dispositivos Jetson, debido a limitada capacidad de procesamiento de las \acrshort{cpu} \acrshort{arm}. A continuación se exponen las soluciones aplicadas para mitigar el impacto computacional de dichos procesos en los modelos YOLO y OSNet.
 
-\subsection{TODO: Postprocesado YOLO}
+\subsection{Postprocesado YOLO}
 \label{sec:postyolo}
 
-El postprocesado de YOLO se ha optimizado para aprovechar los arrays y operaciones de NumPy. Los dispositivos Jetson agradecen especialmente esta mejora, que ha conseguido recortar hasta \textbf{22.3 milisegundos} en la Jetson Orin Nano (los resultados de inferencia reportaron una media de 44.4 milisegundos).
+El postprocesado de YOLO implementado en \cite{andrew} utiliza un bucle for que itera sobre todas las \glspl{bbox} devueltas (8400 en cada inferencia) y busca el valor de confianza más alto entre las clases (80 en total), si dicho valor se ha asignado a la clase que corresponde con un humano, se guardan las coordenadas y la confianza de la detección en un diccionario. Debido a que las salidas de YOLO se devuelven en forma de un array de NumPy, el iterar los datos mediante un bucle for se vuelve \textbf{innecesario}, puesto que con NumPy se pueden aplicar operaciones que afectan a todos los elementos del array \textbf{al instante}. Por otra parte, para obtener el máximo global de confianza se aplica la función \textbf{minMaxLoc} de la librería de OpenCV, dicha función devuelve los valores \textbf{mínimo y máximo globales} de un array, cuando solo se necesita el valor máximo. Por último, no es necesario crear un diccionario adicional para guardar las detecciones correctas pudiendo modificar el array directamente mediante filtrados.
+
+Los cambios realizados incluyen la sustitución del bucle for por un filtrado que aplica a todo el array de NumPy, el reemplazo de la función \textbf{minMaxLoc} por la función \textbf{max} de NumPy y la sustitución del diccionario que almacena las detecciones finales por un nuevo array, que permite ahorrar memoria. Los dispositivos Jetson agradecen especialmente esta mejora, que ha conseguido recortar hasta \textbf{22.3 milisegundos} en la Jetson Orin Nano (los resultados de inferencia reportaron una media de 44.4 milisegundos frente a los 22.1 milisegundos de la nueva versión) \textbf{manteniendo la misma precisión}.
 
 \subsection{Preprocesado OSNet}
 \label{sec:preosnet}
