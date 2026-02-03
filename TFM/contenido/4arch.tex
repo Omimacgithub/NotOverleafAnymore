@@ -10,26 +10,22 @@ En esta sección se explica la estructura general del sistema del proyecto. Para
 \subsection{Arquitectura base}
 \label{sec:basearch}
 
-Se parte de un sistema diseñado para el robot móvil Summit\_XL, compuesto por 2 cámaras \acrshort{rgbd} y un sensor \acrshort{lidar}, que detecta y reconoce personas a partir de nodos que aplican los respectivos modelos de redes neuronales convolucionales (o \acrshort{cnn}). El sistema posee la capacidad de fusionar la información de todos los nodos, de forma que se obtiene un único reconocimiento robusto para cada individuo, junto a su posición concreta respecto al robot en el espacio \acrshort{3d}.
-
-Toda la arquitectura se ejecuta en el \textit{framework} \acrshort{ros} \cite{ROS} (sección \ref{sec:ros}). \acrshort{ros} se encarga de crear los procesos para cada nodo, comprobar su estado, regular la frecuencia a la que trabajan, crear la red en la que dichos procesos intercambian mensajes, entre otros muchos detalles que resultan transparentes para el programador.
-
 \begin{figure}[tbp]
     \centering
-    \includegraphics[width=0.6\linewidth]{imagenes/SYSARCH.jpg}
+    \includegraphics[width=0.45\linewidth]{imagenes/SYSARCH.jpg}
     \caption[Arquitectura del sistema base de partida]{Arquitectura del sistema base de partida, figura extraída de \cite{andrew}}
     \label{fig:sysarch}
 \end{figure}
 
-En la figura \ref{fig:sysarch} se muestra la arquitectura planteada en \cite{andrew}, compuesta por un nodo que procesa los datos del \acrshort{lidar}, 1 o varios nodos que procesan los datos de las cámaras (2 en el caso del robot) y un nodo que devuelve una lista final de todos los individuos reconocidos y su posición, fruto de la fusión de la información de todos los nodos anteriores (nodo integración de sensores). El sistema opera \textbf{frame a frame}, es decir, devuelve la información de los individuos en cada frame capturado por las cámaras.
+Se parte de un sistema diseñado para el robot móvil Summit\_XL, compuesto por 2 cámaras \acrshort{rgbd} y un sensor \acrshort{lidar}, que \textbf{detecta y reconoce personas} a partir de nodos que aplican los respectivos \textbf{modelos de redes neuronales convolucionales} (o \acrshort{cnn}). En la figura \ref{fig:sysarch} se muestra la arquitectura planteada en \cite{andrew}, compuesta por un nodo que recibe \glspl{pcl} \acrshort{3d} del entorno y otorga las posiciones \acrshort{3d} de las personas detectadas mediante el respectivo modelo (nodo \acrshort{lidar}) y 1 o varios nodos que detectan y reconocen personas mediante los datos \acrshort{rgb} y obtienen su posición \acrshort{3d} mediante la imagen de distancias de las cámaras. La información generada por los nodos \textbf{se fusiona} y se devuelve en forma de una \textbf{lista final de todos los individuos reconocidos y su posición \acrshort{3d}} (nodo integración de sensores). El sistema opera \textbf{frame a frame}, es decir, devuelve la información de los individuos en cada frame capturado por las cámaras.
 
-Cada cámara otorga una imagen \acrshort{rgb}, que es procesada por los modelos de detección y reconocimiento, y otra de distancias, que permite realizar una conversión a coordenadas \acrshort{3d}. Cada nodo cámara recibe los datos \textbf{de una sola cámara}.
+%El sistema posee la capacidad de fusionar la información de todos los nodos, de forma que se obtiene un único reconocimiento robusto para cada individuo, junto a su posición concreta respecto al robot en el espacio \acrshort{3d}.
 
-El sensor \acrshort{lidar} otorga una \gls{pcl} del entorno, que sirve como entrada del nodo \acrshort{lidar}, que ejecuta un modelo de detección de objetos en \gls{pcl} y etiqueta los puntos devueltos.
-
-Finalmente, mediante los datos de todos los nodos, el uso de la coherencia espacio-temporal y la aplicación de métodos como la distancia relativa y/o la identidad probable (definidos en \cite{andrew}), se obtiene la lista final de identidades. La posición \acrshort{3d} de cada individuo se obtiene mediante el contraste de las posiciones devueltas del nodo cámara y el \acrshort{lidar} para dicho individuo.
+%Finalmente, mediante los datos de todos los nodos, el uso de la coherencia espacio-temporal y la aplicación de métodos como la distancia relativa y/o la identidad probable (definidos en \cite{andrew}), se obtiene la lista final de identidades. La posición \acrshort{3d} de cada individuo se obtiene mediante el contraste de las posiciones devueltas del nodo cámara y el \acrshort{lidar} para dicho individuo.
 
 %La integración de sensores propuesta en \cite{andrew} ha demostrado mejorar los resultados, debido a su capacidad de rastrear individuos por medio del \acrshort{lidar} fuera del ángulo de visión de las cámaras (cada una con un rango de visión horizontal de 57º), lo que otorga detecciones robustas y persistentes en el tiempo.
+
+Toda la arquitectura se ejecuta en el \textbf{\textit{framework} \acrshort{ros}} \cite{ROS} (sección \ref{sec:ros}). \acrshort{ros} se encarga de crear los procesos para cada nodo, comprobar su estado, regular la frecuencia a la que trabajan, crear la red en la que dichos procesos intercambian mensajes, entre otros muchos detalles que resultan transparentes para el programador.
 
 \subsection{Nodo cámara}
 
@@ -40,57 +36,46 @@ Finalmente, mediante los datos de todos los nodos, el uso de la coherencia espac
     \label{fig:camnod}
 \end{figure}
 
-En la figura \ref{fig:camnod} se muestra el flujo del nodo cámara. Dicho nodo recibe la información de un frame \acrshort{rgb} de una de las cámaras, que es procesado por 2 modelos de detección, uno destinado a rostros (YuNet en la figura \ref{fig:camnod}) y el otro a cuerpos (YOLO en la figura \ref{fig:camnod}). Se obtienen las \glspl{bbox} de los rostros y cuerpos detectados, que se comparan para asegurar que cada recorte facial se encuentra contenido en cada recorte corporal.
+En la figura \ref{fig:camnod} se muestra el flujo del nodo cámara. Dicho nodo sigue un enfoque \textbf{multimodal}, es decir, utiliza las \textbf{características} tanto \textbf{faciales} como \textbf{corporales} del individuo para su detección y reconocimiento. Tras recibir el frame \acrshort{rgb}, este es procesado por 2 modelos de detección, uno destinado a rostros (YuNet en la figura \ref{fig:camnod}) y el otro a cuerpos (YOLO en la figura \ref{fig:camnod}), de los que se obtienen las \glspl{bbox} (o recortes) de los rostros y cuerpos detectados, que se comparan para asegurar que cada recorte facial se encuentra contenido en cada recorte corporal. Posteriormente, se procede al reconocimiento facial (ArcFace en la figura \ref{fig:camnod}) y corporal (OSNet en la figura \ref{fig:camnod}), que devuelven los respectivos \glspl{embedding} (o vectores) de los que se computa la \textbf{distancia coseno} (otorga el grado de similitud entre dos vectores considerando el ángulo entre ellos) con todos los vectores (sujetos) guardados en la base de datos. Como resultado, se obtiene una lista ordenada de los sujetos según el grado de similitud. La identidad del individuo puede tomarse como la primera entrada de la lista de sujetos (es decir, la identidad \textit{a priori} más parecida) o puede procesarse y obtener la entidad por medio de algoritmos más avanzados (en \cite{andrew} se proponen los métodos de distancia relativa e identidad probable). Finalmente, el nodo cámara devuelve la identidad facial y corporal de los individuos, junto a su posición \acrshort{3d}, calculada a partir de la imagen de distancias y las coordenadas de las \glspl{bbox} corporales.
 
-Tras comprobar que cada cara detectada se corresponde con un cuerpo, se procede al reconocimiento facial (ArcFace en la figura \ref{fig:camnod}) y corporal (OSNet en la figura \ref{fig:camnod}), que devuelven un vector con las características representativas para un individuo (o \gls{embedding}).
-
-Una vez obtenidos los \glspl{embedding} de cada usuario, se calcula la \textbf{distancia} de dicho vector con todos los vectores (sujetos) guardados en la base de datos, este cálculo se realiza mediante el algoritmo de \textbf{distancia de cosenos}, que otorga el grado de similitud entre dos vectores \cite{andrew}. Como resultado, se obtiene una lista ordenada de los sujetos según el grado de similitud. La identidad del individuo puede tomarse como la primera entrada de la lista de sujetos (es decir, la identidad \textit{a priori} más parecida) o puede procesarse y obtener la entidad por medio de algoritmos más avanzados (en \cite{andrew} se proponen los métodos de distancia relativa e identidad probable).
+%, que otorga el grado de similitud entre dos vectores \cite{andrew}
 
 \subsection{Arquitectura extendida}
 \label{sec:finalsys}
 
-\begin{figure}[tbp]
-    \centering
-    \includegraphics[width=1\linewidth]{imagenes/FINALSYS.jpg}
-    \caption{Arquitectura del sistema extendido, los módulos en negrita se corresponden con los nuevos componentes desarrollados.}
-    \label{fig:finalsys}
-\end{figure}
+\afterpage{
+    \begin{landscape}
+        \begin{figure}[tbp]
+            \centering
+            \includegraphics[width=1.1\linewidth]{imagenes/FINALSYS.jpg}
+            \caption{Arquitectura del sistema extendido, los módulos en negrita se corresponden con los nuevos componentes desarrollados.}
+            \label{fig:finalsys}
+        \end{figure}
+    \end{landscape}
+}
 
-En la figura \ref{fig:finalsys} se muestra la arquitectura extendida, los nuevos componentes desarrollados se encuentran marcados en negrita, mientras que el resto de la arquitectura sigue la estructura ya comentada.
+En la figura \ref{fig:finalsys} se muestra la arquitectura extendida, los nuevos componentes desarrollados se encuentran marcados en negrita, mientras que el resto de la arquitectura sigue la estructura ya comentada. Debido a que el nodo \acrshort{lidar} no está dentro del foco de este proyecto y tampoco se pudo realizar una migración satisfactoria a \acrshort{ros} 2 del mismo (ver sección \ref{subsec:ROS2}), se ha decidido \textbf{omitirlo} del nuevo sistema extendido. En concreto, se han propuesto los siguientes componentes:
 
-Debido a que el nodo \acrshort{lidar} no está dentro del foco de este proyecto y tampoco se pudo realizar una migración satisfactoria a \acrshort{ros} 2 del mismo (ver sección \ref{subsec:ROS2}), se ha decidido omitirlo del nuevo sistema extendido.
+\begin{description}
+    \item[Procesamiento de vídeo] Implementa el procesamiento de \textbf{secuencias de frames} (o vídeos, en sustitución del esquema frame a frame), con el fin de explotar la coherencia espacio-temporal. Dicho módulo agrupa las \glspl{bbox} por individuos en más de un frame, que posteriormente se transforman en \glspl{embedding} y se guardan en una lista, que sirve de entrada para el módulo de \textbf{reconocimiento adaptativo}.
+    \item[Reconocimiento adaptativo] Implementa la capacidad de detección e inclusión de desconocidos en el sistema (modo \textbf{\textit{Open-Set} y \textit{Open-World}}), en sustitución del reconocimiento mediante la \textbf{distancia coseno}. Evalúa, mediante el uso de la teoría estadística (\acrshort{evt} introducido en la sección \ref{sec:incrlearning}), si la \textbf{mejor puntuación} obtenida de un individuo es un caso \textbf{extremo} respecto al resto de puntos (personas) de la distribución. En caso afirmativo, se trata de un conocido, en caso contrario, de un desconocido. En ambos casos, el sistema actualiza su conocimiento acerca del individuo por medio de la base de datos de \textbf{personas registradas}.
+    \item[Personas registradas] representa al conocimiento existente acerca de los individuos, que es compartido por \textbf{todo el sistema}, es decir, por todos los nodos cámara. Este módulo también abarca la inicialización de dicho registro al arrancar el sistema y los distintos métodos para su compartición entre nodos.
+\end{description}
 
-El nodo cámara pasa de operar frame a frame a procesar una \textbf{secuencia de frames}, con el fin de explotar la coherencia espacio-temporal (módulo de procesamiento de vídeo). Se obtiene la \textbf{lista de entidades} con la lista de \glspl{embedding} para cada individuo y se ejecuta el módulo de reconocimiento adaptativo.
-
-En concreto, se han propuesto los siguientes componentes:
-\begin{itemize}
-    \item \textbf{Procesamiento de video:} implementa toda la lógica necesaria para agrupar las \glspl{bbox} por individuos en más de un frame (video o secuencia). Todas las \glspl{bbox} se transforman en \glspl{embedding}, que se guardan en una lista para ser procesados por el módulo de \textbf{reconocimiento adaptativo}.
-    \item \textbf{Reconocimiento adaptativo:} implementa la capacidad de detección e inclusión de desconocidos en el sistema (modo \textbf{\textit{Open-Set} y \textit{Open-World}}). Evalúa, mediante el uso de la teoría estadística, si una \textbf{puntuación} particular para un individuo no comparte similitudes con el resto de individuos registrados. En caso afirmativo, se trata de un conocido, en caso contrario, de un desconocido. En ambos casos, el sistema actualiza su conocimiento acerca del individuo por medio de la base de datos de \textbf{personas registradas}.
-    \item \textbf{Personas registradas:} representa al conocimiento existente acerca de los individuos, que es compartido por \textbf{todo el sistema}, es decir, por todos los nodos cámara. Este módulo también abarca la inicialización de dicho registro al arrancar el sistema, los distintos métodos para su compartición entre nodos, así como su composición.
-\end{itemize}
-
-Las \textbf{puntuaciones} utilizadas por el reconocimiento adaptativo no son más que los \textbf{resultados de los comités de \acrshort{svm}} sobre las secuencias de \glspl{embedding} de cada individuo (en la sección \ref{sec:val} se indaga en este asunto).
-
-El módulo de reconocimiento adaptativo devuelve la decisión de reconocimiento y actualiza las \textbf{personas registradas}. Los nuevos cambios de los individuos son actualizados y compartidos entre todos los nodos. El método de clasificación pasa de utilizar la \textbf{distancia coseno} a emplear los \textbf{comités de \acrshort{svm}}, que devuelven una serie de \textbf{puntuaciones} que se estudian bajo el teorema estadístico \textbf{\acrfull{evt}}, útil para detectar casos extremos en la distribución de dichas puntuaciones. Este último método permite implementar el reconocimiento \textbf{\textit{Open-Set} y/o \textit{Open-World}}.
-
-Finalmente, las predicciones de cada nodo cámara se contrastan dentro del nodo integración de sensores, que devuelve la lista de identidades final junto a la posición \acrshort{3d}.
-
-%coherente con la información otorgada por los nodos (ejemplo: dos cámaras que no están solapadas no pueden reconocer a una misma persona en el mismo instante temporal).
+Las \textbf{puntuaciones} utilizadas por el reconocimiento adaptativo no son más que los \textbf{resultados de los comités de \acrshort{svm}} sobre las secuencias de \glspl{embedding} de cada individuo (en la sección \ref{sec:val} se indaga en este asunto). En la sección \ref{sec:clasf} se ha justificado la elección de los comités de \acrshort{svm} frente a otros clasificadores por su capacidad de generalización y poder discriminativo.
 
 A continuación, se exponen en detalle los componentes recién comentados.
 
 \section{Procesamiento de video}
 \label{sec:video}
-El sistema de partida trabaja a nivel de frame \cite{andrew}, es decir, devuelve predicciones de los individuos presentes en una sola imagen. Esta aproximación permite trabajar a altas frecuencias (ejemplo: devolver un reconocimiento cada 100 ms), sin embargo, las predicciones dependen enteramente de la calidad del frame (ejemplo: nivel de borrosidad). En este proyecto se ha optado por trabajar con \textbf{secuencias de frames} (o videos), de esta forma, se devuelve un reconocimiento más robusto basado en múltiples muestras.
+El sistema de partida trabaja a nivel de frame \cite{andrew}, es decir, devuelve predicciones de los individuos presentes en una sola imagen. Esta aproximación permite trabajar a altas frecuencias (ejemplo: devolver un reconocimiento cada 100 ms), sin embargo, las predicciones dependen enteramente de la calidad del frame (ejemplo: nivel de borrosidad). En este proyecto se ha optado por trabajar con \textbf{secuencias de frames} (o videos), de esta forma, se devuelve un reconocimiento más robusto basado en múltiples frames.
 
-En cada frame, se extraen las \glspl{bbox} de los individuos presentes a partir de los modelos de detección de caras y cuerpos. Posteriormente, se relacionan dichos datos entre el \textbf{frame actual y el anterior}, hasta establecer la secuencia completa. El tamaño de la secuencia es ajustable según las necesidades del operador (ejemplo: secuencia de 10 frames, que equivale a 1 segundo si las cámaras funcionan a 10 Hz).
-
-El resultado final es una lista (lista de entidades en la figura \ref{fig:finalsys}), que contiene listas de \glspl{bbox} transformadas en \glspl{embedding} (aplicando los modelos de reconocimiento) para cada individuo.
-
-\subsection{Seguimiento de entidades}
-\label{sec:tracker}
+En cada frame, se extraen las \glspl{bbox} de los individuos presentes a partir de los modelos de detección de caras y cuerpos, que posteriormente se asocian entre el \textbf{frame actual y el anterior}, hasta establecer una secuencia completa. El resultado final es una lista (lista de entidades en la figura \ref{fig:finalsys}), que contiene listas de \glspl{bbox} transformadas en \glspl{embedding} (aplicando los modelos de reconocimiento) para cada individuo. El tamaño de la secuencia es ajustable según las necesidades del operador (ejemplo: secuencia de 10 frames, que equivale a 1 segundo si las cámaras funcionan a 10 Hz).
 
 En casos como los del \textit{\gls{dataset}} FACE COX \cite{cox}, donde en los videos siempre aparece una sola persona, la agrupación de las entidades es trivial. Sin embargo, en un video donde aparecen múltiples individuos que se entrecruzan, es necesario adoptar un método para \textbf{seguir} el rastro de cada persona entre frames.
+
+\subsection{Seguimiento y reidentificación de entidades}
+\label{sec:tracker}
 
 \begin{figure}
     \centering
@@ -99,9 +84,9 @@ En casos como los del \textit{\gls{dataset}} FACE COX \cite{cox}, donde en los v
     \label{fig:seq}
 \end{figure}
 
-Se ha aplicado el \textbf{método húngaro} para relacionar las \glspl{bbox} según su grado de solape en dos frames adyacentes, en este caso, el \textbf{frame actual y el anterior}. Se genera la matriz de costes, donde las \glspl{bbox} (o recortes) del frame anterior se encuentran en las filas y las \glspl{bbox} del frame actual en las columnas. Para cada par de \glspl{bbox} de la matriz, se calcula el \textbf{\acrfull{iou}} \cite{iou}. Finalmente, el método húngaro devuelve los pares de menor coste, es decir, de mayor valor de \acrshort{iou} (el resultado se invierte restándole un 1). Tras repetir el proceso en toda la secuencia, se obtiene la lista de recortes de cada persona según el rastro generado por el algoritmo. La figura \ref{fig:seq} muestra el funcionamiento ya comentado.
+Se ha aplicado el \textbf{método húngaro} (introducido en la sección \ref{sec:trackerwork}) para relacionar las \glspl{bbox} según su \textbf{grado de solape} en dos frames adyacentes, en este caso, el \textbf{frame actual y el anterior}. Se genera la matriz de costes, donde las \glspl{bbox} (o recortes) del frame anterior se encuentran en las filas y las \glspl{bbox} del frame actual en las columnas. Para cada par de \glspl{bbox} de la matriz, se calcula el \textbf{\acrfull{iou}} \cite{iou}. Finalmente, el método húngaro devuelve los pares de menor coste, es decir, de mayor valor de \acrshort{iou} (el resultado se invierte restándole un 1). Tras repetir el proceso en toda la secuencia, se obtiene la lista de recortes de cada persona según el rastro generado por el algoritmo. La figura \ref{fig:seq} muestra el funcionamiento ya comentado.
 
-La métrica \acrshort{iou} devuelve el porcentaje de solapamiento y similitud entre \glspl{bbox} (como se muestra en la figura \ref{fig:iou}), de forma que recortes de diferente tamaño (cuando más cerca esté el sujeto de la cámara, más grande será el recorte) den un valor bajo al solaparse (ejemplo: personas que coinciden en la imagen en diferentes distancias). Dadas dos \glspl{bbox} A y B, el \acrshort{iou} se calcula como sigue en la ecuación \ref{eq:iou}.
+La métrica \acrshort{iou} devuelve el porcentaje de solapamiento y similitud entre \glspl{bbox} (como se muestra en la figura \ref{fig:iou}), de forma que recortes de diferente tamaño den un valor bajo aunque el solape sea alto (ejemplo: personas que coinciden en la imagen en diferentes profundidades). Dadas dos \glspl{bbox} A y B, el \acrshort{iou} se calcula como sigue en la ecuación \ref{eq:iou}.
 
 \begin{figure}
     \centering
@@ -114,27 +99,22 @@ La métrica \acrshort{iou} devuelve el porcentaje de solapamiento y similitud en
     IoU = \frac{A \cap B}{A \cup B}\label{eq:iou}
 \end{equation}
 
-\subsection{Reidentificación de entidades}
-\label{subsec:reiden}
-Es posible que durante la detección, las \glspl{bbox} de una misma persona en frames consecutivos no se solapen debido a la velocidad de movimiento de la propia persona o a un movimiento de la cámara, lo que causa una incorrecta aplicación del método húngaro. En este caso, se asigna el mayor coste (valor de 1) a la relación (es decir, un valor de \acrshort{iou} de 0), lo que genera el riesgo de asociar 2 \glspl{bbox} de individuos diferentes.
-
-%También existe la posibilidad de que el método húngaro realice una mala asignación cuando 2 \glspl{bbox} no coinciden, en este caso tendrían el coste máximo (valor de 1), pero igualmente se relacionarían al no existir otras relaciones de menor coste.
-
-Otro problema es el no seguimiento de la persona cuando esta se encuentra totalmente ocluida (ejemplo: se cruza un individuo justo delante) y reaparece o si simplemente la persona gira su cabeza, dejando la cara fuera de la visión de la cámara, y la vuelve a girar. En estos casos, se crearía una nueva entidad para el mismo individuo, lo que no es un comportamiento deseable.
-
-Debido a dichos problemas, es necesario aplicar un método que pueda \textbf{reidentificar} a los individuos cuyo rastro se ha perdido temporalmente. Como se comentó en la sección \ref{sec:trackerwork}, el \textbf{filtro de Kalman} no es beneficioso para la aplicación de este proyecto. Finalmente, se ha diseñado un método más sencillo basado en la \textbf{distancia euclidiana}.
-
-En el caso de que haya un movimiento veloz del individuo o de la cámara o que se haya realizado una asignación con el mayor coste, se calcula la distancia entre el \textbf{centro} de la \gls{bbox} actual con la \gls{bbox} posterior que no tiene solape, si la distancia calculada es \textbf{inferior a un umbral}, \textbf{se valida la asociación}, en caso contrario, la \gls{bbox} del individuo se mantiene, por si se vuelve a localizar en futuros frames.
-
-En el caso de perder la localización del individuo, se mantiene la \gls{bbox} de la última aparición del mismo y se calcula la distancia con las \glspl{bbox} sin asociación en futuros frames. Si la distancia es \textbf{superior} al umbral en un máximo de frames (prefijado por el operador), \textbf{se abandona el rastreo}, en caso contrario se restablece.
-
-El valor del umbral se fija de antemano \textbf{y se ajusta automáticamente en función de la resolución} de la cámara utilizando un escalado a partir de la diagonal (se calcula la diagonal de la resolución prefijada y la nueva resolución y se divide la diagonal de la resolución nueva entre la prefijada, el resultado se multiplica por el valor de umbral).
-
-Siendo $\Delta x$ y $\Delta y$ la diferencia entre las coordenadas \acrshort{2d} de los centros de dos \glspl{bbox}, la distancia euclidiana se calcula como se muestra en la ecuación \ref{eq:eucl}.
+%Problema, si ocurre que 2 bboxes de un individuo no se solapan, y si se solapa otra bbox, por mínimo solape que sea (ejemplo:0.99) ya se realiza la asignación incorrecta.
 
 \begin{equation}
     \Delta r_{euclid} = \sqrt{\Delta x^{2} + \Delta y^{2}} \label{eq:eucl}
 \end{equation}
+
+Es posible que durante la detección, las \glspl{bbox} de una misma persona en frames consecutivos no se solapen debido a la velocidad de movimiento de la propia persona o a un movimiento de la cámara, en este caso se asignaría el mayor coste (valor de 1) a la relación, al igual que la relación con las \glspl{bbox} de otros individuos (si no se solapan, en caso contrario se realiza una asignación \textbf{incorrecta}), lo que genera el riesgo de \textbf{asociar 2 \glspl{bbox} de individuos diferentes}. Otro problema es el no seguimiento de la persona cuando esta se encuentra totalmente ocluida (ejemplo: se cruza un individuo justo delante) y reaparece o si simplemente la persona gira su cabeza fuera de la visión de la cámara y la vuelve a girar mirando a la cámara. En estos casos, se crearía una nueva entidad para el mismo individuo, lo que no es un comportamiento deseable. Debido a dichos problemas, es necesario aplicar un método que pueda \textbf{reidentificar} a los individuos cuyo rastro se ha perdido temporalmente. Como ya se comentó en la sección \ref{sec:trackerwork}, el \textbf{filtro de Kalman} no es beneficioso para la aplicación de este proyecto, por lo que se ha optado por un método más sencillo basado en la \textbf{distancia euclidiana}. Siendo $\Delta x$ y $\Delta y$ la diferencia entre las coordenadas \acrshort{2d} de los \textbf{centros} de dos \glspl{bbox}, la distancia euclidiana se calcula como se muestra en la ecuación \ref{eq:eucl}.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{imagenes/FOLREID.jpg}
+    \caption{Diagrama de flujo del procesamiento de video}
+    \label{fig:reident}
+\end{figure}
+
+La figura \ref{fig:reident} muestra el diagrama de flujo que conforma todo el módulo de procesamiento de video. Se parte de una lista de asignaciones del método húngaro entre dos frames y la lista de entidades detectadas hasta el momento en la secuencia. Se itera la lista de entidades con asignación, si dicha asignación no posee el mayor coste, \textbf{se valida la asociación}, en caso contrario (las \glspl{bbox} de un individuo no se solapan), se calcula la distancia entre el \textbf{centro} de las \glspl{bbox} de frames adyacentes, si la distancia es \textbf{inferior a un valor de umbral} (las \glspl{bbox} son cercanas) \textbf{se valida la asociación}, en caso contrario, la posición (coordenadas de la \gls{bbox}) del individuo se mantiene, por si se vuelve a localizar en futuros frames. En caso de que la entidad no disponga de asignación (se ha perdido su rastro), se calcula la distancia entre la posición guardada y las \glspl{bbox} sin asignación en el frame actual, si dicha distancia es inferior a un valor de umbral, \textbf{se asocian las \glspl{bbox}}. El valor del umbral se fija de antemano \textbf{y se ajusta automáticamente en función de la resolución} de la cámara utilizando un escalado a partir de la diagonal (se calcula la diagonal de la resolución prefijada y la nueva resolución y se divide la diagonal de la resolución nueva entre la prefijada, el resultado se multiplica por el valor de umbral). Finalmente, se añaden las nuevas entidades del frame actual (las que no han conseguido asignación por ninguno de los métodos) a la lista de entidades para ser tenidas en cuenta en futuros frames. A modo de regular el funcionamiento de la reidentificación, la localización de un individuo se abandona tras realizar un \textbf{máximo de intentos} controlado por una variable asignada a cada entidad (intentos\_loc en la figura \ref{fig:reident}). El valor de la variable se restablece si se reidentifica al individuo satisfactoriamente antes de alcanzar el límite.
 
 \begin{figure}[hp!]
     \centering
@@ -147,24 +127,20 @@ Siendo $\Delta x$ y $\Delta y$ la diferencia entre las coordenadas \acrshort{2d}
     \begin{subfigure}[c]{0.2\textwidth}
         \includegraphics[width=\textwidth]{imagenes/eucl2.jpg}
     \end{subfigure}
+    \begin{subfigure}[c]{0.2\textwidth}
+        \includegraphics[width=\textwidth]{imagenes/eucl3.jpg}
+    \end{subfigure}
     \caption{Reidentificación mediante la distancia euclidiana}
     \label{fig:eucls}
 \end{figure}
 
-En la figura \ref{fig:eucls} se expone un ejemplo real, en el primer frame, se muestran dos entidades etiquetadas con un identificador (0 y 1) y como se aplica la distancia euclidiana para la entidad 0, cuyas \glspl{bbox} no se solapan, también se muestra como la entidad 1 está a punto de ser ocluida, al no haber \glspl{bbox} en frames posteriores asociables a la entidad 1, la posición del sujeto se guarda. En el segundo frame (figura \ref{fig:eucls}), la entidad 1 se encuentra totalmente ocluida por la entidad 0, como en el instante posterior a dicho frame existe una \gls{bbox} sin ninguna asociación, se calcula la distancia euclidiana entre dicha \gls{bbox} respecto a la última detectada de la entidad 1. En el último frame (figura \ref{fig:eucls}) se muestra la entidad 1 reasignada.
+%, también se muestra como la entidad 1 está a punto de ser ocluida, al no haber \glspl{bbox} en frames posteriores asociables a la entidad 1
 
-\begin{figure}
-    \centering
-    \includegraphics[width=1\linewidth]{imagenes/FOLREID.jpg}
-    \caption{Diagrama de flujo del procesamiento de video}
-    \label{fig:reident}
-\end{figure}
+En la figura \ref{fig:eucls} se expone un ejemplo real, en el primer frame, se muestran dos entidades etiquetadas con un identificador (0 y 1) y como se aplica la distancia euclidiana para la entidad 0, cuyas \glspl{bbox} no se solapan. En el segundo frame (figura \ref{fig:eucls}), la entidad 1 no encuentra ninguna asignación posible, debido a que va a ser ocluida, por lo tanto la posición de su última \gls{bbox} se guarda. En el tercer frame (figura \ref{fig:eucls}), la entidad 1 se encuentra totalmente ocluida por la entidad 0, como en el instante posterior a dicho frame existe una \gls{bbox} sin ninguna asociación, se calcula la distancia euclidiana entre dicha \gls{bbox} respecto a la guardada de la entidad 1. Finalmente, la entidad 1 se reasigna en el último frame debido a que la distancia calculada es inferior al umbral (figura \ref{fig:eucls}).
 
-La figura \ref{fig:reident} muestra el diagrama de flujo que conforma todo el módulo de procesamiento de video.
+%Se aplica el método húngaro para asociar detecciones entre el frame anterior y el actual. Se itera la lista de entidades con los individuos detectados hasta el momento, si algún individuo posee la asignación de mayor coste o no se ha establecido, se aplica el método de reidentificación durante un máximo de frames, controlado por la variable intentos\_loc. Por cada intento fallido de localización, se decrementa dicha variable, así hasta llegar al 0, que es el punto en el que se descarta la localización. En el resto de casos, la asignación del frame anterior con el actual se realiza y se restablece de nuevo la variable de intentos (en el caso de reidentificación).
 
-Se aplica el método húngaro para asociar detecciones entre el frame anterior y el actual. Se itera la lista de entidades con los individuos detectados hasta el momento, si algún individuo posee la asignación de mayor coste o no se ha establecido, se aplica el método de reidentificación durante un máximo de frames, controlado por la variable intentos\_loc. Por cada intento fallido de localización, se decrementa dicha variable, así hasta llegar al 0, que es el punto en el que se descarta la localización. En el resto de casos, la asignación del frame anterior con el actual se realiza y se restablece de nuevo la variable de intentos (en el caso de reidentificación).
-
-Al final de cada iteración del módulo, se añaden las nuevas detecciones a la lista de entidades. Los nuevos casos se corresponden con asignaciones de \gls{bbox} que no se corresponden con ninguna entidad antes registrada.
+%Al final de cada iteración del módulo, se añaden las nuevas detecciones a la lista de entidades. Los nuevos casos se corresponden con asignaciones de \gls{bbox} que no se corresponden con ninguna entidad antes registrada.
 
 \section{Reconocimiento adaptativo}
 \label{sec:archrecon}
@@ -176,36 +152,41 @@ Al final de cada iteración del módulo, se añaden las nuevas detecciones a la 
     \label{fig:ADAPTSYS}
 \end{figure}
 
-La figura \ref{fig:ADAPTSYS} muestra la arquitectura del módulo de reconocimiento adaptativo, que se compone de los siguientes componentes:
-\begin{itemize}
-    \item \textbf{Módulo de valoración}: cada comité asigna una puntuación a la secuencia de \glspl{embedding} (o vectores) de un individuo.
-    \item \textbf{Módulo de reconocimiento}: devuelve una decisión de reconocimiento basándose en las puntuaciones de cada comité.
-    \item \textbf{Módulo de actualización}: se encarga de crear un nuevo comité si se detecta un usuario nuevo (\textit{unknown}) o de crear una nueva \acrshort{svm} para registrar los cambios del usuario existente (\textit{drift}).
-    \item \textbf{Módulo de limitación}: reemplaza la \acrshort{svm} que menos aporta a un comité, en el caso de que este exceda el límite establecido.
-\end{itemize}
+La figura \ref{fig:ADAPTSYS} muestra la arquitectura de la capacidad de adaptación ante los cambios del sistema (o aprendizaje incremental), que se compone de los siguientes módulos:
+\begin{description}
+    \item[Módulo de valoración] Devuelve las \textbf{puntuaciones máximas} de cada comité a la secuencia de \glspl{embedding} de entrada.
+    \item[Módulo de reconocimiento] Toma la decisión de reconocimiento basándose en la distribución de puntuaciones máximas de todos los comités.
+    \item[Módulo de actualización] Se encarga de crear un nuevo comité si se detecta un usuario nuevo (\textit{unknown}) o de crear una nueva \acrshort{svm} para registrar los cambios del usuario existente (\textit{drift}).
+    \item[Módulo de limitación] Reemplaza la \acrshort{svm} que menos aporta a un comité, en el caso de que se haya excedido el límite de \acrshort{svm}s en un comité.
+\end{description}
 
-Se recibe la secuencia de vectores del individuo, que son procesados por el \textbf{módulo de valoración} (módulo EDF en la figura \ref{fig:ADAPTSYS}), que devuelve las puntuaciones de cada comité, dichas puntuaciones se ordenan de menor a mayor, de forma que la primera puntuación (la mejor) se corresponde \textit{a priori} con el comité del individuo. Las puntuaciones son recibidas por el \textbf{módulo de reconocimiento} (módulo RDF en la figura \ref{fig:ADAPTSYS}), que determina, mediante el \acrfull{evt}, si el comité corresponde realmente al individuo (conocido) o no (desconocido). El \textbf{módulo de actualización} (\textit{update module} en la figura \ref{fig:ADAPTSYS}) recibe la decisión, si el individuo es conocido, se agrega una nueva \acrshort{svm} entrenada con la secuencia de \glspl{embedding} como positivos y con un extracto de las muestras del resto de individuos como negativos, en caso contrario, se crea un nuevo comité con una \acrshort{svm} entrenada con el mismo conjunto de positivos y un conjunto aleatorio de las muestras de \textbf{todos los individuos} como negativos. Finalmente, si el comité se excede en el límite fijado de \acrshort{svm}s, el \textbf{módulo de limitación} (\textit{limitation module} en la figura \ref{fig:ADAPTSYS}) determina la \acrshort{svm} que menos aporta a dicho comité, que pasa a ser \textbf{eliminada} del mismo. Sendos módulos de actualización y limitación se encargan de añadir, actualizar y eliminar las \acrshort{svm}, los comités y las muestras de los individuos a la base de datos de \textbf{personas registradas}.
+La figura \ref{fig:ADAPTSYS} muestra el diseño del reconocimiento adaptativo. Se recibe la secuencia de vectores del individuo, que son procesados por el \textbf{módulo de valoración} (módulo EDF en la figura \ref{fig:ADAPTSYS}), que devuelve las puntuaciones de cada comité, dichas puntuaciones se ordenan de menor a mayor, de forma que la primera puntuación (la mejor) se corresponde \textit{a priori} con el comité del individuo y el resto de puntuaciones conforman la distribución de máximos. Las puntuaciones son recibidas por el \textbf{módulo de reconocimiento} (módulo RDF en la figura \ref{fig:ADAPTSYS}), que determina, mediante el \acrfull{evt}, si la mejor puntuación corresponde realmente al individuo (conocido) o no (desconocido). El \textbf{módulo de actualización} (\textit{update module} en la figura \ref{fig:ADAPTSYS}) recibe la decisión, si el individuo es conocido, se agrega una nueva \acrshort{svm} entrenada con la secuencia de \glspl{embedding} como positivos y con un extracto de las muestras del \textbf{resto de individuos} como negativos, en caso contrario, se crea un nuevo comité con una \acrshort{svm} entrenada con el mismo conjunto de positivos y un subconjunto de las muestras de \textbf{todos los individuos} como negativos. Finalmente, si el comité se excede en el límite fijado de \acrshort{svm}s, el \textbf{módulo de limitación} (\textit{limitation module} en la figura \ref{fig:ADAPTSYS}) determina la \acrshort{svm} que menos aporta a dicho comité, que pasa a ser \textbf{eliminada} del mismo. Sendos módulos de actualización y limitación se encargan de añadir, actualizar y eliminar las \acrshort{svm}, los comités y las muestras de los individuos a la base de datos de \textbf{personas registradas}.
 
-Para facilitar la lectura de la memoria y, puesto que no se incluye ninguna mejora respecto a los modelos propuestos en \cite{Erik,CESAR}, el diseño e implementación de este módulo se ha movido al apéndice \ref{chap:adaptrecon}.
+Para facilitar la lectura de la memoria y, puesto que no se incluye ninguna mejora respecto a los diseños propuestos en \cite{Erik,CESAR}, el \textbf{diseño e implementación de este módulo} se ha movido al \textbf{apéndice \ref{chap:adaptrecon}}.
 
 \section{Personas registradas}
 \label{sec:initarch}
 
-Conforma la base de datos de todos los individuos registrados compartida por \textbf{todo el sistema}. Dicha base de datos se compone de los comités, sus respectivas \acrshort{svm} y de las muestras de cada sujeto, que se actualiza por medio de los módulos de actualización y limitación dentro del módulo de reconocimiento adaptativo. A continuación se explican los diferentes procesos de \textbf{inicialización} propuestos, así como diferentes técnicas para compartir la información entre los nodos del sistema.
+El sistema crea y mantiene una base de datos con todas las personas registradas, que es compartida por \textbf{todos los nodos}. Dicha base de datos se compone de los comités, sus respectivas \acrshort{svm} y de las muestras de cada sujeto, que se actualiza por medio de los módulos de actualización y limitación dentro del módulo de reconocimiento adaptativo. A continuación se explican los diferentes procesos de \textbf{inicialización} propuestos, así como diferentes técnicas para compartir la información entre los nodos del sistema.
 
 \subsection{Inicialización}
 \label{sec:initieing}
 
 %fundamental, debido a que la \acrshort{svm} inicial es la que define la identidad del comité. Si dicha \acrshort{svm} está compuesta por muestras de baja calidad (ejemplo: caras borrosas o parcialmente ocluidas), entonces el comité \textbf{no se identificará correctamente consigo mismo} y, por lo tanto, generará \textbf{mayor confusión} a la hora de aplicar Weibull, es decir, \textbf{se generarán más desconocidos}.
 
-En esta primera fase del sistema, se crean los registros que representarán a los individuos iniciales. Como se ha demostrado en \cite{Erik}, el proceso de inicialización es \textbf{crítico} y depende de la calidad de las muestras escogidas. Las muestras borrosas o parcialmente ocluidas agregan confusión a las \acrshort{svm}, que devuelven puntuaciones similares al no distinguir correctamente las características del individuo.
+En esta primera fase del sistema, se crean los registros que representarán a los individuos iniciales. En \cite{Erik} se ha demostrado que el proceso de inicialización es \textbf{crítico} y depende de la calidad de las muestras escogidas. Se han propuesto las siguientes 2 aproximaciones acordes a los tipos de aprendizaje incremental vistos en la sección \ref{sec:incrtypes}.
 
-En este proyecto se han probado 2 aproximaciones, una \textbf{semisupervisada}, es decir, con intervención del operador, y la otra \textbf{no supervisada}, en la que el sistema se inicializa de manera completamente autónoma. En ambos modos, se requieren de mínimo \textbf{5 muestras} del individuo, acorde a las pruebas de \cite{Erik}.
+\begin{description}
+    \item[Semisupervisada] El operador realiza una selección de las muestras más representativas de cada individuo, de los que se obtienen las características (\glspl{embedding}) a partir de los modelos de reconocimiento. Una vez inicializada la base de datos, el sistema deja de recibir datos etiquetados para entrenarse con datos no etiquetados durante su operación.
+    \item[No supervisada] El sistema se encarga de recoger las muestras en el instante en el que aparece un mínimo de entidades simultáneas en escena. A partir de los frames de las cámaras, que estarán sincronizadas, se obtienen las \glspl{bbox} por medio de los modelos de detección y se agrupan por individuo mediante el módulo de procesamiento de video. Este método \textbf{no requiere de ninguna intervención por parte del operador}.
+\end{description}
 
-\subsubsection{Semisupervisado}
-El operador realiza una selección de los frames más representativos para cada individuo, de los que se obtienen las características (\glspl{embedding}) a partir de los modelos de reconocimiento. Una vez inicializados los individuos iniciales, el sistema deja de recibir datos etiquetados para entrenarse con datos no etiquetados durante su operación, por lo que este método se clasificaría dentro del aprendizaje incremental \textbf{semisupervisado} (ver sección \ref{sec:incrtypes}).
+%, una \textbf{semisupervisada}, es decir, se selecciona un conjunto de muestras minuciosamente de parte del operador y la otra \textbf{no supervisada}, en la que el sistema recolecta las muestras de los individuos de manera completamente autónoma. En ambos modos, se requieren de mínimo \textbf{5 muestras} del individuo, acorde a las pruebas de \cite{Erik}.
 
-\subsubsection{No supervisado}
+%\subsubsection{Semisupervisado}
+
+
+%\subsubsection{No supervisado}
 
 \begin{figure}
     \centering
@@ -214,27 +195,21 @@ El operador realiza una selección de los frames más representativos para cada 
     \label{fig:init}
 \end{figure}
 
-El sistema se encarga de recoger los frames en el instante en el que aparece un mínimo de entidades simultáneas en escena. A partir de los frames de las cámaras, que estarán sincronizadas, se obtienen las \glspl{bbox} por medio de los modelos de detección y se agrupan por individuo mediante el módulo de procesamiento de video. Este método \textbf{no requiere de ninguna intervención por parte del operador}, por lo que se clasificaría dentro del aprendizaje incremental \textbf{no supervisado} (ver sección \ref{sec:incrtypes}). El funcionamiento se muestra en la figura \ref{fig:init}.
 
-Dado un número de cámaras \textbf{sincronizadas}, se busca un instante (o frame) en el que mínimo se detecten \textbf{5 personas} (equivalente al mínimo de puntos necesario para formar una distribución de Weibull consistente \cite{Erik}) de forma simultánea entre todas las cámaras. En dicho instante, se aplica el método de procesamiento de video para organizar las \glspl{bbox} por individuo, si no se obtienen suficientes \glspl{bbox} del sujeto, el sistema \textbf{repite el proceso de búsqueda} en otro instante. En caso contrario, se obtienen las características (o \textit{\glspl{embedding}/features}) y se almacenan para la creación de las \acrshort{svm}.
-
-Las \glspl{bbox} se someten a un método de \textbf{filtrado}, que puede descartarlas si no cumplen con las siguientes condiciones:
-
+En la figura \ref{fig:init} se muestra el procedimiento de la inicialización no supervisada. Dado un número de cámaras \textbf{sincronizadas}, se busca un instante (o frame) en el que mínimo se detecten \textbf{5 personas} (equivalente al mínimo de puntos de la distribución para que el \acrshort{evt} sea efectivo \cite{Erik}) de forma simultánea entre todas las cámaras. En dicho instante, se aplica el método de procesamiento de video para organizar las \glspl{bbox} por individuo, si no se obtienen suficientes \glspl{bbox} del sujeto, el sistema \textbf{repite el proceso de búsqueda} en otro instante. En caso contrario, se obtienen los \glspl{embedding} y se almacenan para la creación de las \acrshort{svm}. Con el fin de evitar las muestras de \textbf{mala calidad}, las \glspl{bbox} se someten a un método de \textbf{filtrado}, que puede descartarlas si no cumplen con las siguientes condiciones:
 \begin{itemize}
     \item La cara se encuentra enteramente dentro del plano
     \item La \gls{bbox} es más alta que ancha.
 \end{itemize}
 
-En ambos modos de inicialización, se crean los comités de cada usuario con una \acrshort{svm} inicial. Dicha \acrshort{svm} se entrena a partir de las propias muestras del individuo (conjunto de positivos) y una selección aleatoria del resto de muestras (conjunto de negativos). Finalmente, los comités se añaden a la base de datos de \textbf{personas registradas}.
+Tras obtener los \glspl{embedding} por medio de uno de los 2 modos de inicialización, se crean los comités de cada usuario con una \textbf{\acrshort{svm} inicial}, que se entrena a partir de las propias muestras del individuo (conjunto de positivos) y una selección de muestras del resto de individuos (conjunto de negativos). Finalmente, los comités se añaden a la base de datos de \textbf{personas registradas}.
 
 \subsection{Registro compartido}
 \label{sec:shared}
 
-En el sistema de partida (ver sección \ref{sec:partarch}), el registro inicial de individuos no se modifica (modo \textit{Closed-Set}), por lo tanto, no existe la necesidad de mantener una fuente centralizada de los datos. En su lugar, cada nodo inicializa su propia copia. Para implementar el modo \textit{Open-Set} y/o \textit{Open-World}, es necesario mantener los datos actualizados en todos los nodos mediante métodos de compartición.
+En el sistema de partida (ver sección \ref{sec:partarch}), el registro inicial de individuos \textbf{no se modifica} (modo \textit{Closed-Set}), por lo tanto, no existe la necesidad de mantener una fuente centralizada de los datos y, en su lugar, cada nodo inicializa su propia copia. Para implementar el modo \textit{Open-Set} y/o \textit{Open-World}, es necesario mantener los datos actualizados en todos los nodos mediante métodos de compartición. Debido a que el sistema es distribuido (computación en múltiples nodos) y los nodos están implementados en Python, es necesario explorar otras vías diferentes a la memoria compartida entre procesos. Se han propuesto las siguientes 2 alternativas:
 
-Debido a que el sistema es distribuido (computación en nodos de cálculo distintos) y los nodos están implementados en Python, es necesario explorar otras vías diferentes a la memoria compartida entre procesos. Para este proyecto, se han propuesto 2 alternativas:
-
-\begin{itemize}
-    \item \textbf{Base de datos centralizada}: todos los nodos acceden a una base de datos de baja latencia (ejemplo: base de datos puramente en memoria), de la que reciben el registro de personas actualizado. Dicha base de datos se encontraría en la misma máquina que el nodo integración de sensores, que realizaría las peticiones de escritura. Finalmente, la base de datos propaga las modificaciones a todos los nodos conectados.
-    \item \textbf{Red \acrshort{ros}}: el nodo integración de sensores recibe los mensajes de los nodos cámara y, aprovechando la red creada por \acrshort{ros}, se difunde un mensaje con los nuevos cambios a un tópico en el que todos los nodos cámara estarán suscritos, de forma que mantienen su propia copia actualizada.
-\end{itemize}
+\begin{description}
+    \item[Base de datos centralizada] Todos los nodos acceden a una base de datos de baja latencia (ejemplo: base de datos puramente en memoria), de la que reciben el registro de personas actualizado. Dicha base de datos se encontraría en la misma máquina que el nodo integración de sensores, que realizaría las peticiones de escritura. Tras una petición de escritura, la base de datos propaga las modificaciones a todos los nodos conectados.
+    \item[Red \acrshort{ros}] El nodo integración de sensores recibe los mensajes de los nodos cámara, de los que extraerá los nuevos cambios a la base de datos. Aprovechando la red creada por \acrshort{ros}, el nodo integrador difunde un mensaje con las nuevas modificaciones a un tópico en el que todos los nodos cámara estarán suscritos, de forma que aplican los cambios, manteniendo así su propia copia actualizada.
+\end{description}
