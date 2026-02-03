@@ -24,10 +24,10 @@ La función \textit{infer} del código \ref{coud:trtskel} se ejecuta por cada ve
 
 Las operaciones de copia de datos y la inferencia se ejecutan de forma \textbf{asíncrona}, por lo que es necesario introducir una barrera de sincronización una vez todas las operaciones se emitan, de forma que nuevos \glspl{thread} no sobrescriben la memoria de la \acrshort{gpu} mientras esta realiza inferencias.
 
-\section{Procesamiento de video}
+\section{Procesamiento de vídeo}
 La implementación sigue el flujo expuesto en la sección \ref{sec:tracker}. El cálculo del \acrshort{iou} es sencillo y no entraña apenas complejidad computacional. Previo al \acrshort{iou}, se obtiene el área a partir de las coordenadas de las \glspl{bbox} y se calcula la intersección y la unión. La distancia euclidiana se calcula como se expone en la sección \ref{subsec:reiden} y tampoco entraña mayor dificultad.
 
-Para realizar una asignación óptima del método húngaro, se utilizó la función \textit{linear\_sum\_assignment} otorgada por el módulo \textit{optimize} de la librería SciPy \cite{lsa}. Dicha librería implementa el algoritmo Jonker-Volgenan, que es una variante del método húngaro con complejidad computacional $O(n^{3})$ \cite{lsa, o3}. Atendiendo a la elevada complejidad computacional, este algoritmo se volvería impracticable con matrices de cientos de filas y columnas (ejemplo: detección de 100 personas de una cámara en un frame y su anterior) \cite{325}. Sin embargo, como en los videos de prueba una cámara llega a detectar como máximo 4 personas a la vez, la ejecución del algoritmo no supone apenas algún coste.
+Para realizar una asignación óptima del método húngaro, se utilizó la función \textit{linear\_sum\_assignment} otorgada por el módulo \textit{optimize} de la librería SciPy \cite{lsa}. Dicha librería implementa el algoritmo Jonker-Volgenan, que es una variante del método húngaro con complejidad computacional $O(n^{3})$ \cite{lsa, o3}. Atendiendo a la elevada complejidad computacional, este algoritmo se volvería impracticable con matrices de cientos de filas y columnas (ejemplo: detección de 100 personas de una cámara en un frame y su anterior) \cite{325}. Sin embargo, como en los vídeos de prueba una cámara llega a detectar como máximo 4 personas a la vez, la ejecución del algoritmo no supone apenas algún coste.
 
 \section{Personas registradas}
 \label{sec:init}
@@ -42,7 +42,7 @@ A la hora de entrenar las \acrshort{svm}, se asigna la etiqueta 1 (variable \tex
 
 \subsection{Método de inicialización no supervisado}
 
-Como ya se explicó en la sección \ref{sec:initarch}, en el método de inicialización no supervisado se crean los comités de las nuevas entidades únicamente de la información disponible en el momento de ejecución del sistema. Para la implementación del algoritmo de la figura \ref{fig:init} se ha podido aprovechar el módulo de procesamiento de video para la fase de recolección de \glspl{bbox}. El resto de detalles de implementación no entrañan nada destacable.
+Como ya se explicó en la sección \ref{sec:initarch}, en el método de inicialización no supervisado se crean los comités de las nuevas entidades únicamente de la información disponible en el momento de ejecución del sistema. Para la implementación del algoritmo de la figura \ref{fig:init} se ha podido aprovechar el módulo de procesamiento de vídeo para la fase de recolección de \glspl{bbox}. El resto de detalles de implementación no entrañan nada destacable.
 
 \section{Escalabilidad y tolerancia a fallos de las cámaras}
 \label{sec:scal}

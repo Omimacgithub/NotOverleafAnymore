@@ -66,13 +66,13 @@ Las \textbf{puntuaciones} utilizadas por el reconocimiento adaptativo no son má
 
 A continuación, se exponen en detalle los componentes recién comentados.
 
-\section{Procesamiento de video}
-\label{sec:video}
-El sistema de partida trabaja a nivel de frame \cite{andrew}, es decir, devuelve predicciones de los individuos presentes en una sola imagen. Esta aproximación permite trabajar a altas frecuencias (ejemplo: devolver un reconocimiento cada 100 ms), sin embargo, las predicciones dependen enteramente de la calidad del frame (ejemplo: nivel de borrosidad). En este proyecto se ha optado por trabajar con \textbf{secuencias de frames} (o videos), de esta forma, se devuelve un reconocimiento más robusto basado en múltiples frames.
+\section{Procesamiento de vídeo}
+\label{sec:vídeo}
+El sistema de partida trabaja a nivel de frame \cite{andrew}, es decir, devuelve predicciones de los individuos presentes en una sola imagen. Esta aproximación permite trabajar a altas frecuencias (ejemplo: devolver un reconocimiento cada 100 ms), sin embargo, las predicciones dependen enteramente de la calidad del frame (ejemplo: nivel de borrosidad). En este proyecto se ha optado por trabajar con \textbf{secuencias de frames} (o vídeos), de esta forma, se devuelve un reconocimiento más robusto basado en múltiples frames.
 
 En cada frame, se extraen las \glspl{bbox} de los individuos presentes a partir de los modelos de detección de caras y cuerpos, que posteriormente se asocian entre el \textbf{frame actual y el anterior}, hasta establecer una secuencia completa. El resultado final es una lista (lista de entidades en la figura \ref{fig:finalsys}), que contiene listas de \glspl{bbox} transformadas en \glspl{embedding} (aplicando los modelos de reconocimiento) para cada individuo. El tamaño de la secuencia es ajustable según las necesidades del operador (ejemplo: secuencia de 10 frames, que equivale a 1 segundo si las cámaras funcionan a 10 Hz).
 
-En casos como los del \textit{\gls{dataset}} FACE COX \cite{cox}, donde en los videos siempre aparece una sola persona, la agrupación de las entidades es trivial. Sin embargo, en un video donde aparecen múltiples individuos que se entrecruzan, es necesario adoptar un método para \textbf{seguir} el rastro de cada persona entre frames.
+En casos como los del \textit{\gls{dataset}} FACE COX \cite{cox}, donde en los vídeos siempre aparece una sola persona, la agrupación de las entidades es trivial. Sin embargo, en un vídeo donde aparecen múltiples individuos que se entrecruzan, es necesario adoptar un método para \textbf{seguir} el rastro de cada persona entre frames.
 
 \subsection{Seguimiento y reidentificación de entidades}
 \label{sec:tracker}
@@ -110,11 +110,11 @@ Es posible que durante la detección, las \glspl{bbox} de una misma persona en f
 \begin{figure}
     \centering
     \includegraphics[width=1\linewidth]{imagenes/FOLREID.jpg}
-    \caption{Diagrama de flujo del procesamiento de video}
+    \caption{Diagrama de flujo del procesamiento de vídeo}
     \label{fig:reident}
 \end{figure}
 
-La figura \ref{fig:reident} muestra el diagrama de flujo que conforma todo el módulo de procesamiento de video. Se parte de una lista de asignaciones del método húngaro entre dos frames y la lista de entidades detectadas hasta el momento en la secuencia. Se itera la lista de entidades con asignación, si dicha asignación no posee el mayor coste, \textbf{se valida la asociación}, en caso contrario (las \glspl{bbox} de un individuo no se solapan), se calcula la distancia entre el \textbf{centro} de las \glspl{bbox} de frames adyacentes, si la distancia es \textbf{inferior a un valor de umbral} (las \glspl{bbox} son cercanas) \textbf{se valida la asociación}, en caso contrario, la posición (coordenadas de la \gls{bbox}) del individuo se mantiene, por si se vuelve a localizar en futuros frames. En caso de que la entidad no disponga de asignación (se ha perdido su rastro), se calcula la distancia entre la posición guardada y las \glspl{bbox} sin asignación en el frame actual, si dicha distancia es inferior a un valor de umbral, \textbf{se asocian las \glspl{bbox}}. El valor del umbral se fija de antemano \textbf{y se ajusta automáticamente en función de la resolución} de la cámara utilizando un escalado a partir de la diagonal (se calcula la diagonal de la resolución prefijada y la nueva resolución y se divide la diagonal de la resolución nueva entre la prefijada, el resultado se multiplica por el valor de umbral). Finalmente, se añaden las nuevas entidades del frame actual (las que no han conseguido asignación por ninguno de los métodos) a la lista de entidades para ser tenidas en cuenta en futuros frames. A modo de regular el funcionamiento de la reidentificación, la localización de un individuo se abandona tras realizar un \textbf{máximo de intentos} controlado por una variable asignada a cada entidad (intentos\_loc en la figura \ref{fig:reident}). El valor de la variable se restablece si se reidentifica al individuo satisfactoriamente antes de alcanzar el límite.
+La figura \ref{fig:reident} muestra el diagrama de flujo que conforma todo el módulo de procesamiento de vídeo. Se parte de una lista de asignaciones del método húngaro entre dos frames y la lista de entidades detectadas hasta el momento en la secuencia. Se itera la lista de entidades con asignación, si dicha asignación no posee el mayor coste, \textbf{se valida la asociación}, en caso contrario (las \glspl{bbox} de un individuo no se solapan), se calcula la distancia entre el \textbf{centro} de las \glspl{bbox} de frames adyacentes, si la distancia es \textbf{inferior a un valor de umbral} (las \glspl{bbox} son cercanas) \textbf{se valida la asociación}, en caso contrario, la posición (coordenadas de la \gls{bbox}) del individuo se mantiene, por si se vuelve a localizar en futuros frames. En caso de que la entidad no disponga de asignación (se ha perdido su rastro), se calcula la distancia entre la posición guardada y las \glspl{bbox} sin asignación en el frame actual, si dicha distancia es inferior a un valor de umbral, \textbf{se asocian las \glspl{bbox}}. El valor del umbral se fija de antemano \textbf{y se ajusta automáticamente en función de la resolución} de la cámara utilizando un escalado a partir de la diagonal (se calcula la diagonal de la resolución prefijada y la nueva resolución y se divide la diagonal de la resolución nueva entre la prefijada, el resultado se multiplica por el valor de umbral). Finalmente, se añaden las nuevas entidades del frame actual (las que no han conseguido asignación por ninguno de los métodos) a la lista de entidades para ser tenidas en cuenta en futuros frames. A modo de regular el funcionamiento de la reidentificación, la localización de un individuo se abandona tras realizar un \textbf{máximo de intentos} controlado por una variable asignada a cada entidad (intentos\_loc en la figura \ref{fig:reident}). El valor de la variable se restablece si se reidentifica al individuo satisfactoriamente antes de alcanzar el límite.
 
 \begin{figure}[hp!]
     \centering
@@ -174,19 +174,12 @@ El sistema crea y mantiene una base de datos con todas las personas registradas,
 
 %fundamental, debido a que la \acrshort{svm} inicial es la que define la identidad del comité. Si dicha \acrshort{svm} está compuesta por muestras de baja calidad (ejemplo: caras borrosas o parcialmente ocluidas), entonces el comité \textbf{no se identificará correctamente consigo mismo} y, por lo tanto, generará \textbf{mayor confusión} a la hora de aplicar Weibull, es decir, \textbf{se generarán más desconocidos}.
 
-En esta primera fase del sistema, se crean los registros que representarán a los individuos iniciales. En \cite{Erik} se ha demostrado que el proceso de inicialización es \textbf{crítico} y depende de la calidad de las muestras escogidas. Se han propuesto las siguientes 2 aproximaciones acordes a los tipos de aprendizaje incremental vistos en la sección \ref{sec:incrtypes}.
+En esta primera fase del sistema, se crean los registros que representarán a los individuos iniciales. En \cite{5samples} se ha demostrado que el proceso de inicialización es \textbf{crítico} y depende de la calidad de las muestras escogidas. Se han propuesto las siguientes 2 aproximaciones acordes a los tipos de aprendizaje incremental vistos en la sección \ref{sec:incrtypes}.
 
 \begin{description}
     \item[Semisupervisada] El operador realiza una selección de las muestras más representativas de cada individuo, de los que se obtienen las características (\glspl{embedding}) a partir de los modelos de reconocimiento. Una vez inicializada la base de datos, el sistema deja de recibir datos etiquetados para entrenarse con datos no etiquetados durante su operación.
-    \item[No supervisada] El sistema se encarga de recoger las muestras en el instante en el que aparece un mínimo de entidades simultáneas en escena. A partir de los frames de las cámaras, que estarán sincronizadas, se obtienen las \glspl{bbox} por medio de los modelos de detección y se agrupan por individuo mediante el módulo de procesamiento de video. Este método \textbf{no requiere de ninguna intervención por parte del operador}.
+    \item[No supervisada] El sistema se encarga de recoger las muestras en el instante en el que aparece un mínimo de entidades simultáneas en escena. A partir de los frames de las cámaras, que estarán sincronizadas, se obtienen las \glspl{bbox} por medio de los modelos de detección y se agrupan por individuo mediante el módulo de procesamiento de vídeo. Este método \textbf{no requiere de ninguna intervención por parte del operador}.
 \end{description}
-
-%, una \textbf{semisupervisada}, es decir, se selecciona un conjunto de muestras minuciosamente de parte del operador y la otra \textbf{no supervisada}, en la que el sistema recolecta las muestras de los individuos de manera completamente autónoma. En ambos modos, se requieren de mínimo \textbf{5 muestras} del individuo, acorde a las pruebas de \cite{Erik}.
-
-%\subsubsection{Semisupervisado}
-
-
-%\subsubsection{No supervisado}
 
 \begin{figure}
     \centering
@@ -196,7 +189,7 @@ En esta primera fase del sistema, se crean los registros que representarán a lo
 \end{figure}
 
 
-En la figura \ref{fig:init} se muestra el procedimiento de la inicialización no supervisada. Dado un número de cámaras \textbf{sincronizadas}, se busca un instante (o frame) en el que mínimo se detecten \textbf{5 personas} (equivalente al mínimo de puntos de la distribución para que el \acrshort{evt} sea efectivo \cite{Erik}) de forma simultánea entre todas las cámaras. En dicho instante, se aplica el método de procesamiento de video para organizar las \glspl{bbox} por individuo, si no se obtienen suficientes \glspl{bbox} del sujeto, el sistema \textbf{repite el proceso de búsqueda} en otro instante. En caso contrario, se obtienen los \glspl{embedding} y se almacenan para la creación de las \acrshort{svm}. Con el fin de evitar las muestras de \textbf{mala calidad}, las \glspl{bbox} se someten a un método de \textbf{filtrado}, que puede descartarlas si no cumplen con las siguientes condiciones:
+En la figura \ref{fig:init} se muestra el procedimiento de la inicialización no supervisada. Dado un número de cámaras \textbf{sincronizadas}, se busca un instante (o frame) en el que mínimo se detecten \textbf{5 personas} (equivalente al mínimo de puntos de la distribución para que el \acrshort{evt} sea efectivo \cite{Erik}) de forma simultánea entre todas las cámaras. En dicho instante, se aplica el método de procesamiento de vídeo para organizar las \glspl{bbox} por individuo, si no se obtienen suficientes \glspl{bbox} del sujeto, el sistema \textbf{repite el proceso de búsqueda} en otro instante. En caso contrario, se obtienen los \glspl{embedding} y se almacenan para la creación de las \acrshort{svm}. Con el fin de evitar las muestras de \textbf{mala calidad}, las \glspl{bbox} se someten a un método de \textbf{filtrado}, que puede descartarlas si no cumplen con las siguientes condiciones:
 \begin{itemize}
     \item La cara se encuentra enteramente dentro del plano
     \item La \gls{bbox} es más alta que ancha.
