@@ -72,10 +72,10 @@ El sistema de partida trabaja a nivel de frame \cite{andrew}, es decir, devuelve
 
 En cada frame, se extraen las \glspl{bbox} de los individuos presentes a partir de los modelos de detección de caras y cuerpos, que posteriormente se asocian entre el \textbf{frame actual y el anterior}, hasta establecer una secuencia completa. El resultado final es una lista (lista de entidades en la figura \ref{fig:finalsys}), que contiene listas de \glspl{bbox} transformadas en \glspl{embedding} (aplicando los modelos de reconocimiento) para cada individuo. El tamaño de la secuencia es ajustable según las necesidades del operador (ejemplo: secuencia de 10 frames, que equivale a 1 segundo si las cámaras funcionan a 10 Hz).
 
-En casos como los del \textit{\gls{dataset}} FACE COX \cite{cox}, donde en los vídeos siempre aparece una sola persona, la agrupación de las entidades es trivial. Sin embargo, en un vídeo donde aparecen múltiples individuos que se entrecruzan, es necesario adoptar un método para \textbf{seguir} el rastro de cada persona entre frames.
+En casos como los del \textit{\gls{dataset}} FACE COX \cite{cox}, donde en los vídeos siempre aparece una sola persona, la agrupación de las entidades es trivial. Sin embargo, en un vídeo donde aparecen múltiples individuos que se entrecruzan, es necesario adoptar un método para \textbf{seguir el rastro de cada persona entre frames}.
 
-\subsection{Seguimiento y reidentificación de entidades}
-\label{sec:tracker}
+%\subsection{Seguimiento y reidentificación de entidades}
+%\label{sec:tracker}
 
 \begin{figure}
     \centering
@@ -200,9 +200,9 @@ Tras obtener los \glspl{embedding} por medio de uno de los 2 modos de inicializa
 \subsection{Registro compartido}
 \label{sec:shared}
 
-En el sistema de partida (ver sección \ref{sec:partarch}), el registro inicial de individuos \textbf{no se modifica} (modo \textit{Closed-Set}), por lo tanto, no existe la necesidad de mantener una fuente centralizada de los datos y, en su lugar, cada nodo inicializa su propia copia. Para implementar el modo \textit{Open-Set} y/o \textit{Open-World}, es necesario mantener los datos actualizados en todos los nodos mediante métodos de compartición. Debido a que el sistema es distribuido (computación en múltiples nodos) y los nodos están implementados en Python, es necesario explorar otras vías diferentes a la memoria compartida entre procesos. Se han propuesto las siguientes 2 alternativas:
+En el sistema de partida (ver sección \ref{sec:partarch}), el registro inicial de individuos \textbf{no se modifica} (modo \textit{Closed-Set}), por lo tanto, no existe la necesidad de mantener una fuente centralizada de los datos y, en su lugar, cada nodo inicializa su propia copia. Para implementar el modo \textit{Open-Set} y \textit{Open-World}, es necesario \textbf{propagar los cambios} del módulo de reconocimiento adaptativo a \textbf{todos los nodos} del sistema. Debido a que el sistema es distribuido (computación en múltiples nodos) y los nodos están implementados en Python, es necesario explorar otras vías diferentes a la memoria compartida entre procesos. Se han propuesto las siguientes 2 alternativas:
 
 \begin{description}
     \item[Base de datos centralizada] Todos los nodos acceden a una base de datos de baja latencia (ejemplo: base de datos puramente en memoria), de la que reciben el registro de personas actualizado. Dicha base de datos se encontraría en la misma máquina que el nodo integración de sensores, que realizaría las peticiones de escritura. Tras una petición de escritura, la base de datos propaga las modificaciones a todos los nodos conectados.
-    \item[Red \acrshort{ros}] El nodo integración de sensores recibe los mensajes de los nodos cámara, de los que extraerá los nuevos cambios a la base de datos. Aprovechando la red creada por \acrshort{ros}, el nodo integrador difunde un mensaje con las nuevas modificaciones a un tópico en el que todos los nodos cámara estarán suscritos, de forma que aplican los cambios, manteniendo así su propia copia actualizada.
+    \item[Red \acrshort{ros}] El nodo integración de sensores recibe los mensajes de los nodos cámara, de los que extraerá los nuevos cambios a la base de datos. Aprovechando la red creada por \acrshort{ros}, el nodo integrador difunde un mensaje con las nuevas modificaciones a un tópico en el que todos los nodos cámara estarán suscritos, de forma que puedan recibir y aplicar los cambios, manteniendo así su propia copia actualizada.
 \end{description}

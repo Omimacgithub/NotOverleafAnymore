@@ -1,13 +1,13 @@
-\begin{lstlisting}[language=Python, float=t, label=coud:trtskel, caption=Esqueleto del código de las inferencias con TensorRT]
+\begin{lstlisting}[language=Python, float=t, label=coud:trtskel, caption={Esqueleto del código de las inferencias con TensorRT, sección \ref{sec:trtinfer}}]
 import tensorrt as trt
 import pycuda.driver as cuda
 
-# BATCH_SIZE: number of images to be processed in a single inference
+# BATCH_SIZE: number of images to be processed on a single inference
 # NUM_CHANNELS: number of image channels, typically 3 (red, green and blue)
-# size: input tensor size of the model
-# osize: output tensor size of the model
-# ifp: input tensor precision of the model
-# ofp: output tensor precision of the model
+# width, height: width and height of input image
+# features: number of features provided by model output
+# ifp: input tensor float precision of the model
+# ofp: output tensor float precision of the model
 class CNN_model:
     def __init__(self, cuda_ctx):
         super().__init__()
@@ -15,30 +15,30 @@ class CNN_model:
         self.ctx.push()
         f = open(str('path_to_trt_engine'), "rb")
         runtime = trt.Runtime(trt.Logger(trt.Logger.WARNING)) 
-        self.engine = runtime.deserialize_cuda_engine(f.read())
-        self.context = self.engine.create_execution_context()
+        self.cuda_engine = runtime.deserialize_cuda_engine(f.read())
+        self.context = self.cuda_engine.create_execution_context()
         self.stream = cuda.Stream()
-        self.input_size = BATCH_SIZE * NUM_CHANNELS * size * size * ifp().itemsize
-        self.output_size = BATCH_SIZE * features * osize * ofp().itemsize
+        self.input_size = BATCH_SIZE * NUM_CHANNELS * width * height * ifp().itemsize
+        self.output_size = BATCH_SIZE * features * ofp().itemsize
         self.d_input = cuda.mem_alloc(self.input_size)
         self.d_output = cuda.mem_alloc(self.output_size)
         self.bindings = [int(self.d_input), int(self.d_output)]
-        self.outputs = numpy.empty([BATCH_SIZE, osize], dtype=ofp)
-        for binding in range(self.engine.num_io_tensors):
-          tensor_name = self.engine.get_tensor_name(binding)
+        self.outputs = numpy.empty([BATCH_SIZE, features], dtype=ofp)
+        for binding in range(self.cuda_engine.num_io_tensors):
+          tensor_name = self.cuda_engine.get_tensor_name(binding)
           self.context.set_tensor_address(tensor_name, self.bindings[binding])
         self.ctx.pop()
     def infer(self, data):
       self.ctx.push()
       try:
-        preprocesed_input = PREPROCESING(data)
+        preprocessed_input = PREPROCESSING(data)
         tensor = self.engine.get_tensor_name(0) # Get input tensor name
-        self.context.set_input_shape(tensor,(data.shape[0],size,size,NUM_CHANNELS))
-        cuda.memcpy_htod_async(self.d_input, preprocesed_input.astype(ifp), self.stream)
+        self.context.set_input_shape(tensor,(data.shape[0],height,width,NUM_CHANNELS))
+        cuda.memcpy_htod_async(self.d_input, preprocessed_input.astype(ifp), self.stream)
         self.context.execute_async_v3(self.stream.handle)
         cuda.memcpy_dtoh_async(self.outputs, self.d_output, self.stream)
         self.stream.synchronize()
-        return POSTPROCESING(self.outputs)
+        return POSTPROCESSING(self.outputs)
       finally:
         self.ctx.pop()
 \end{lstlisting}

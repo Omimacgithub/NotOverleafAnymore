@@ -1,15 +1,15 @@
 \chapter{Flujos de trabajo de TensorRT}
 \label{chap:procedure}
 
-\lettrine{E}{n} este apéndice se comentan las diferentes opciones para integrar TensorRT con los modelos de redes neuronales y se detalla el procedimiento seguido para su ejecución en dicha herramienta.
+\lettrine{E}{n} este apéndice se comentan las diferentes opciones para integrar TensorRT con los modelos de redes neuronales del proyecto y se detalla el procedimiento seguido para su ejecución en dicha herramienta.
 
 \section{Introducción}
 
-A la hora de realizar inferencias en el \textit{framework} de TensorRT, existen diferentes integraciones o flujos de trabajo (\textit{workflows}) que se exponen a continuación:
+A la hora de realizar inferencias en el \textit{framework} de TensorRT, existen diferentes integraciones o flujos de trabajo (\textit{workflows}). A continuación se exponen algunas de estas opciones:
 
 \begin{description}
-    \item[TensorFlow/PyTorch-TensorRT] Las integraciones de TensorRT con PyTorch (Torch-TensorRT) y TensorFlow (TF-TRT) permiten aprovechar directamente las funcionalidades de TensorRT a través de los frameworks mencionados. Ambas integraciones parten el grafo generado del modelo en varios subgrafos para su optimización y ejecución en TensorRT. Los subgrafos generados que no son compatibles con TensorRT pasan a ejecutarse en los frameworks correspondientes. Esta aproximación no permite exprimir al máximo las capacidades del hardware por lo que, aunque es una solución sencilla, no resulta del todo eficiente.
-    \item[\acrshort{onnx}/\acrshort{onnx} Runtime-TensorRT] Esta aproximación requiere de la exportación de los modelos al formato \acrshort{onnx} para su uso con la \acrshort{api} de TensorRT o \acrshort{onnx} Runtime.  Si se emplea la \acrshort{api} de TensorRT, es necesario reservar la memoria de los dispositivos y planificar la ejecución del trabajo en la \acrshort{gpu} por parte del programador \cite{trtworkflows}. En cambio, \acrshort{onnx} Runtime ofrece una mayor abstracción de este proceso, ya que dicha \acrshort{api} interacciona directamente con TensorRT por medio de los \textbf{Execution Providers (EP)}, que hace uso de su \gls{rt} para ejecutar los subgrafos en el hardware \cite{EP,trtworkflows}.
+    \item[TensorFlow/PyTorch-TensorRT] \cite{trttf,trtworkflows} Las integraciones de TensorRT con PyTorch (Torch-TensorRT) y TensorFlow (TF-TRT) permiten aprovechar directamente las funcionalidades de dicho software a través de los \textit{frameworks} mencionados. Ambas integraciones parten el grafo generado del modelo en varios subgrafos para su optimización y ejecución en TensorRT. Los subgrafos generados que no son compatibles con TensorRT pasan a ejecutarse directamente en los \textit{frameworks} correspondientes. Esta aproximación no permite exprimir al máximo las capacidades del hardware por lo que, aunque es una solución sencilla, no resulta del todo eficiente.
+    \item[\acrshort{onnx}/\acrshort{onnx} Runtime-TensorRT] \cite{trtworkflows} Esta aproximación requiere de la exportación de los modelos al formato \acrshort{onnx} para su uso con la \acrshort{api} de TensorRT o \acrshort{onnx} Runtime.  Si se emplea la \acrshort{api} de TensorRT, es necesario reservar la memoria de los dispositivos y planificar la ejecución del trabajo en la \acrshort{gpu} por parte del programador \cite{trtworkflows}. En cambio, \acrshort{onnx} Runtime ofrece una mayor abstracción de este proceso, ya que dicha \acrshort{api} interacciona directamente con TensorRT por medio de los \textbf{Execution Providers (EP)} \cite{EP}, que hace uso de su \gls{rt} para ejecutar los subgrafos en el hardware.
 \end{description}
 
 \begin{figure}[tbp]

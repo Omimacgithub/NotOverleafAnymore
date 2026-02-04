@@ -1,26 +1,29 @@
-\begin{lstlisting}[language=Python, float=t, label=coud:cash, caption=Recolección de mensajes de las cachés de los sensores (ROS Noetic), basicstyle=\footnotesize]
+\begin{lstlisting}[language=Python, float=t, label=coud:cash, caption={Recolección de mensajes de las cachés de los sensores (ROS 1), sección \ref{sec:scal}}, basicstyle=\footnotesize]
 def process(self):
-# lidar_cash: MessageFiltersCache corresponding to LiDAR node.
-# cam_cash: list of MessageFiltersCache objects, as many as camera nodes are launched.
+# self: Integration node class
+# self.lidar_cache: MessageFiltersCache corresponding to LiDAR node.
+# self.cam_caches: list of MessageFiltersCache objects, as many as camera nodes are launched.
+# nl: flag that indicates absence of lidar message
+# nc: flag that indicates absence of any camera message
     #Collect lidar message
-    last_stamp = self.lidar_cash.getLatestTime()
+    last_stamp = self.lidar_cache.getLatestTime()
     elapsed = rospy.Time.now().to_sec() - last_stamp.to_sec() if last_stamp else 1
-    lidar = self.lidar_cash.getElemBeforeTime(last_stamp) if elapsed <= 0.2 else None
-    nl = False if lidar else True
-    message_list = [lidar] if not nl else []
+    lidar_msg = self.lidar_cache.getElemBeforeTime(last_stamp) if elapsed <= 0.2 else None
+    nl = False if lidar_msg else True
+    message_list = [lidar_msg] if not nl else []
     #Collect cameras messages
     pre = len(message_list)
-    for cam in self.cam_cashes:
-      camlast = cam.getLatestTime()
-      report = cam.getElemBeforeTime(camlast)
+    for cam_cache in self.cam_caches:
+      last_stamp = cam_cache.getLatestTime()
+      report = cam_cache.getElemBeforeTime(last_stamp)
       if report:
-        camlapsed = rospy.Time.now().to_sec() - camlast.to_sec()
-        if camlapsed <= 0.2:
+        elapsed = rospy.Time.now().to_sec() - last_stamp.to_sec()
+        if elapsed <= 0.2:
           message_list.append(report)
     post = len(message_list)
     nc = True if pre == post else False
     if len(message_list) > 0:
-      #Call integration node with collected messages
+      #Call fusion of results with collected messages
       self.on_frame(message_list, nl, nc)
     else:
       print("No new content in the queue")

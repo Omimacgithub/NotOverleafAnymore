@@ -1,25 +1,27 @@
 %, basicstyle=\footnotesize]
-\begin{lstlisting}[language=Python, float=t, label=coud:training, caption=Entrenamiento de las SVM]     
-def def_svm(samples, idx, d1, unk):
-# samples shape: (IoIs, num_svm, num_samples, feature_dim)
+\begin{lstlisting}[language=Python, float=t, label=coud:training, caption={Entrenamiento de las SVM, sección \ref{sec:training}}]     
+# sample = set of embeddings from CNNs, for ArcFace and OSNet_x1, each sample is composed of 512 embeddings
+def def_svm(embeddings, idx, d1, unk):
+# embeddings shape: (num_entities, num_svm, num_samples, embeddings)
 # idx: index that points to the entity ensemble in the database
 # d1: positive samples 
 # unk: flag to mark if d1 samples belong to an unknown entity
 # nneg: number of samples that make up the set of negatives.
-    samplesNegative = deepcopy(samples)
+    neg_embeddings = deepcopy(embeddings)
     if not unk:
-        samplesNegative.pop(idx)
-    l = [num_samples for IoIs in samplesNegative for num_svm in IoIs for num_samples in num_svm]
-    k = nneg if len(l) > nneg else len(l)
-    samplesNegative = random_pick(np.array(l), size=k)
-    trainData = np.vstack([samplesNegative, d1], dtype=np.float32)
-    labels = -np.ones([samplesNegative.shape[0], 1], dtype=np.int32)
+        neg_embeddings.pop(idx)
+    neg_samples = [neg_samples for num_entities in neg_embeddings for num_svm in num_entities for num_samples in num_svm]
+    k = nneg if len(neg_samples) > nneg else len(neg_samples)
+    neg_samples = random_pick(np.array(neg_samples), size=k) # Negative selection
+    trainData = np.vstack([neg_samples, d1], dtype=np.float32)
+    nlabels = -np.ones([neg_samples.shape[0], 1], dtype=np.int32)
     plabels = np.ones([len(d1), 1], dtype=np.int32)
-    labels = np.vstack([labels, plabels])
+    labels = np.vstack([nlabels, plabels])
     svm = cv2.ml.SVM_create()
     svm.setType(cv2.ml.SVM_C_SVC)
     svm.setKernel(cv2.ml.SVM_LINEAR)
     svm.setClassWeights(np.array([1,100], dtype = np.float32))
     svm.setTermCriteria((cv2.TERM_CRITERIA_COUNT, 1000, 1.e-06))
+    svm.train(trainData.astype(np.float32), cv2.ml.ROW_SAMPLE, labels.astype(np.int32))
     return svm
 \end{lstlisting}
