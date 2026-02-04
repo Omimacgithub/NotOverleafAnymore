@@ -1,0 +1,10 @@
+\begin{table}[tbp]
+    \begin{tabular}{l|l|l}
+        \hline
+        \multicolumn{1}{c|}{\textit{\begin{tabular}[c]{@{}c@{}}Métodos de\\ compartición\end{tabular}}} & \multicolumn{1}{c|}{\textbf{Ventajas}}                                                                                                                                                             & \multicolumn{1}{c}{\textbf{Desventajas}}                                                                                                                          \\ \hline
+        \textit{\begin{tabular}[c]{@{}l@{}}Base de datos\\ centralizada\\ (ej: Redis)\end{tabular}}     & \begin{tabular}[c]{@{}l@{}}-Permite realizar copias de \\ seguridad\\ -Es altamente tolerante a fallos\\ -Mayor escalabilidad\\ -Múltiples opciones para la\\ protección de los datos\end{tabular} & \begin{tabular}[c]{@{}l@{}}-Se agrega la latencia en la \\ escritura/lectura a mayores de\\ la latencia en la red\\ -Consume mucha memoria principal\end{tabular} \\ \hline
+        \textit{Red ROS}                                                                                & \begin{tabular}[c]{@{}l@{}}-Lecturas y escrituras rápidas\\ (memoria de Python)\\ -Permite intercambiar mayor\\ variedad de estructuras de datos\end{tabular}                                      & \begin{tabular}[c]{@{}l@{}}-Si el nodo integrador falla, se\\ pierden los cambios. \\ -No permite realizar copias de\\ seguridad\end{tabular}                     \\ \hline
+    \end{tabular}
+    \caption{Ventajas y desventajas de los 2 métodos de compartición propuestos.}
+    \label{tab:redvsros}
+\end{table}
