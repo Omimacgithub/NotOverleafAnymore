@@ -3,15 +3,15 @@
 
 \lettrine{E}{n} este apéndice se exponen los componentes que forman parte de un sistema \acrfull{mig} y se presenta el caso concreto de la Jetson AGX Thor.
 
-Como ya se mencionó en la sección \ref{sec:gpuses}, la funcionalidad \acrshort{mig} permite la asignación de particiones físicas de la \acrshort{gpu} a procesos de CUDA, de forma que se ejecutan con recursos dedicados, es decir, sin interferencias de otras aplicaciones. A la hora de gestionar las particiones de la \acrshort{gpu}, se aplica la siguiente terminología \cite{migconcepts}:
-\begin{itemize}
-    \item \textbf{\acrshort{gpu} Engine}: es la parte de la \acrshort{gpu} que ejecuta el trabajo. Un ejemplo es el copy engine, que se encarga de realizar las operaciones relacionadas con la memoria (direct memory access, memcpy, entre otros).
-    \item \textbf{\acrshort{gpu} Memory Slice}: porción de los controladores de memoria y de la caché de la \acrshort{gpu}.
-    \item \textbf{\acrshort{gpu} SM Slice}: porción de los \glspl{sm} de la \acrshort{gpu}.
-    \item \textbf{\acrshort{gpu} Slice}: porción de la \acrshort{gpu} que combina un único \textbf{\acrshort{gpu} Memory Slice} y un único \textbf{\acrshort{gpu} SM Slice}.
-    \item \textbf{\acrshort{gpu} Instance}: conjunto de \textbf{\acrshort{gpu} Slices} y \textbf{\acrshort{gpu} Engines}.
-    \item \textbf{Compute Instance}: una o múltiples instancias que pertenecen a una \textbf{\acrshort{gpu} Instance}. Entre ellas se comparten las \textbf{\acrshort{gpu} Memory Slices} y los \textbf{\acrshort{gpu} Engines}, mientras que los \textbf{\acrshort{gpu} SM Slices} se \textbf{particionan}.
-\end{itemize}
+Como ya se mencionó en la sección \ref{sec:gpuses}, la funcionalidad \acrshort{mig} permite la asignación de particiones físicas de la \acrshort{gpu} a procesos de \gls{CUDA}, de forma que se ejecutan con recursos dedicados, es decir, sin interferencias de otras aplicaciones. A la hora de gestionar las particiones de la \acrshort{gpu}, se aplica la siguiente terminología \cite{migconcepts}:
+\begin{description}
+    \item[\acrshort{gpu} Engine] Es la parte de la \acrshort{gpu} que ejecuta el trabajo. Un ejemplo es el \emph{copy engine}, que se encarga de realizar las operaciones relacionadas con la memoria (direct memory access, memcpy, entre otros).
+    \item[\acrshort{gpu} Memory Slice] Porción de los controladores de memoria y de la caché de la \acrshort{gpu}.
+    \item[\acrshort{gpu} SM Slice] Porción de los \glspl{sm} de la \acrshort{gpu}.
+    \item[\acrshort{gpu} Slice] Porción de la \acrshort{gpu} que combina un único \textbf{\acrshort{gpu} Memory Slice} y un único \textbf{\acrshort{gpu} SM Slice}.
+    \item[\acrshort{gpu} Instance] Conjunto de \textbf{\acrshort{gpu} Slices} y \textbf{\acrshort{gpu} Engines}.
+    \item[Compute Instance] Una o múltiples instancias que pertenecen a una \textbf{\acrshort{gpu} Instance}. Entre ellas se comparten las \textbf{\acrshort{gpu} Memory Slices} y los \textbf{\acrshort{gpu} Engines}, mientras que los \textbf{\acrshort{gpu} SM Slices} se \textbf{particionan}.
+\end{description}
 
 \begin{figure}[tbp]
     \centering
@@ -20,7 +20,7 @@ Como ya se mencionó en la sección \ref{sec:gpuses}, la funcionalidad \acrshort
     \label{fig:MIGPARTITIONING}
 \end{figure}
 
-Las \textbf{\acrshort{gpu} Instances} son la unidad más grande de particionado y siguen el esquema \textbf{xc.yg.zgb}, donde \textbf{yg} indica el número de \textbf{Compute Slices} que se reservan, que no son más que un conjunto de \textbf{\acrshort{gpu} SM Slices} y \textbf{\acrshort{gpu} Engines} (estos últimos compartidos por todas las \textbf{Compute Instances}). \textbf{zgb} indica la memoria total asignada a la \textbf{\acrshort{gpu} Instance} y \textbf{xc} indica el número de \textbf{Compute Slices} asignadas a cada \textbf{Compute Instance}. La figura \ref{fig:MIGPARTITIONING} muestra la \textbf{\acrshort{gpu} Instance} \textbf{1c.4g.20gb} de la que se pueden crear \textbf{Compute Instances}, cada \textbf{Compute Instance} obtendrá 1/4 de \textbf{Compute Slices} y 20 \acrshort{gb}s de memoria compartida entre todas las \textbf{Compute Instances}.
+Las \textbf{\acrshort{gpu} Instances} son la unidad más grande de particionado y siguen el esquema \textbf{xc.yg.zgb}, donde \textbf{yg} indica el número de \textbf{Compute Slices} que se reservan, que no son más que un conjunto de \textbf{\acrshort{gpu} SM Slices} y \textbf{\acrshort{gpu} Engines} (estos últimos compartidos por todas las \textbf{Compute Instances}). \textbf{zgb} indica la memoria total asignada a la \textbf{\acrshort{gpu} Instance} y \textbf{xc} indica el número de \textbf{Compute Slices} asignadas a cada \textbf{Compute Instance}. La figura \ref{fig:MIGPARTITIONING} muestra la \textbf{\acrshort{gpu} Instance} \textbf{1c.4g.20gb} de la que se pueden crear \textbf{Compute Instances}, cada \textbf{Compute Instance} obtendrá una de cuatro \textbf{Compute Slices} y 20 \acrshort{gb}s de memoria compartida entre todas las \textbf{Compute Instances}.
 
 La Jetson AGX Thor soporta \acrshort{mig}, cuya configuración se encuentra estructurada de la siguiente forma (información extraída de los comandos \textbf{nvidia-smi mig}):
 \begin{itemize}
