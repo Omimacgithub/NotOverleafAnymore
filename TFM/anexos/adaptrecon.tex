@@ -1,7 +1,7 @@
 \chapter{Reconocimiento adaptativo}
 \label{chap:adaptrecon}
 
-\lettrine{E}{n} este apéndice se presenta el diseño y la implementación de la capacidad de reconocimiento con adaptación a los cambios (o aprendizaje incremental) propuesta en \cite{Erik, CESAR}.
+\lettrine{E}{n} este apéndice se presentan los detalles de la capacidad de reconocimiento con adaptación a los cambios (o aprendizaje incremental) propuesta en \cite{Erik, CESAR}.
 
 \section{Diseño}
 
@@ -12,56 +12,63 @@
     \label{fig:cloneADAPTSYS}
 \end{figure}
 
-En la figura \ref{fig:cloneADAPTSYS} se muestra la arquitectura del módulo de reconocimiento con capacidad de adaptación a los cambios, ya introducido en la sección \ref{sec:archrecon}. A continuación se comenta en profundidad todos sus componentes.
+En la figura \ref{fig:cloneADAPTSYS} se muestra la arquitectura del módulo de reconocimiento adaptativo ya introducido en la sección \ref{sec:archrecon}. A continuación, se comenta en profundidad todos sus componentes.
 
 \subsection{Módulo de valoración}
 \label{sec:val}
 
-Es el módulo encargado de devolver una puntuación comparable de cada individuo que será aplicada en la decisión de reconocimiento. Por cada secuencia de entrada, siendo esta una secuencia de \textit{\gls{embedding}} (figura \ref{fig:cloneADAPTSYS}), se calculan las \textbf{puntuaciones (scores) para cada comité}. La puntuación de un comité es a su vez un valor consensuado entre los resultados de las predicciones de las \acrshort{svm} que lo conforman, el criterio de consenso (o de fusión) se basa en un percentil (generalmente la media). Aplicar percentiles es igual a escoger un conjunto amplio o reducido de \acrshort{svm}, ya que pueden existir \acrshort{svm} dañinas para el comité (ejemplo: corresponden a otra persona), los percentiles ayudan a tolerar los resultados de dichas \acrshort{svm}. Para cada comité, se ejecutan las siguientes funciones:
-\begin{itemize}
-    \item \textbf{FDF} (Frame Decision Function): se calculan los scores de cada \acrshort{svm} contra \textbf{un frame} de la secuencia y se fusionan las salidas (o puntuaciones) en una única puntuación, que representa la puntuación del comité para dicho frame. Antes de la fusión, se aplica la normalización Euclidiana a cada puntuación con el fin de hacerlas comparables. Siendo $x_{i}$ un \textit{\gls{embedding}} o la salida de una \acrshort{svm}, se obtiene el vector normalizado $s_{i}$ como sigue en la ecuación \ref{eq:l2norm}.
-    \item \textbf{SDF} (Sequence Decision Function): se encarga de fusionar todas las puntuaciones de la anterior función para obtener un único resultado que representa a la \textbf{secuencia}.
-\end{itemize}
+Es el módulo (función EDF en la figura \ref{fig:cloneADAPTSYS}) encargado de devolver las \textbf{puntuaciones mínimas} de cada comité (individuo) a la secuencia de entrada, que serán aplicadas en la decisión de reconocimiento. La puntuación de un comité es a su vez un valor consensuado entre los resultados de las predicciones de las \acrshort{svm} que lo conforman, el criterio de consenso (o de fusión) se basa en un \textbf{percentil} (generalmente la mediana). Aplicar percentiles ayuda a tolerar los resultados de las \acrshort{svm} \textbf{dañinas} de un comité (ejemplo: corresponden a otra persona). Para cada comité, se ejecutan las siguientes funciones:
+\begin{description}
+    \item[FDF (Frame Decision Function)] Se encarga de calcular las puntuaciones de cada \acrshort{svm} contra \textbf{un frame} de la secuencia. Las puntuaciones (o salidas) de cada \acrshort{svm} se \textbf{fusionan} en una única salida, que representa la puntuación mínima del comité para dicho frame. Antes de la fusión, se aplica la normalización Euclidiana a cada puntuación con el fin de hacerlas comparables. Siendo $x_{i}$ la salida de una \acrshort{svm}, se obtiene el vector normalizado $s_{i}$ como sigue en la ecuación \ref{eq:l2norm}.
+    \item[SDF (Sequence Decision Function)] Se encarga de fusionar todas las puntuaciones de la anterior función para obtener un único resultado que representa a la \textbf{secuencia}.
+\end{description}
 
 \begin{equation}
     s_{i} = \frac{x_{i}}{\left\| x_{i}\right\|_{2}} \label{eq:l2norm}
 \end{equation}
 
+Finalmente, se ordenan las puntuaciones de todos los comités de menor a mayor para su uso en el módulo de reconocimiento.
+
 \subsection{Módulo de reconocimiento}
 \label{sec:reckon}
 
-Este módulo determina si la entidad detectada se corresponde a un individuo previamente reclutado o a una entidad \textbf{desconocida}. Para tomar la decisión de si un sujeto es o no un desconocido, se ha implementado un algoritmo basado en el teorema estadístico \acrfull{evt} o teorema de Fisher–Tippett–Gnedenko, que permite \textbf{detectar extremos} en distribuciones estadísticas. Siendo \textit{f(x)} la distribución de puntuaciones de los comités \textbf{que no corresponden con el sujeto}, se analiza si la puntuación del comité que se corresponde supuestamente con el sujeto es un \textbf{extremo} de la distribución \textit{f(x)}, en dicho caso, la entidad se reconoce claramente diferenciada con el resto, en caso contrario, se denota como \textbf{desconocido}.
+Este módulo determina, dado el conjunto de puntuaciones del módulo de valoración, si una entidad es \textbf{desconocida} o no. Para tomar dicha decisión, se ha implementado un método que compone una \textbf{distribución de Weibull} (sección \ref{sec:incrlearning}) junto a un valor de umbral, que establece una frontera entre lo conocido y lo desconocido.
 
 \begin{figure}
     \centering
-    \includegraphics[width=1\linewidth]{imagenes/FITS.jpg}
-    \caption{Ejemplos de distribuciones de Weibull y como el umbral (Tw) distingue entre un desconocido (\textit{unknown}) y una deriva (\textit{drift}).}
+    \includegraphics[width=0.8\linewidth]{imagenes/weibullshapescale.png}
+    \caption[Impacto de los parámetros \emph{shape} y \emph{scale} en la distribución de Weibull]{Impacto de los parámetros \emph{shape} y \emph{scale} en la distribución de Weibull, figura extraída de \cite{hawkins2019modeling}}
+    \label{fig:weibullshapescale}
+\end{figure}
+
+La primera puntuación (la mejor) se corresponde \textit{a priori} con el comité del individuo, mientras que el resto de puntuaciones conforman la distribución de puntuaciones \textbf{no coincidentes} (denominada a partir de ahora como \textit{f(x)}), que siguen una \textbf{distribución de Weibull}. Dicha distribución se modela a partir los parámetros \textbf{\emph{shape} y \emph{scale}}, en la figura \ref{fig:weibullshapescale} se muestra el impacto al cambiar dichos parámetros.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{imagenes/UNK.jpg}
+    \caption{Ejemplos de distribuciones de Weibull y como el umbral (\emph{Tw}) distingue entre un desconocido (\emph{unknown}) y un conocido (\emph{drift}).}
     \label{fig:FITS}
 \end{figure}
 
-Se calcula la probabilidad de pertenencia a la distribución de la puntuación en cuestión, es decir, la salida de la función \acrfull{pdf} de Weibull. Si la probabilidad se encuentra por debajo de un \textbf{umbral} (\textit{Tw} en la figura \ref{fig:cloneADAPTSYS}), entonces se trata de un \textbf{extremo} \cite{Erik, scorenorm}. En la situación de la derecha de la figura \ref{fig:FITS} se muestra un caso en el que la puntuación ganadora es un extremo, al contrario de la gráfica de la izquierda.
+A partir de la distribución \textit{f(x)}, se hallan los parámetros \emph{shape} y \emph{scale} (mediante un método de estimación de parámetros) que modelan la distribución de Weibull. Finalmente, se calcula la probabilidad de pertenencia a la distribución \textit{f(x)} de la \textbf{mejor puntuación}, es decir, la salida de la \acrfull{pdf} de Weibull. Si la probabilidad se encuentra por debajo del umbral (\textit{Tw} en la figura \ref{fig:cloneADAPTSYS}), entonces se trata de un \textbf{conocido}, en caso contrario de un \textbf{desconocido}. En la figura \ref{fig:FITS} se muestran dos ejemplos de decisiones de reconocimiento, el de la izquierda representado a un desconocido y el de la derecha a un conocido.
 
-Las puntuaciones de todos los comités se ordenan por su valor (función sort de la figura \ref{fig:cloneADAPTSYS}), siendo la mejor puntuación la primera de la lista, es decir, la más baja (en la sección \ref{sec:init} se explica el porqué) y el resto de puntuaciones las no coincidentes.
-
-El algoritmo expuesto otorga un conocimiento robusto, ya que convierte puntuaciones (o scores) concretos de una \acrshort{svm} en probabilidades que siguen una teoría estadística. Esto permite la \textbf{fusión de datos de diferentes fuentes} como nuevas \acrshort{cnn} de reconocimiento o nuevas cámaras diferentes a las Kinect en el sistema \cite{scorenorm}.
+El método expuesto otorga un conocimiento robusto, ya que convierte puntuaciones (o scores) concretos de una \acrshort{svm} en probabilidades que siguen una teoría estadística. Esto permite la \textbf{fusión de datos de diferentes fuentes} como nuevas \acrshort{cnn} de reconocimiento o nuevas cámaras diferentes a las Kinect en el sistema \cite{scorenorm}.
 
 \subsection{Módulo de actualización}
-Es el módulo que implementa la actualización de los comités tras el reconocimiento realizado en la anterior función. Según la entidad predicha, se toma una cierta decisión de actualización. Si el sujeto es \textbf{desconocido}, se crea un nuevo comité con una \acrshort{svm} que se añade al registro. La \acrshort{svm} se entrena con las muestras (\textit{\glspl{embedding}} de caras o cuerpos) obtenidas del propio sujeto como conjunto de positivos, mientras que el conjunto de negativos se compone de muestras aleatorias extraídas directamente de la base de datos. Si el sujeto es \textbf{conocido}, se agrega una nueva \acrshort{svm} al comité, entrenada con las muestras del propio individuo como positivos y como negativos un muestreo aleatorio de todas las entidades \textbf{excepto el propio sujeto}.
+Es el módulo que implementa la actualización de los comités tras el reconocimiento realizado en la anterior función. Su funcionamiento se expone en la sección \ref{sec:archrecon}.
 
-Una condición necesaria para que este módulo se ejecute es que la secuencia de entrada \textbf{contenga un mínimo de \textit{\glspl{embedding}} para la inicialización de la \acrshort{svm}}, dicho mínimo es fijado por el operador de antemano.
+Con el fin de evitar comités \textbf{muy específicos} (ejemplo: todas sus \acrshort{svm} responden igual), se comprueba si las muestras a añadir son lo \textbf{suficientemente representativas}. Las muestras con puntuaciones dentro de la clase positiva no contribuyen a la \textbf{diversidad}, a diferencia de las que se encuentran dentro de los límites negativos, pero a costa de incluir muestras con ruido (ejemplo: borrosas), que pueden \textbf{confundir} al comité en futuros reconocimientos. Las \textbf{muestras en el borde} (cercanas al 0) añaden cierto nivel de características nuevas al comité, mientras se mantiene un riesgo bajo de mezclar muestras de otros comités \cite{Erik, CESAR}.
 
-Otra precondición, que aplica a las entidades conocidas, es comprobar si las muestras a añadir son lo suficientemente representativas. Las puntuaciones cerca del cero indican que las muestras se encuentran en el borde de lo que es nuevo y de lo que la \acrshort{svm} ya conoce. Si la mediana de las puntuaciones de los \glspl{embedding} para un comité se encuentra por debajo de un umbral (\textit{update\_th}), se procede a seleccionar las muestras más cercanas al 0 (función \textit{sample\_selection} en la figura \ref{fig:cloneADAPTSYS}), que compondrán el conjunto de positivos de la \acrshort{svm}.
-
-\textbf{El tamaño del conjunto de positivos y de negativos es prefijado por el operador}, en la sección \ref{seq:paramtunning} se evalúa su impacto en el rendimiento.
+Como precondición de este módulo para individuos conocidos, se comprueba si la mediana de las puntuaciones de la secuencia se encuentran por debajo de 0.1, lo que indica que la secuencia contiene muestras en el borde. El módulo selecciona las muestras más cercanas al 0, que compondrán el conjunto de positivos de la nueva \acrshort{svm} del comité.
 
 \subsection{Módulo de limitación}
 \label{seq:limmod}
 
-Dicho módulo se encuentra inherente al de actualización. Si un comité excede un número prefijado de \acrshort{svm} almacenadas, se toma una decisión para eliminar una de las \acrshort{svm} según los siguientes criterios.
+El módulo de limitación se activa cuando un comité excede el máximo prefijado de \acrshort{svm}s. En este caso, se elimina una de las \acrshort{svm} con base a los siguientes criterios.
 
 \subsubsection{Diversidad}
 
-Este criterio devuelve un valor que representa el grado de diferenciación de una \acrshort{svm} respecto a su comité. Se escoge un conjunto aleatorio de \textit{\glspl{embedding}} de entre todos los comités y se calcula la puntuación de cada \acrshort{svm} del comité. Posteriormente, se acumula el producto de los signos entre scores y se multiplica por -1, de esta forma, el \acrshort{svm} más discordante (es decir, el único que devuelve un resultado contrario respecto a una amplia mayoría) obtendrá un mayor valor de este criterio y viceversa. El valor de diversidad de cada \acrshort{svm} se calcula como en \cite{Erik}. Dado un conjunto de \glspl{embedding} \{$x_{0}$, $x_{1}$, ..., $x_{Q-1}$\} y un comité $e^{k}$ con N \acrshort{svm}s \{$h^{k}_{0}$, $h^{k}_{1}$, ..., $h^{k}_{N-1}$\}, $D(h^{k}_{i})$ se calcula como sigue en la ecuación \ref{eq:diversity}, donde \textit{sgn} es la función \textit{sign}, que devuelve 1 o -1 dependiendo del signo del número real.
+Este criterio devuelve un valor que representa el grado de diferenciación de una \acrshort{svm} respecto a su comité. Se escoge un conjunto aleatorio de \textit{\glspl{embedding}} de entre todos los comités y se calcula la puntuación de cada \acrshort{svm}. Posteriormente, se acumula el producto de los signos entre puntuaciones y se multiplica por -1, de esta forma, las \acrshort{svm}s más discordantes respecto a la mayoría obtendrán un mayor valor de este criterio y viceversa. El valor de diversidad de cada \acrshort{svm} se calcula como en \cite{Erik}. Dado un conjunto de \glspl{embedding} \{$x_{0}$, $x_{1}$, ..., $x_{Q-1}$\} y un comité $e^{k}$ con N \acrshort{svm}s \{$h^{k}_{0}$, $h^{k}_{1}$, ..., $h^{k}_{N-1}$\}, $D(h^{k}_{i})$ se calcula como sigue en la ecuación \ref{eq:diversity}, donde \textit{sgn} es la función \textit{sign}, que devuelve 1 o -1 dependiendo del signo del número real.
 
 \begin{align}
     D(h_{i}^{k})= \sum_{j=0;j\neq i}^{N-1} d(h_{i}^{k}, h_{j}^{k}) \label{eq:diversity} \\
@@ -70,7 +77,7 @@ Este criterio devuelve un valor que representa el grado de diferenciación de un
 
 \subsubsection{Coherencia}
 
-Este criterio viene a determinar la precisión de una \acrshort{svm} en el reconocimiento respecto a las salidas de su comité. El valor de coherencia determina cuantas veces una \acrshort{svm} devuelve el mismo signo que el resultado consensuado del comité para un conjunto de \textit{\glspl{embedding}}. Si los signos coinciden, se suma 1 al valor de coherencia, en caso contrario, se resta 1 a dicho valor, de forma que un valor alto se corresponde con una buena precisión. En el momento de creación de una \acrshort{svm}, este valor se inicializa a 0 y se va acumulando. Dado un comité ganador $e^{k}$ de N \acrshort{svm}s \{$h^{k}_{0}$, $h^{k}_{1}$, ..., $h^{k}_{N-1}$\} y un conjunto de \textit{\glspl{embedding}} \{$x_{0}$, $x_{1}$, ..., $x_{Q-1}$\}, $C_{k,i}$ se calcula como sigue en \cite{CESAR} (ecuación \ref{eq:coherence}), donde $1[\cdot]$ representa a un condicional que devuelve 1 si la condición se cumple o 0 en caso contrario.
+Este criterio viene a determinar la precisión de una \acrshort{svm} en el reconocimiento respecto a la salida de su comité. El valor de coherencia determina cuantas veces una \acrshort{svm} devuelve el mismo signo que el resultado consensuado del comité para la secuencia de entrada. Si los signos coinciden, se suma 1 al valor de coherencia, en caso contrario, se resta 1 a dicho valor. En el momento de creación de una \acrshort{svm}, este valor se inicializa a 0 y se va acumulando, de forma que un valor alto se corresponde con una buena precisión. Dado un comité ganador $e^{k}$ de N \acrshort{svm}s \{$h^{k}_{0}$, $h^{k}_{1}$, ..., $h^{k}_{N-1}$\} y la secuencia de \textit{\glspl{embedding}} de entrada \{$x_{0}$, $x_{1}$, ..., $x_{Q-1}$\}, $C_{k,i}$ se calcula como sigue en \cite{CESAR} (ecuación \ref{eq:coherence}), donde $1[\cdot]$ representa a un condicional que devuelve 1 si la condición se cumple o 0 en caso contrario.
 
 \begin{align}
     C_{k,i} = 1[sgn(e^{k}) == sgn(\bar{y})] - 1 [sgn(e^{k}) \neq sgn(\bar{y})] \label{eq:coherence} \\
@@ -79,13 +86,13 @@ Este criterio viene a determinar la precisión de una \acrshort{svm} en el recon
 
 \subsubsection{Favorabilidad}
 
-Finalmente, los dos criterios anteriores se fusionan en un valor llamado \textbf{índice de favorabilidad}. La fórmula para calcular dicho índice es la misma que en \cite{CESAR}. Dado el valor de coherencia $C_{k,i}$ de la \acrshort{svm} $h^{i}$ del comité ganador $e^{k}$ y el valor de diversidad $D(h^{m})$, la favorabilidad se calcula como sigue en la figura \ref{eq:fav}, donde son $\alpha$ y $\gamma$ constantes que ajustan el peso de la coherencia y la diversidad respectivamente.
+Finalmente, los dos criterios anteriores se fusionan en un valor llamado \textbf{índice de favorabilidad}. La fórmula para calcular dicho índice es la misma que en \cite{CESAR}. Dado el valor de coherencia $C_{k,i}$ de la \acrshort{svm} $h^{i}$ del comité ganador $e^{k}$ y el valor de diversidad $D(h^{m})$, la favorabilidad se calcula como sigue en la ecuación \ref{eq:fav}, donde son $\alpha$ y $\gamma$ constantes que ajustan el peso de la coherencia y la diversidad respectivamente.
 
 \begin{equation}
     F(h_{i}^{k}) = \alpha C_{k,i} + \gamma D(h_{i}^{k}) \label{eq:fav}
 \end{equation}
 
-Como en los dos criterios anteriores, cuanto mayor sea el valor devuelto, mejor se valora la \acrshort{svm}. De este modo, la \acrshort{svm} con el menor valor de dicho índice \textbf{se elimina del comité}.
+La \acrshort{svm} con el menor valor en el índice de favorabilidad \textbf{es eliminada del comité}.
 
 \section{Implementación}
 \label{sec:adaptimpel}
@@ -94,31 +101,17 @@ En esta sección se explican algunos de los detalles de implementación de los c
 
 \subsection{Módulo de valoración}
 
-Como se expuso en la sección \ref{sec:val}, el módulo de valoración devuelve un conjunto de puntuaciones que representan a la secuencia para todos los comités.
-
 La implementación sigue el funcionamiento descrito en la sección \ref{sec:val}. Para calcular los percentiles y la mediana en las funciones FDF y SDF se utilizan las funciones \textit{percentile} y \textit{median} respectivamente de la librería NumPy.
 
 \subsection{Módulo de reconocimiento}
 
 \input{contenido/codes/weib.tex}
 
-Como se mencionó en la sección \ref{sec:reckon}, el módulo de reconocimiento determina si la entidad detectada se corresponde a un individuo previamente reclutado o a una entidad \textbf{desconocida}. El código \ref{coud:weib} muestra la implementación de dicha funcionalidad. Se parte de la función RDF (Recognition Decision Function), que recibe el conjunto de puntuaciones ordenado y devuelve la decisión de reconocimiento.
-
-Del conjunto de puntuaciones ordenadas, se excluye la mejor puntuación de todos los comités (es decir, la puntuación más baja) y se compone la distribución de puntuaciones no coincidentes. Se calcula para cada punto la distancia respecto a la mediana (vector v), de forma que los puntos de la distribución se distancian del mejor comité. Se obtienen los parámetros \textit{shape} y \textit{scale} a partir de la distribución, que modelan la función de Weibull. Finalmente, se calcula la probabilidad de pertenencia del mejor comité a la distribución (función weib) y se toma la decisión en base a un umbral (\textit{Tw}). Si la probabilidad es inferior al umbral, se reconoce el caso como un extremo y se asigna la identidad correspondiente al sujeto (\textit{drift}), en caso contrario se devuelve como desconocido (\textit{unknown}).
+El código \ref{coud:weib} muestra la implementación del módulo de reconocimiento. Para que el reconocimiento pueda resolver casos en los que hay disputa entre comités (ejemplo: secuencia con muestras en el borde), se calcula para cada punto la distancia respecto a la mediana, de forma que los puntos de la distribución se distancian de la mejor puntuación. Se obtienen los parámetros \textit{shape} y \textit{scale} de la distribución de Weibull de puntuaciones no coincidentes (función \emph{scipy.stats.weibull\_min.fit}) y se calcula la probabilidad de pertenencia (\acrshort{pdf}) de la mejor puntuación a la distribución (función \emph{weib}). Si la probabilidad es inferior al umbral (\textit{Tw}), se reconoce el caso como un extremo y se asigna la identidad correspondiente al sujeto (\textit{drift}), en caso contrario se devuelve como desconocido (\textit{unknown}).
 
 Un cambio importante respecto a la implementación de \cite{Erik}, es que se toman \textbf{todas las puntuaciones} de los comités (excepto el comité presuntamente ganador) en vez de \textbf{la mitad de las puntuaciones} para formar la distribución de puntuaciones no coincidentes. La principal razón de este cambio es la \textbf{escasa disponibilidad} de individuos para hacer las pruebas (únicamente 10), que limita la correcta definición de la distribución de Weibull.
 
-Para obtener los parámetros que componen la distribución de Weibull, se utiliza la función \textit{fit} de la clase \textit{weibull\_fit} del módulo \textit{stats} de la librería SciPy.
-
-\subsection{Módulo de actualización}
-
-La implementación del módulo sigue el flujo descrito en la sección \ref{sec:reckon}. En el caso de una clase conocida, la nueva \acrshort{svm} se guarda en el comité junto a la selección de positivos, que sirven para entrenar nuevas \acrshort{svm}, en el caso contrario se crea una nueva entrada en la base de datos con la nueva etiqueta del individuo (\textbf{person\_id}), el comité con su \acrshort{svm} inicial (\textbf{ensemble}) y la selección de positivos (\textbf{descriptors}) y la lista de valores de coherencia (\textbf{coherence}) inicializada a 0. En la selección de los positivos se aplica la función de valor absoluto a la lista de puntuaciones de las muestras, que posteriormente se ordena de menor a mayor y se recuperan los primeros valores, que son los más cercanos al 0.
-
-La creación de las \acrshort{svm} se realiza a partir de la función \textit{def\_svm} expuesta en la sección \ref{sec:init}.
-
 \subsection{Módulo de limitación}
-En el \textbf{módulo de actualización}, si el comité excede el máximo de \acrshort{svm} establecido, este módulo se activa para hallar la \acrshort{svm} que menos contribuye, por tanto la que debe de abandonar el comité.
 
-Se invoca a la función que calcula el criterio de favorabilidad, que otorga un valor para cada \acrshort{svm} a partir de la suma de los criterios de diversidad y coherencia. Se almacenan los resultados en un array de NumPy y se ordenan los valores devueltos mediante la función \textit{argsort} de NumPy, por lo que la \acrshort{svm} a eliminar se corresponde con la primera entrada del vector (es decir, el que tenga el valor de favorabilidad más bajo).
-
-Los valores de coherencia se calculan sobre el valor acumulado de cada \acrshort{svm} cada vez que se invoca a este módulo. Por simpleza, se ha optado por reiniciar este valor en todo el comité a 0 cada vez que se reemplaza una \acrshort{svm}, de forma que se mantenga una comparación justa entre todas las \acrshort{svm}.
+Cuando se excede el límite de \acrshort{svm}s de un comité, se invoca a la función que calcula el criterio de favorabilidad, que otorga un valor para cada \acrshort{svm} a partir de la suma de los criterios de diversidad y coherencia. Se almacenan los resultados en un array de NumPy y se ordenan mediante la función \textit{argsort} de NumPy, por lo que la \acrshort{svm} a eliminar se corresponde con la primera entrada del vector (es decir, la que tenga el valor de favorabilidad más bajo).
+Los valores de coherencia se calculan sobre el valor acumulado de cada \acrshort{svm} cada vez que se invoca a este módulo. Por simpleza, se ha optado por reiniciar este valor en todo el comité a 0 cada vez que se reemplaza una \acrshort{svm}, de forma que se mantiene una comparación justa respecto a las \acrshort{svm} recientes.

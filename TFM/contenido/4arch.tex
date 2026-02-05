@@ -165,16 +165,16 @@ En la figura \ref{fig:eucls} se expone un ejemplo real. En el primer frame, se m
 
 La figura \ref{fig:ADAPTSYS} muestra los componentes del módulo de reconocimiento adaptativo:
 \begin{description}
-    \item[Módulo de valoración] Devuelve las \textbf{puntuaciones máximas} de cada comité a la secuencia de \glspl{embedding} de entrada.
-    \item[Módulo de reconocimiento] Toma la decisión de reconocimiento basándose en la distribución de puntuaciones máximas de todos los comités.
+    \item[Módulo de valoración] Devuelve las \textbf{puntuaciones mínimas} de cada comité a la secuencia de \glspl{embedding} de entrada.
+    \item[Módulo de reconocimiento] Toma la decisión de reconocimiento basándose en la distribución de puntuaciones mínimas de todos los comités.
     \item[Módulo de actualización] Se encarga de crear un nuevo comité si se detecta un usuario nuevo (\textit{unknown}) o de crear una nueva \acrshort{svm} para registrar los cambios de un usuario ya registrado en el sistema (\textit{drift}).
     \item[Módulo de limitación] Reemplaza la \acrshort{svm} que menos aporta a un comité, en el caso de que se haya excedido el límite de \acrshort{svm}s en un comité.
 \end{description}
 
-La figura \ref{fig:ADAPTSYS} muestra el diseño del reconocimiento adaptativo. La secuencia de vectores del individuo son procesados por el \textbf{módulo de valoración} (módulo EDF en la figura \ref{fig:ADAPTSYS}), que devuelve las \textbf{puntuaciones máximas} de cada comité ordenadas de menor a mayor. Así la primera puntuación (la mejor) se corresponde \textit{a priori} con el comité del individuo, mientras que el resto de puntuaciones conforman la distribución de máximos. A partir de las puntuaciones el \textbf{módulo de reconocimiento} (módulo RDF en la figura \ref{fig:ADAPTSYS}) determina, mediante el \acrfull{evt}, si el comité corresponde realmente a un individuo (conocido) o no (desconocido). El \textbf{módulo de actualización} registra los cambios según la decisión de reconocimiento del individuo:
+La figura \ref{fig:ADAPTSYS} muestra el diseño del reconocimiento adaptativo. La secuencia de vectores del individuo son procesados por el \textbf{módulo de valoración} (módulo EDF en la figura \ref{fig:ADAPTSYS}), que devuelve las \textbf{puntuaciones mínimas} de cada comité ordenadas de menor a mayor. Así la primera puntuación (la mejor) se corresponde \textit{a priori} con el comité del individuo, mientras que el resto de puntuaciones conforman la distribución de mínimos. A partir de las puntuaciones el \textbf{módulo de reconocimiento} (módulo RDF en la figura \ref{fig:ADAPTSYS}) determina, mediante el \acrfull{evt}, si el comité corresponde realmente a un individuo (conocido) o no (desconocido). El \textbf{módulo de actualización} registra los cambios según la decisión de reconocimiento del individuo:
 
 \begin{itemize}
-    \item \textbf{El individuo es un conocido.} Se agrega al comité una nueva \acrshort{svm} entrenada con la secuencia de \glspl{embedding} del individuo como positivos y una selección aleatoria de las muestras del \textbf{resto de individuos registrados} como negativos.
+    \item \textbf{El individuo es un conocido.} Se agrega al comité una nueva \acrshort{svm} entrenada con la secuencia de \glspl{embedding} del individuo como positivos y una selección aleatoria de las muestras de todos los individuos registrados \textbf{excepto el propio sujeto} como negativos.
     \item \textbf{El individuo es un desconocido.} Se crea un \textbf{nuevo comité} con una \acrshort{svm} entrenada con la secuencia de \glspl{embedding} del individuo como positivos y una selección aleatoria de las muestras de \textbf{todos los individuos registrados} como negativos.
 \end{itemize}
 
@@ -192,7 +192,7 @@ El sistema crea y mantiene una base de datos con todas las personas registradas,
 
 %fundamental, debido a que la \acrshort{svm} inicial es la que define la identidad del comité. Si dicha \acrshort{svm} está compuesta por muestras de baja calidad (ejemplo: caras borrosas o parcialmente ocluidas), entonces el comité \textbf{no se identificará correctamente consigo mismo} y, por lo tanto, generará \textbf{mayor confusión} a la hora de aplicar Weibull, es decir, \textbf{se generarán más desconocidos}.
 
-En esta primera fase del sistema se crean los registros de los individuos iniciales. Como se muestra en \cite{5samples}, el proceso de inicialización es \textbf{crítico} y depende de la calidad de las muestras escogidas. Acorde a las pruebas de \cite{Erik} es deseable un mínimo de \textbf{5 muestras} por individuo. Se han propuesto las siguientes 2 aproximaciones acordes a los tipos de aprendizaje incremental vistos en la sección \ref{sec:incrtypes}.
+En esta primera fase del sistema se crean los registros de los individuos iniciales. Como se muestra en \cite{5samples}, el proceso de inicialización es \textbf{crítico} y depende de la calidad de las muestras escogidas. Se han propuesto las siguientes 2 aproximaciones acordes a los tipos de aprendizaje incremental vistos en la sección \ref{sec:incrtypes}.
 
 \begin{description}
     \item[Semisupervisada] El operador realiza una selección de las muestras más representativas de cada individuo, de los que se obtienen las características (\glspl{embedding}) a partir de los modelos de reconocimiento. Una vez inicializada la base de datos, el sistema deja de recibir datos etiquetados para entrenarse con datos no etiquetados durante su operación.

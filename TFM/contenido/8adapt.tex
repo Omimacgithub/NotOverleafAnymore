@@ -8,44 +8,44 @@
 En esta sección se introducen las pruebas escogidas para medir las capacidades del reconocimiento adaptativo desarrollado, en concreto las siguientes:
 
 \begin{itemize}
-    \item \textbf{Ajuste de parámetros:} se realiza un conjunto de pruebas con diferentes valores de parámetros para evaluar su impacto y por qué generan los resultados expuestos.
-    \item \textbf{Inicialización de personas registradas:} se estudian los resultados de 2 métodos de inicialización (expuestos en la sección \ref{sec:initieing}), uno semisupervisado (las muestras son seleccionadas por el operador) y el otro totalmente controlado por el propio sistema (no supervisado).
+    \item \textbf{Ajuste de parámetros del aprendizaje y reconocimiento.} Se realiza un conjunto de pruebas con diferentes valores de parámetros para evaluar su impacto en el rendimiento.
+    \item \textbf{Métodos de inicialización del sistema.} Se prueban las 2 técnicas de inicialización propuestas (sección \ref{sec:initieing}), que son una \textbf{semisupervisada} (las muestras son seleccionadas por el operador) y la otra \textbf{no supervisada} (el propio sistema extrae las muestras).
 \end{itemize}
 
-Todas las pruebas mencionadas se ejecutan en las modalidades \textbf{\textit{Open-Set}}, que en este caso \textbf{detecta desconocidos y actualiza las entidades existentes}\footnote{Habitualmente, en el modo \textit{Open-Set} no se aplica la actualización de las entidades existentes} y \textbf{\textit{Open-World}}, que realiza las mismas funciones que \textit{Open-Set}, pero con la capacidad de \textbf{registrar a los desconocidos en el sistema} (como ya se comentó en la sección \ref{sec:incrtypes}).
+Todas las pruebas mencionadas se ejecutan en las modalidades \textbf{\textit{Open-Set}}, que en este caso \textbf{detecta desconocidos y actualiza las entidades ya registradas}\footnote{Habitualmente, en el modo \textit{Open-Set} no se aplica la actualización de las entidades} y \textbf{\textit{Open-World}}, que realiza las mismas funciones que \textit{Open-Set}, pero con la capacidad de \textbf{registrar a los desconocidos en el sistema} (como ya se comentó en la sección \ref{sec:incrtypes}).
 
 \section{Realización de las pruebas}
 
 Las pruebas que analizan los nuevos componentes se realizaron por \textbf{separado del sistema} bajo el modelo de reconocimiento facial \textbf{ArcFace}. Por lo tanto, se sigue el mismo procedimiento que el expuesto en la sección \ref{sec:probes} para los modelos de reconocimiento y se aplica el mismo \gls{dataset}, salvo por los siguientes cambios en las pruebas:
 
 \begin{itemize}
-    \item Los frames se procesan \textbf{por bloques}, de forma que se agrupan las \glspl{bbox} según el individuo mediante la técnica de procesamiento de vídeo (sección \ref{sec:vídeo}), se obtienen los \glspl{embedding} por medio de ArcFace y se aplica el reconocimiento adaptativo para reconocer a las personas de la secuencia.
-    \item Se devuelven las métricas de \textbf{\textit{precision}, \textit{recall}} y \textbf{\textit{F1\_score}}, en vez de únicamente la métrica \textit{precision} para evaluar los reconocimientos (ver apéndice \ref{subsec:recon} para más detalles de estas métricas).
+    \item El módulo de reconocimiento adaptativo procesa \textbf{secuencias de frames} (vídeos), que se obtienen mediante la técnica de procesamiento de vídeo (sección \ref{sec:vídeo}).
+    \item Se devuelven las métricas de \textbf{\textit{precision}, \textit{recall}} y \textbf{\textit{F1\_score}}, en vez de únicamente la métrica \textit{precision} para evaluar los reconocimientos (ver apéndice \ref{subsec:recon} para más detalles).
 \end{itemize}
 
 \section{Ajuste de parámetros del aprendizaje y reconocimiento}
 \label{seq:paramtunning}
 
-En esta sección se realiza un estudio acerca de la configuración óptima de parámetros en términos de rendimiento del sistema. A continuación, se exponen los parámetros utilizados y su función, junto con el rango de valores para la prueba.
+En esta sección se realiza un estudio acerca de la configuración óptima de parámetros en términos de rendimiento del sistema. A continuación, se exponen los parámetros utilizados y su función, junto con el rango de valores probado.
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.75\linewidth]{imagenes/SOLAPING.jpg}
+    \includegraphics[width=0.7\linewidth]{imagenes/SOLAPING.jpg}
     \caption{Ejemplo de funcionamiento del parámetro \textit{step\_size}}
     \label{fig:SOLAPING}
 \end{figure}
 
 \begin{itemize}
-    \item \textbf{Umbral de Weibull (\textit{Tw})}: valor que determina si una entidad es desconocida o no. El rango probado es (0.05 0.1 0.25), no se muestran valores más altos debido a que no presentan variaciones notorias en los resultados respecto al valor 0.25.
-    \item \textbf{Percentil (\textit{percent})}: valor del percentil aplicado en la combinación de las puntuaciones generadas por las \acrshort{svm}. El rango probado es (25 50 75).
+    \item[Umbral de Weibull (\textit{Tw})] Valor de umbral que determina si una entidad es \textbf{desconocida o no}. El rango probado es (0.05 0.1 0.25). No se muestran valores más altos, debido a que no presentan variaciones notorias en los resultados respecto al valor 0.25.
+    \item[Percentil (\textit{percent})] Valor del percentil aplicado en la obtención de la puntuación mínima de cada comité (). El rango probado es (25 50 75).
     \item \textbf{Número de \acrshort{svm} (\textit{max\_svm})}: valor que representa el tamaño máximo de un comité. El rango probado es (1 3 7 10),  valores más altos implicarían un mayor coste computacional en cada iteración.
     \item \textbf{Número de negativos (\textit{nneg})}: tamaño del conjunto de muestras negativas. El rango probado es (10 50). No se han podido probar valores más altos, debido a la escasez de muestras disponibles.
-    \item \textbf{Tamaño de la plantilla}: establece el número de frames positivos que define a un comité. El tamaño se ha fijado en 5 frames, ya que se ha demostrado que otorga buen rendimiento, al mismo tiempo que utiliza el mínimo de muestras posibles \cite{5samples}.
+    \item \textbf{Número de positivos}: establece el número de frames positivos que define a un comité. El tamaño se ha fijado en 5 frames, ya que en \cite{5samples} se ha demostrado que otorga buen rendimiento, al mismo tiempo que utiliza el mínimo de muestras posibles.
     \item \textbf{Tamaño de secuencia (\textit{frame\_block})}: número de frames que forman una secuencia de vídeo. Se ha fijado el valor en 15 frames, que equivalen a 1,5 segundos de vídeo con cámaras funcionando a 10 Hz.
     \item \textbf{Tamaño de salto (\textit{step\_size})}: establece el salto en el número de frames entre secuencias. Gracias a este parámetro, se obtiene un mayor número de secuencias a partir de un mismo vídeo de prueba. La figura \ref{fig:SOLAPING} muestra un ejemplo con tamaño de secuencia 15 y valor de \textit{step\_size} de 5 (que es el que se va a mantener para las pruebas).
 \end{itemize}
 
-A continuación se exponen los resultados obtenidos para cada combinación en \textit{Open-Set} y \textit{Open-World} como una media de 5 ejecuciones. Se parte de \textbf{10 individuos registrados de antemano}, 6 de ellos presentes en el vídeo de prueba. Se inicializa cada comité con 5 frames representativos (que corresponde con el \textbf{tamaño de la plantilla}).
+A continuación se exponen los resultados obtenidos para cada combinación en \textit{Open-Set} y \textit{Open-World} como una media de 5 ejecuciones. A modo de obtener más puntos para definir las distribuciones de Weibull, se ha expandido el sistema con \textbf{4 individuos} a mayores de los 6 presentes en el vídeo de prueba, cuyas muestras se han adquirido de la misma forma (imágenes de las cámaras Kinect). %TODO: poner fotos??? %Se inicializa cada comité con 5 frames representativos (que corresponde con el \textbf{tamaño de la plantilla}).
 
 \subsection{Modo \textit{Open-Set}}
 \label{sec:osparams}
@@ -70,8 +70,6 @@ Los parámetros \textbf{\textit{nneg}} y \textbf{\textit{percent}} permanecen co
 A la hora de escoger un valor de \textbf{\textit{Tw}}, es necesario tener en cuenta una métrica adicional, que es el \textbf{número de comités} que se han generado (\textit{Number of ensembles} en la tabla \ref{tab:owparams}), contando los 10 comités iniciales. Un \textbf{valor alto de \textit{Tw}} implica una \textbf{reducción} en la creación de \textbf{comités}, debido al \textbf{elevado \textit{recall}} y por ende a un \textbf{menor número de desconocidos}. Al \textbf{reducir el valor de \textit{Tw}}, se \textbf{elevan notablemente} los \textbf{comités} creados, pasando de 18 a 34 comités, lo que es \textbf{problemático} para este sistema, ya que no posee la capacidad de \textbf{asociar los nuevos comités} a los ya existentes, por lo que aumenta el riesgo de que más de un comité se active, dando el reconocimiento como \textbf{desconocido}.
 
 En cuanto al parámetro \textbf{\textit{max\_svm}}, los resultados conducen a la misma conclusión que en las pruebas de la sección \ref{sec:osparams}, salvo por el valor de 3 en uno de los resultados, que implica que el sistema prefiere un valor de \textit{Tw} de 0.25, aunque solo opere con 3 \acrshort{svm}s por comité (realmente 1 \acrshort{svm}, por el percentil 25).
-
-%TODO:\textbf{Umbral de actualización}: valor que se compara frente a la fusión de scores de una secuencia. El rango probado es (0.1 0.3)
 
 \subsection{Discusiones}
 \label{sec:discusparamtunning}
