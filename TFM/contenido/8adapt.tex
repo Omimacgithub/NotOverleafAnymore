@@ -3,17 +3,6 @@
 
 \lettrine{E}{n} este capítulo se exponen las pruebas y los resultados que miden las capacidades de los nuevos componentes implementados.
 
-\section{Introducción}
-
-En esta sección se introducen las pruebas escogidas para medir las capacidades del reconocimiento adaptativo desarrollado, en concreto las siguientes:
-
-\begin{itemize}
-    \item \textbf{Ajuste de parámetros del aprendizaje y reconocimiento.} Se realiza un conjunto de pruebas con diferentes valores de parámetros para evaluar su impacto en el rendimiento.
-    \item \textbf{Métodos de inicialización del sistema.} Se prueban las 2 técnicas de inicialización propuestas (sección \ref{sec:initieing}), que son una \textbf{semisupervisada} (las muestras son seleccionadas por el operador) y la otra \textbf{no supervisada} (el propio sistema extrae las muestras).
-\end{itemize}
-
-Todas las pruebas mencionadas se ejecutan en las modalidades \textbf{\textit{Open-Set}}, que en este caso \textbf{detecta desconocidos y actualiza las entidades ya registradas}\footnote{Habitualmente, en el modo \textit{Open-Set} no se aplica la actualización de las entidades} y \textbf{\textit{Open-World}}, que realiza las mismas funciones que \textit{Open-Set}, pero con la capacidad de \textbf{registrar a los desconocidos en el sistema} (como ya se comentó en la sección \ref{sec:incrtypes}).
-
 \section{Realización de las pruebas}
 
 Las pruebas que analizan los nuevos componentes se realizaron por \textbf{separado del sistema} bajo el modelo de reconocimiento facial \textbf{ArcFace}. Por lo tanto, se sigue el mismo procedimiento que el expuesto en la sección \ref{sec:probes} para los modelos de reconocimiento y se aplica el mismo \gls{dataset}, salvo por los siguientes cambios en las pruebas:
@@ -22,6 +11,15 @@ Las pruebas que analizan los nuevos componentes se realizaron por \textbf{separa
     \item El módulo de reconocimiento adaptativo procesa \textbf{secuencias de frames} (vídeos), que se obtienen mediante la técnica de procesamiento de vídeo (sección \ref{sec:vídeo}).
     \item Se devuelven las métricas de \textbf{\textit{precision}, \textit{recall}} y \textbf{\textit{F1\_score}}, en vez de únicamente la métrica \textit{precision} para evaluar los reconocimientos (ver apéndice \ref{subsec:recon} para más detalles).
 \end{itemize}
+
+A modo de evaluar las capacidades del reconocimiento adaptativo desarrollado, se han realizado las siguientes pruebas:
+
+\begin{itemize}
+    \item \textbf{Ajuste de parámetros del aprendizaje y reconocimiento.} Se realiza un conjunto de pruebas con diferentes valores de parámetros para evaluar su impacto en el rendimiento.
+    \item \textbf{Métodos de inicialización del sistema.} Se prueban las 2 técnicas de inicialización propuestas (sección \ref{sec:initieing}), que son una \textbf{semisupervisada} (las muestras son seleccionadas por el operador) y la otra \textbf{no supervisada} (el propio sistema extrae las muestras).
+\end{itemize}
+
+Todas las pruebas mencionadas se ejecutan en las modalidades \textbf{\textit{Open-Set}}, que en este caso \textbf{detecta desconocidos y actualiza las entidades ya registradas}\footnote{Habitualmente, en el modo \textit{Open-Set} no se aplica la actualización de las entidades} y \textbf{\textit{Open-World}}, que realiza las mismas funciones que \textit{Open-Set}, pero con la capacidad de \textbf{registrar a los desconocidos en el sistema} (como ya se comentó en la sección \ref{sec:incrtypes}).
 
 \section{Ajuste de parámetros del aprendizaje y reconocimiento}
 \label{seq:paramtunning}
@@ -67,7 +65,7 @@ Al igual que en la anterior sección, en la tabla \ref{tab:owparams} se muestran
 
 Los parámetros \textbf{\textit{nneg}} y \textbf{\textit{percent}} permanecen constantes, acorde a las pruebas de la anterior sección.
 
-A la hora de escoger un valor de \textbf{\textit{Tw}}, es necesario tener en cuenta una métrica adicional, que es el \textbf{número de comités} que se han generado (\textit{Number of ensembles} en la tabla \ref{tab:owparams}), contando los 10 comités iniciales. Un \textbf{valor alto de \textit{Tw}} implica una \textbf{reducción} en la creación de \textbf{comités}, debido al \textbf{elevado \textit{recall}} y por ende a un \textbf{menor número de desconocidos}. Al \textbf{reducir el valor de \textit{Tw}}, se \textbf{elevan notablemente} los \textbf{comités} creados, pasando de 18 a 34 comités, lo que es \textbf{problemático} para este sistema, ya que no posee la capacidad de \textbf{asociar los nuevos comités} a los ya existentes, por lo que aumenta el riesgo de que más de un comité se active, dando el reconocimiento como \textbf{desconocido}.
+A la hora de escoger un valor de \textbf{\textit{Tw}} es necesario tener en cuenta una métrica adicional, que es el \textbf{número de comités} que se han generado (\textit{Number of ensembles} en la tabla \ref{tab:owparams}), contando los 10 comités iniciales. Un \textbf{valor alto de \textit{Tw}} implica una \textbf{reducción} en la creación de \textbf{comités}, debido al \textbf{elevado \textit{recall}} y por ende a un \textbf{menor número de desconocidos}. Al reducir el valor de \emph{Tw} se \textbf{elevan notablemente} los \textbf{comités} creados, pasando de 18 a 34 comités, que se corresponden con \textbf{comités duplicados}. Los comités duplicados se entrenan con las muestras del propio individuo tanto en el \textbf{conjunto de positivos} como en el de \textbf{negativos} (ya que dicho individuo ya se encuentra registrado en el sistema), lo que \textbf{anula el poder discriminativo} de las \acrshort{svm}, traduciéndose en mayor cantidad de falsos desconocidos y predicciones erróneas (tanto el \emph{precision} como el \emph{recall} \textbf{bajan}), proliferando aún más la creación de estos comités.
 
 En cuanto al parámetro \textbf{\textit{max\_svm}}, los resultados conducen a la misma conclusión que en las pruebas de la sección \ref{sec:osparams}, salvo por el valor de 3 en uno de los resultados, que implica que el sistema prefiere un valor de \textit{Tw} de 0.25, aunque solo opere con 3 \acrshort{svm}s por comité (realmente 1 \acrshort{svm}, por el percentil 25).
 
