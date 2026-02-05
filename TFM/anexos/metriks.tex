@@ -7,40 +7,39 @@
 \label{sec:metriks}
 
 Para evaluar la clasificación de los modelos de visión artificial del proyecto, se empleó la famosa matriz de confusión, que es una tabla compuesta por los siguientes \textit{items}:
-\begin{itemize}
-    \item \textit{\textbf{True Positive (TP)}}: predicción positiva correcta. Para los modelos de detección, sería detectar correctamente a una persona, mientras que para los modelos de reconocimiento, sería asignar la etiqueta correcta a la persona detectada.
-    \item \textit{\textbf{True Negative (TN)}}: predicción negativa correcta. Para los modelos de detección, sería no detectar correctamente a una persona, lo que carece de sentido a la hora de evaluar un buen detector. Para los modelos de reconocimiento, sería predecir que la clase (persona en este caso) no pertenece a ninguna de las registradas, es decir, predecir un \textbf{desconocido}. Este componente \textbf{no se llega a utilizar} para las pruebas de detección, por los motivos comentados, ni para las de reconocimiento, ya que siempre se asume la entidad desconocida como \textbf{incorrecta}.
-    \item \textit{\textbf{False Positive (FP)}}: predicción positiva errónea. Para los modelos de detección, sería detectar una persona donde no la hay, mientras que para los modelos de reconocimiento, sería otorgar una etiqueta incorrecta a la persona detectada.
-    \item \textit{\textbf{False Negative (FN)}}: predicción negativa errónea. Para los modelos de detección, sería no detectar a la persona presente, mientras que para los modelos de reconocimiento, sería asignar la entidad de desconocido a una persona ya registrada en el sistema.
-\end{itemize}
+\begin{description}
+    \item[True Positive (TP)] Predicción positiva correcta. Para los modelos de detección, sería detectar correctamente a una persona, mientras que para los modelos de reconocimiento sería asignar la etiqueta correcta a la persona detectada.
+    \item[True Negative (TN)] Predicción negativa correcta. Para los modelos de detección, sería no detectar correctamente a una persona, lo que carece de sentido. Para los modelos de reconocimiento, sería predecir que la persona no pertenece a ninguna de las ya registradas, es decir, predecir un \textbf{desconocido}. Este componente \textbf{no se llega a utilizar} para las pruebas.
+    \item[False Positive (FP)] Predicción positiva errónea. Para los modelos de detección, sería detectar una persona donde no la hay, mientras que para los modelos de reconocimiento sería otorgar una etiqueta incorrecta a la persona detectada.
+    \item[False Negative (FN)] Predicción negativa errónea. Para los modelos de detección, sería no detectar a la persona presente, mientras que para los modelos de reconocimiento sería asignar la entidad de desconocido a una persona ya registrada en el sistema.
+\end{description}
 
-Estos componentes se aplicarán a los \glspl{dataset} de prueba formados a partir de los vídeos grabados. En un entorno real de operación no sería posible aplicar dichas métricas por falta de un \textit{\gls{gt}}.
+A continuación, se exponen las \textbf{métricas de evaluación} utilizadas para los modelos de detección y reconocimiento.
 
 \section{Modelos de detección}
 \label{subsec:det}
 
-\begin{itemize}
-    \item \textbf{\textit{Precision}}: \textbf{cuando el modelo detecta un objeto}, cuantas veces la detección corresponde con una persona presente.
-          \begin{equation}
-              Precision = \frac{TP}{TP + FP}
-          \end{equation}
-    \item \textbf{\textit{Recall}}: \textbf{cuando realmente hay una persona}, cuantas veces el modelo detecta a esa persona.
-          \begin{equation}
-              Recall = \frac{TP}{TP + FN}
-          \end{equation}
-    \item \textbf{\textit{F1\_score}}: se calcula como una media armónica entre el \textit{recall} (proporción de objetos detectados) y el \textit{precision} (proporción de detecciones correctas) \cite{andrew}.
-          \begin{equation}
-              F1\_score = 2* \frac{Precision * Recall}{Precision + Recall}
-          \end{equation}
-
-\end{itemize}
+\begin{description}
+    \item[Precision] \textbf{Cuando el modelo detecta un objeto}, cuantas veces la detección corresponde con una persona presente.
+        \begin{equation}
+            Precision = \frac{TP}{TP + FP}
+        \end{equation}
+    \item[Recall] \textbf{Cuando realmente hay una persona}, cuantas veces el modelo detecta a esa persona.
+        \begin{equation}
+            Recall = \frac{TP}{TP + FN}
+        \end{equation}
+    \item[F1\_score] Se calcula como una media armónica entre el \textit{recall} (proporción de personas detectadas) y el \textit{precision} (proporción de detecciones correctas) \cite{andrew}.
+        \begin{equation}
+            F1\_score = 2* \frac{Precision * Recall}{Precision + Recall}
+        \end{equation}
+\end{description}
 
 \section{Modelos de reconocimiento}
 \label{subsec:recon}
 
 Las métricas de evaluación se calculan igual que en los modelos de detección. A continuación se exponen las diferencias en el significado:
-\begin{itemize}
-    \item \textbf{\textit{Precision}}: \textbf{dentro de las detecciones realizadas por el respectivo modelo}, cuantas veces se ha reconocido correctamente al individuo.
-    \item \textbf{\textit{Recall}}: \textbf{dentro del conjunto de reconocimientos correctos y desconocidos}, cuantas veces se ha reconocido al individuo correctamente. Dicho en otras palabras, el \textit{recall} mide la confianza del propio sistema a la hora de asignar identidades (el desconocido se asume como una indecisión del sistema de asignar una identidad en pruebas en las que únicamente aparecen personas conocidas).
-    \item \textbf{\textit{F1\_score}}: lo mismo que en los modelos de detección.
-\end{itemize}
+\begin{description}
+    \item[Precision] \textbf{Cuando se reconoce a una persona como conocida}, cuantas veces se ha reconocido correctamente su entidad.
+    \item[Recall] \textbf{Cuando se reconoce a una persona}, cuantas veces se ha reconocido correctamente su entidad.
+    \item[F1\_score] Lo mismo que en los modelos de detección.
+\end{description}
