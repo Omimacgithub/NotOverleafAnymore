@@ -1,6 +1,6 @@
-%, basicstyle=\footnotesize]
-\begin{lstlisting}[language=Python, float=t, label=coud:training, caption={Entrenamiento de las SVM, sección \ref{sec:training}}]     
-# sample = set of embeddings from CNNs, for ArcFace and OSNet_x1, each sample is composed of 512 embeddings
+\begin{lstlisting}[language=Python, %float=t, 
+    label=coud:training, caption={Entrenamiento de las SVM, sección \ref{sec:training}}]     
+# sample = set of embeddings from CNNs, typically set size is 512 embeddings
 def def_svm(embeddings, idx, d1, unk):
 # embeddings shape: (num_entities, num_svm, num_samples, embeddings)
 # idx: index that points to the entity ensemble in the database

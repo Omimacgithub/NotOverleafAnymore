@@ -1,14 +1,14 @@
 \begin{table}[]
     \centering
-    \begin{tabular}{c|c|c}
+    \begin{tabular}{c|c|c|c}
         \hline
-        \textbf{Models}                                                                             & \textbf{Input size} & \textbf{Params(M)} \\ \hline
-        \textit{YuNet \cite{wu2023yunet}}                                                           & 640x640x3           & 0.053              \\ \cline{1-1}
-        \textit{\begin{tabular}[c]{@{}c@{}}ArcFace (ResNet100) \cite{deng2019arcface}\end{tabular}} & 112x112x3           & \textbf{40.3}      \\ \cline{1-1}
-        \textit{\begin{tabular}[c]{@{}c@{}}YOLO11n \cite{redmon2016you}\end{tabular}}               & 640x640x3           & 2.6                \\ \cline{1-1}
-        \textit{\begin{tabular}[c]{@{}c@{}}YOLOv8n \cite{redmon2016you}\end{tabular}}               & 640x640x3           & 3.2                \\ \cline{1-1}
-        \textit{\begin{tabular}[c]{@{}c@{}}OSNet \cite{zhou2019omni}\end{tabular}}                  & 258x126x3           & 2.2                \\ \hline
+        \textbf{Models}                                     & \textbf{Input size} & \textbf{Params(M)} & \textbf{\begin{tabular}[c]{@{}c@{}}ONNX Model \\ size (MB)\end{tabular}} \\ \hline
+        \textit{YuNet \cite{wu2023yunet}}                   & 640x640x3           & 0.053              & 0.2                                                                      \\ \cline{1-1}
+        \textit{ArcFace (ResNet100) \cite{deng2019arcface}} & 112x112x3           & \textbf{40.3}      & 152                                                                      \\ \cline{1-1}
+        \textit{YOLO11n \cite{redmon2016you}}               & 640x640x3           & 2.6                & 11                                                                       \\ \cline{1-1}
+        \textit{YOLOv8n \cite{redmon2016you}}               & 640x640x3           & 3.2                & 13                                                                       \\ \cline{1-1}
+        \textit{OSNet\_x1 \cite{zhou2019omni}}              & 258x126x3           & 2.2                & 8.3                                                                      \\ \hline
     \end{tabular}
-    \caption{Propiedades de los modelos utilizados}
+    \caption{Propiedades de los modelos utilizados en el capítulo \ref{chap:cnn}}
     \label{tab:modelspecs}
 \end{table}

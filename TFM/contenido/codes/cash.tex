@@ -1,17 +1,16 @@
-\begin{lstlisting}[language=Python, float=t, label=coud:cash, caption={Recolección de mensajes de las cachés de los sensores (ROS 1), sección \ref{sec:scal}}, basicstyle=\footnotesize]
+\begin{lstlisting}[language=Python, float=t, 
+  label=coud:cash, caption={Recolección de mensajes de las cachés de los sensores (ROS 1), sección \ref{sec:scal}}, basicstyle=\footnotesize]
 def process(self):
 # self: Integration node class
 # self.lidar_cache: MessageFiltersCache corresponding to LiDAR node.
 # self.cam_caches: list of MessageFiltersCache objects, as many as camera nodes are launched.
 # nl: flag that indicates absence of lidar message
 # nc: flag that indicates absence of any camera message
-    #Collect lidar message
     last_stamp = self.lidar_cache.getLatestTime()
     elapsed = rospy.Time.now().to_sec() - last_stamp.to_sec() if last_stamp else 1
     lidar_msg = self.lidar_cache.getElemBeforeTime(last_stamp) if elapsed <= 0.2 else None
     nl = False if lidar_msg else True
     message_list = [lidar_msg] if not nl else []
-    #Collect cameras messages
     pre = len(message_list)
     for cam_cache in self.cam_caches:
       last_stamp = cam_cache.getLatestTime()
@@ -25,6 +24,4 @@ def process(self):
     if len(message_list) > 0:
       #Call fusion of results with collected messages
       self.on_frame(message_list, nl, nc)
-    else:
-      print("No new content in the queue")
 \end{lstlisting}

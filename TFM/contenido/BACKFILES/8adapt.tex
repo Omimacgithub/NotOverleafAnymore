@@ -1,0 +1,138 @@
+\chapter{Pruebas y resultados del sistema extendido}
+\label{chap:systesting}
+
+\lettrine{E}{n} este capítulo se exponen las pruebas y los resultados que miden las capacidades de los nuevos componentes implementados.
+
+\section{Realización de las pruebas}
+
+Las pruebas que analizan los nuevos componentes se realizaron por \textbf{separado del sistema} bajo el modelo de reconocimiento facial \textbf{ArcFace}. Por lo tanto, se sigue el mismo procedimiento que el expuesto en la sección \ref{sec:probes} para los modelos de reconocimiento y se aplica el mismo \gls{dataset}, salvo por los siguientes cambios en las pruebas:
+
+\begin{itemize}
+    \item El módulo de reconocimiento adaptativo procesa \textbf{secuencias de frames} (vídeos), que se obtienen mediante la técnica de procesamiento de vídeo (sección \ref{sec:vídeo}).
+    \item Se devuelven las métricas de \textbf{\textit{precision}, \textit{recall}} y \textbf{\textit{F1\_score}}, en vez de únicamente la métrica \textit{precision} para evaluar los reconocimientos (ver apéndice \ref{subsec:recon} para más detalles).
+\end{itemize}
+
+A modo de evaluar las capacidades del reconocimiento adaptativo desarrollado, se han realizado las siguientes pruebas:
+
+\begin{itemize}
+    \item \textbf{Ajuste de parámetros del aprendizaje y reconocimiento.} Se realiza un conjunto de pruebas con diferentes valores de parámetros para evaluar su impacto en el rendimiento.
+    \item \textbf{Métodos de inicialización del sistema.} Se prueban las 2 técnicas de inicialización propuestas (sección \ref{sec:initieing}), que son una \textbf{semisupervisada} (las muestras son seleccionadas por el operador) y la otra \textbf{no supervisada} (el propio sistema extrae las muestras).
+\end{itemize}
+
+Todas las pruebas mencionadas se ejecutan en las modalidades \textbf{\textit{Open-Set}}, que en este caso \textbf{detecta desconocidos y actualiza las entidades ya registradas}\footnote{Habitualmente, en el modo \textit{Open-Set} no se aplica la actualización de las entidades} y \textbf{\textit{Open-World}}, que realiza las mismas funciones que \textit{Open-Set}, pero con la capacidad de \textbf{registrar a los desconocidos en el sistema} (como ya se comentó en la sección \ref{sec:incrtypes}).
+
+\section{Ajuste de parámetros del aprendizaje y reconocimiento}
+\label{seq:paramtunning}
+
+En esta sección se realiza un estudio acerca de la configuración óptima de parámetros en términos de rendimiento del sistema. A continuación, se exponen los parámetros utilizados y su función, junto con el rango de valores probado.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\linewidth]{imagenes/SOLAPING.jpg}
+    \caption{Ejemplo de funcionamiento del parámetro \textit{step\_size}}
+    \label{fig:SOLAPING}
+\end{figure}
+
+\begin{description}
+    \item[Umbral de Weibull (\textit{Tw})] Valor de umbral que determina si una entidad es \textbf{desconocida o no}. El rango probado es (0.05 0.1 0.25). No se muestran valores más altos, debido a que no presentan variaciones notorias en los resultados respecto al valor 0.25.
+    \item[Percentil (\textit{percent})] Valor del percentil aplicado en la obtención de la puntuación mínima de cada comité (en el apéndice \ref{sec:val} se explica el uso de los percentiles). El rango probado es (25 50 75).
+    \item[Número de \acrshort{svm}s (\textit{max\_svm})] Valor que representa el tamaño máximo de un comité. El rango probado es (1 3 7 10),  valores más altos implicarían un mayor coste computacional en cada iteración.
+    \item[Número de negativos (\textit{nneg})] Representa el tamaño del conjunto de muestras negativas. El rango probado es (10 50). No se han podido probar valores más altos, debido a la escasez de muestras disponibles.
+    \item[Número de positivos] Establece el número de muestras positivas que define a un comité. El tamaño se ha fijado en 5 muestras, ya que en \cite{5samples} se ha demostrado que otorga buen rendimiento, al mismo tiempo que utiliza el mínimo de muestras posibles.
+    \item[Tamaño de secuencia (\textit{frame\_block})] Número de frames que conforman una secuencia de vídeo. Se ha fijado el valor en 15 frames, que equivalen a 1,5 segundos de vídeo con las cámaras funcionando a 10 Hz.
+    \item[Tamaño de salto (\textit{step\_size})] Establece el salto en el número de frames entre secuencias. Gracias a este parámetro, se obtiene un mayor número de secuencias a partir de un mismo vídeo de prueba. La figura \ref{fig:SOLAPING} muestra un ejemplo con un tamaño de secuencia de 15 y un tamaño de salto de 5 (que es el que se va a mantener para las pruebas).
+\end{description}
+
+A continuación se exponen los resultados obtenidos para cada combinación en \textit{Open-Set} y \textit{Open-World} como una media de 5 ejecuciones. A modo de obtener más puntos para definir las distribuciones de Weibull, se ha expandido el sistema con \textbf{4 individuos} a mayores de los 6 presentes en el vídeo de prueba, cuyas muestras se han adquirido de la misma forma (capturas de las cámaras Kinect). %TODO: poner fotos??? %Se inicializa cada comité con 5 frames representativos (que corresponde con el \textbf{tamaño de la plantilla}).
+
+\subsection{Modo \textit{Open-Set}}
+\label{sec:osparams}
+
+\input{contenido/tables/tests/osparams.tex}
+
+La tabla \ref{tab:osparams} muestra los 5 mejores resultados de las pruebas del análisis de parámetros ordenados según la métrica \textit{F1\_score}.
+
+El parámetro \textbf{\textit{percent}} muestra una tendencia clara al valor \textbf{25}. Un percentil de 25 implica escoger las 2/3 primeras \acrshort{svm} para otorgar la puntuación final del comité. En el caso de este sistema, cuando un comité se activa con sus muestras, un porcentaje no precisamente bajo (aproximadamente el 30-40\%) de las \acrshort{svm} devuelven una respuesta \textbf{negativa} frente a las muestras de su propia clase, mientras que otra parte del comité devuelve valores cercanos al 0 (lo que se podría considerar como indecisión en la respuesta), por lo que realmente \textbf{no se compone una mayoría} de respuestas positivas. Por este motivo, el sistema prefiere un \textbf{percentil bajo} (25) frente a la \textbf{votación por mayoría} (mediana, percentil 75). Los \textbf{valores extremos} en el percentil implican en un \textbf{bajo \textit{recall}}, un percentil de 100 implica obtener el mayor valor (que se corresponde con la peor coincidencia), este valor puede proceder de una \acrshort{svm} de otro individuo (pudo incluirse debido a un reconocimiento erróneo previo), que hace que el comité no se active ante sus muestras. Lo mismo sucede con un percentil de 0.\\
+\indent Para el parámetro \textbf{\textit{nneg}} se considera más efectivo un tamaño de 50 del conjunto de negativos frente al valor de 10, ya que con 50 muestras se puede albergar un \textbf{mayor número de individuos} y, por ende, la \acrshort{svm} puede definir mejor el hiperplano que separa las muestras positivas de las negativas, mejorando así su poder discriminativo y su capacidad de generalización.\\
+\indent En cuanto al valor del parámetro \textbf{\textit{Tw}} no existe una tendencia clara. Atendiendo a los valores de \textit{precision} y \textit{recall}, se puede apreciar como al \textbf{aumentar el umbral de Weibull}, el \textbf{\textit{recall} aumenta a costa de la precisión}, debido a que se está agregando cierta tolerancia de la mejor puntuación a pertenecer a la distribución de puntuaciones no coincidentes, por lo tanto, \textbf{menos desconocidos} se detectan (aumenta el \textit{recall}) a costa de aceptar un mayor número de \textbf{predicciones erróneas} (baja la precisión), un valor bajo demuestra justo lo contrario. Un valor de \textbf{0.1} parece ser la opción \textbf{más equilibrada} entre un excelente \textit{recall} y una excelente precisión para \textit{Open-Set}.\\
+\indent En el caso del parámetro \textbf{\textit{max\_svm}}, tampoco es seguro qué único valor escoger. Puede afirmarse que un valor alto devuelve resultados más robustos, esto se debe a que se implica un mayor número de \acrshort{svm} en cada reconocimiento, lo que da lugar a más diversidad y por lo tanto a unos comités que se activan en una mayor cantidad de diversas situaciones de la entidad.
+
+\subsection{Modo \textit{Open-World}}
+
+\input{contenido/tables/tests/owparams.tex}
+
+Al igual que en la anterior sección, en la tabla \ref{tab:owparams} se muestran los cinco mejores resultados, ordenados acorde al \textbf{\textit{F1\_score}}.
+
+Los parámetros \textbf{\textit{nneg}} y \textbf{\textit{percent}} permanecen constantes, acorde a las pruebas de la anterior sección.
+
+A la hora de escoger un valor de \textbf{\textit{Tw}} es necesario tener en cuenta una métrica adicional, que es el \textbf{número de comités} que se han generado (\textit{Number of ensembles} en la tabla \ref{tab:owparams}), contando los 10 comités iniciales. Un \textbf{valor alto de \textit{Tw}} implica una \textbf{reducción} en la creación de \textbf{comités}, debido al \textbf{elevado \textit{recall}} y por ende a un \textbf{menor número de desconocidos}. Al reducir el valor de \emph{Tw} se \textbf{elevan notablemente} los \textbf{comités} creados, pasando de 18 a 34 comités, que se corresponden con \textbf{comités duplicados}. Los comités duplicados se entrenan con las muestras del propio individuo tanto en el \textbf{conjunto de positivos} como en el de \textbf{negativos} (ya que dicho individuo ya se encuentra registrado en el sistema), lo que \textbf{anula el poder discriminativo} de las \acrshort{svm}, traduciéndose en mayor cantidad de falsos desconocidos y predicciones erróneas (tanto el \emph{precision} como el \emph{recall} \textbf{bajan}), proliferando aún más la creación de estos comités.
+
+En cuanto al parámetro \textbf{\textit{max\_svm}}, los resultados conducen a la misma conclusión que en las pruebas de la sección \ref{sec:osparams}, salvo por el valor de 3 en uno de los resultados, que implica que el sistema prefiere un valor de \textit{Tw} de 0.25, aunque solo opere con 3 \acrshort{svm}s por comité (realmente 1 \acrshort{svm}, por el percentil 25).
+
+\subsection{Discusiones}
+\label{sec:discusparamtunning}
+
+Los resultados de precisión en el modo \textit{Open-World} son claramente \textbf{inferiores} al modo \textit{Open-Set}. La principal causa es la generación de \textbf{comités duplicados} en el modo \textit{Open-World}, que se crean como respuesta a ciertas condiciones del individuo (ejemplo: una orientación diferente de la cara) que el comité original no es capaz de reconocer, de forma que se adueñan de parte de su identidad. Por este motivo, es necesario implementar un método que permita \textbf{asociar comités duplicados} y/o mejorar el reconocimiento por medio del \acrfull{evt}.
+
+%TODO: no lo creo, sino como se explica la subida en el recall???? Creo q el sistema es capaz de crear comités que se ajusten mejor a las situaciones concretas del individuo que con el comité original no sucede (ejemplo: una determinada orientación de la cara), esto quiere decir que . El principal factor de esta caída es la existencia de \textbf{comités duplicados} para un individuo, lo que aumenta las probabilidades de otorgar un reconocimiento \textbf{desconocido}. Para colmo, cabe la posibilidad de que las \acrshort{svm} que pertenecen a los comités duplicados se entrenen con muestras del \textbf{mismo individuo} en los conjuntos \textbf{positivo y negativo}, lo que podría \textbf{anular el poder discriminatorio} de dichas \acrshort{svm}, lo que implica en una \textbf{pérdida de precisión}. Por otro lado, el \textit{recall} aumenta, precisamente por la creación de nuevos comités, que a.
+
+El valor del parámetro \textbf{\textit{Tw}} es \textbf{clave} para el correcto funcionamiento del sistema, mientras que en el modo \textit{Open-Set} un valor bajo de este parámetro resulta en un balance muy favorable para la precisión y el \textit{recall}, en el modo \textit{Open-World} es \textbf{perjudicial} para ambas métricas, debido a que fomenta la creación de comités duplicados. En cambio, un \textbf{valor alto} de este parámetro en el modo \textbf{\textit{Open-World}}, aunque a priori sea negativo para la precisión, es la \textbf{mejor opción} para reducir la creación de comités duplicados.
+
+Uno de los objetivos del sistema es obtener la \textbf{mayor diversidad intra-comité} y la \textbf{mayor especificidad inter-comité}, de esta forma, el comité responde a la mayor variedad de situaciones de su entidad, mientras que no se activa ante otros individuos. En este sistema, una proporción de las \acrshort{svm} creadas \textbf{son muy similares entre sí}, dando lugar a poca información nueva del individuo. Esto se debe principalmente al \textbf{\textit{step\_size}} introducido en las pruebas, que hace que las \acrshort{svm}s compartan frames entre sí.
+
+%TODO: porqué un 40% de las SVM devuelven respuestas negativas ante sus muestras?, no creo q sea porque las svm son de otros comités (quizá 1 si), si son muy especificas eso puede explicarlo, lo bueno es que en todas las situaciones que he visto siempre hay al menos 3/4 svms activadas, por lo que dentro de lo especifico no lo es tanto.
+
+%Disponer de un conjunto mayor de negativos para entrenar las \acrshort{svm} podría mejorar las respuestas de los comités.
+
+%Un \textbf{percentil alto} encajaría si las SVM son \textbf{específicas} entre sí (la mayoría de las SVM devuelven match). En cambio, un \textbf{bajo percentil} funcionaría con unas SVM \textbf{más diversas} (se espera que la minoría de las SVM den un resultado coincidente).
+
+%TODO: En relación con el anterior punto, el número de SVM influye en la decisión de que percentil tomar. Si se utilizan 3 SVM por comité y la mediana, al menos 2 SVM deben de devolver un score bajo para dar un resultado coincidente. Por otro lado, si se utilizan 10 SVM y un percentil de 30, sólo 3 de las 10 SVM necesitan estar de acuerdo para devolver un match. En los resultados se muestra como un comité de 3 SVM y TW=0.05 destaca respecto a un comité de 1 SVM y TW=0.5. Los resultados utilizando 10 SVM por comité no llegan a mejorar notablemente el valor de 3 SVM, esto es de gran relevancia, puesto que se reduce el número de iteraciones de cada reconocimiento de 10*n a 3*n, siendo n el número de comités que existen y asumiendo que todos los comités han llegado al límite de SVM. Con estos resultados se ha demostrado que implementar varias SVM por comité mejora el recall manteniendo la precisión. 1 sóla SVM por comité es efectiva si dicha SVM es representativa del individuo, en caso contrario puede devolver respuestas coincidentes acerca de una entidad distinta del comité, generando ruido que perjudica a las predicciones de Weibull. Un mayor número de SVM combinado con el percentil devuelve un resultado conforme dicta un grupo que omite los scores de SVM intrusas (de entidades distintas) y permite expulsarlas mediante los criterios ya comentados en la sección \ref{seq:limmod}.
+
+%La calidad de la función de reconocimiento viene determinada por el número de puntos que componen la función de Weibull, cuantos más puntos, mayor definición y por tanto reconocimientos más precisos \cite{Erik}. Con un universo de 20 individuos, solo 5 puntos componen la función de Weibull (de las 20 entidades solo 10 se registran en el sistema, a modo de probar el open-set, y de esos 10, la mitad definen la función), lo que lleva a un comportamiento más impreciso que con un universo mayor. El sistema inicial cuenta con un universo de \textbf{6 individuos}, lo que claramente \textbf{es insuficiente} para realizar una diferenciación precisa de los IoI respecto a lo desconocido.
+
+\section{Métodos de inicialización del sistema}
+
+En esta sección se evalúa el sistema en los modos \textit{Open-Set} y \textit{Open-World} en las 2 técnicas de inicialización vistas en la sección \ref{sec:initieing} (semisupervisada y no supervisada). Para mostrar el notorio impacto del parámetro \textbf{\textit{Tw}} en los resultados, se han probado los valores \textbf{0.25} y \textbf{0.1} en todas las pruebas de la sección. El resto de valores de los parámetros son los mismos de la anterior sección, salvo por los parámetros \textbf{\textit{max\_svm}}, \textbf{\textit{percent}} y \textbf{\textit{nneg}}, a los que se les ha asignado los valores \textbf{10, 25 y 50} respectivamente, acorde a los resultados obtenidos en la anterior sección.
+
+En la técnica no supervisada, el sistema ha podido encontrar como máximo \textbf{5 personas} en un instante del vídeo (el mínimo necesario, como se expone en la sección \ref{sec:initieing}) entre las 2 cámaras. Debido a que el \gls{dataset} contiene \textbf{6 personas}, se ha decidido añadir a la entidad restante durante la operación del sistema, en el momento que el módulo de reconocimiento adaptativo reconozca a un desconocido.
+
+%La situación ideal sería encontrar un instante en el que todas las personas del vídeo (6 en total) aparezcan. Como mínimo para que el sistema se inicialice es necesario que aparezcan 5 entidades, que equivale al número mínimo de puntos necesarios para definir la distribución de Weibull. En el \gls{dataset} de prueba solo aparece un instante de 5 individuos que cumpla con las condiciones anteriores. Por lo tanto, es necesario añadir a la entidad restante durante la inferencia en el caso de la técnica no supervisada.
+
+\subsection{Modo \textit{Open-Set}}
+
+\input{contenido/tables/tests/osinittab.tex}
+
+\begin{figure}[tbp]
+    \centering
+    \begin{subfigure}[t]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{imagenes/supervised.jpg}
+        \caption{modo semisupervisado}
+    \end{subfigure}
+    \hspace{2cm}
+    \begin{subfigure}[t]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{imagenes/nosupervised.jpg}
+        \caption{modo no supervisado}
+    \end{subfigure}
+    \caption{Conjuntos de muestras según la inicialización}
+    \label{fig:inits}
+\end{figure}
+
+En la tabla \ref{tab:osinittab} se muestran los resultados para los 2 tipos de inicialización. La figura \ref{fig:inits} expone un ejemplo de las muestras recogidas según la técnica. En la izquierda, puede verse que las muestras tienen una buena resolución, apenas poseen borrosidad, contienen suficiente luminosidad y son todas caras frontales, justo lo contrario que las muestras de la derecha. Por un lado, la buena calidad de las muestras de la inicialización semisupervisada (izquierda de la figura \ref{fig:inits}) permiten al sistema responder ante una mayor variedad de situaciones del individuo, por lo tanto es la que mejores resultados arroja. Por otro lado, la baja calidad y escasa variedad de las muestras escogidas del modo no supervisado (derecha de la figura \ref{fig:inits}) limitan la capacidad del sistema de reconocer la entidad ante cambios en las condiciones (ejemplo: orientación de la cara) y de recoger las características que la diferencian del resto de individuos. Esto supone la principal causa del descenso del \textit{F1\_score} en 10 puntos respecto al modo semisupervisado.
+
+A pesar de la caída en el rendimiento en la técnica no supervisada, se logra que el sistema \textbf{no colapse}, lo que indica que el módulo de procesamiento de vídeo y la inclusión del nuevo individuo durante la operación del sistema \textbf{funcionan correctamente}.
+
+Atendiendo al valor del parámetro \textit{Tw}, el valor de 0.25 obtiene un mejor \textit{F1\_score}, ya que a pesar de ser levemente inferior en la precisión respecto al valor 0.1, el \textit{recall} mejora con creces, demostrando así que el sistema puede resolver más reconocimientos sin apenas impacto en la precisión.
+
+\subsection{Modo \textit{Open-World}}
+
+\input{contenido/tables/tests/owinittab.tex}
+
+En la tabla \ref{tab:owinittab} se muestran los resultados esta vez para \textit{Open-World}. Se puede apreciar una caída en la precisión de la técnica no supervisada, mayor que en el modo \textit{Open-Set}. Al jugar con la inclusión de nuevos comités, el sistema se decanta por crear un nuevo comité si el reconocimiento no es claro, lo que se acentúa en muestras extraídas durante la operación (generalmente de baja calidad), que conforman comités que responden a menor variedad de situaciones del individuo y, por ende, a generar más comités que cubran dichas situaciones.
+
+En el caso del modo \textit{Open-World}, la variación en el umbral de Weibull (\textit{Tw}) tiene un mayor impacto respecto a \textit{Open-Set}, debido a la creación de nuevos comités que, por un lado, ayuda a potenciar el \textit{recall}, mientras que por otro la precisión cae significativamente. En el caso de la técnica no supervisada, el valor de 0.1 genera una \textbf{caída dramática} respecto a unos resultados de por sí \textbf{ínfimos} al usar un valor de 0.25. La acumulación excesiva de comités duplicados puede volverse contraproducente, ya que, a pesar de que por un lado ayuda a definir mejor la distribución de Weibull con más puntos, por otro se devuelven puntuaciones más cercanas a la ganadora, debido a las similitudes entre los comités, lo que genera \textbf{indecisión} en el sistema y por ende a que el \textit{recall} y la precisión disminuyan.
+
+\subsection{Discusiones}
+
+Mientras que el modo \textit{Open-Set} logra mantener el tipo en ambas técnicas de inicialización, el modo \textit{Open-World} \textbf{colapsa} en la técnica no supervisada. La baja calidad de las muestras iniciales impide la extracción de las características discriminatorias de un individuo respecto al resto del mundo, lo que supone la causa principal del deterioro en el rendimiento, acentuado en el caso del modo \textit{Open-World}, debido a la creación de más comités con poca diferenciación entre sí, lo que conduce a más dudas en los reconocimientos y por consiguiente al desmoronamiento del sistema.
+
+El inevitable ruido que contienen las muestras también es uno de las principales causas de la caída en la precisión, por lo que es necesario adoptar métodos para hacer una selección según el grado de borrosidad u orientación de la cara, más allá del filtrado inicial propuesto y de añadir las muestras con puntuaciones cercanas al 0, que no implica necesariamente que sean las mejores para mejorar la generalización de los comités.
