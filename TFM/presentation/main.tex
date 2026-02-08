@@ -1,0 +1,81 @@
+% Presentation guidelines: https://www.dc.fi.udc.es/ai/~cabalar/docencia.html
+
+\documentclass{beamer}
+\usepackage{xcolor}
+\usetheme{Madrid}
+%\usecolortheme{beaver}
+%Information to be included in the title page:
+\AtBeginSection[]
+{
+  \begin{frame}
+    \frametitle{Índice}
+    \tableofcontents[currentsection]
+  \end{frame}
+}
+\definecolor{MyOrange}{RGB}{230, 85, 10}
+
+% --- PORTADA ---
+\title{Reconocimiento facial con aprendizaje máquina en arquitecturas embebidas de altas prestaciones}
+\author{Omar Montenegro Macía \and \\\vspace{1em} Dirección: Carlos Vázquez Regueiro}%\\}
+%\author{
+%    Dirección: Carlos Vázquez Regueiro}
+\institute{Universidade da Coruña}
+%\institute{Universidade de Santiago de Compostela}
+\date{2026}
+
+\begin{document}
+
+\frame{
+    \begin{figure}[]
+        \centering
+        %   \begin{subfigure}[t]{0.3\textwidth}
+
+        \includegraphics[width=0.3\linewidth]{../imagenes/udc.jpg}
+        %   \end{subfigure}
+        %  \hspace{2cm}
+        % \begin{subfigure}[t]{0.3\textwidth}
+        %        \includegraphics[width=0.1\linewidth]{../imagenes/usc.jpg}
+        %\end{subfigure}
+    \end{figure}
+
+    \titlepage
+}
+
+% USAR FRASES CORTAS, DESTACAR PALABRAS EN CADA ITEM.
+
+%\section{Motivación}
+\begin{frame}{Motivación}
+    Poner foto robot móvil con una Jetson integrada.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Índice}
+    \tableofcontents
+\end{frame}
+
+\section{Demo}
+\begin{frame}{Demos}
+    GIFs con los componentes construidos funcionando
+\end{frame}
+
+\section{(Opcional?) Trabajo relacionado}
+\begin{frame}{Trabajo relacionado}
+    This is some text in the first frame. This is some text in the first frame. This is some text in the first frame.
+\end{frame}
+
+\section{Conclusiones}
+\begin{frame}{Conclusiones}
+    Seguir mismo esquema de la memoria:
+    \begin{enumerate}
+        \item Resumen
+        \item Conclusiones positivas y negativas
+        \item Trabajo futuro
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}[c]
+    \centering
+    \Large ¡Gracias por su atención!%\textcolor{MyOrange}{¡Gracias por su atención!}
+\end{frame}
+
+\end{document}

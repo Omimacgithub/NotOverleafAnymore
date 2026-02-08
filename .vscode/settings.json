@@ -192,6 +192,12 @@
 	],
 	"latex-workshop.latex.recipes": [
 		{
+			"name": "Presentation (xelatex)",
+			"tools": [
+				"xelatexmk",
+			]
+		},
+		{
 			"name": "PDF with glossary",
 			"tools": [
 				"xelatexmk",
